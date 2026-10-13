@@ -1,0 +1,19 @@
+{
+  "orphan_counts": {
+    "accounts_customers": 0,
+    "insurance_policy_accounts": 0,
+    "loan_accounts": 0,
+    "mobile_senders": 0,
+    "mobile_receivers": 0
+  },
+  "table_rows": {
+    "insurance_operations": "22",
+    "loan_repayments": "22",
+    "customers": "800",
+    "accounts": "1200",
+    "mobile_money_payments": "22",
+    "bank_transactions": "1110",
+    "products": "16",
+    "branches": "32"
+  }
+}

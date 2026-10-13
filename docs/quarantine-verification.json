@@ -1,0 +1,36 @@
+{
+  "mixed_files_verified": true,
+  "all_flow_replay_verified": true,
+  "accepted_rows": 8,
+  "rejected_rows": 24,
+  "files": [
+    {
+      "source_file": "CI/bank_transactions/2026-01-06/bank_txn_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "dataset": "bank_transactions",
+      "accepted_rows": 2,
+      "rejected_rows": 6,
+      "source_etag": "\"2bf4b0a1dce382660ec545385f47bd7f\""
+    },
+    {
+      "source_file": "CI/insurance_operations/2026-01-06/insurance_ops_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "dataset": "insurance_operations",
+      "accepted_rows": 2,
+      "rejected_rows": 6,
+      "source_etag": "\"73ea797abcf4a1c72602441636b99d4a\""
+    },
+    {
+      "source_file": "CI/mobile_money_payments/2026-01-06/mobile_money_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "dataset": "mobile_money_payments",
+      "accepted_rows": 2,
+      "rejected_rows": 6,
+      "source_etag": "\"a0882f4d1a33bde5ba52ca338dea6fe4\""
+    },
+    {
+      "source_file": "CI/loan_repayments/2026-01-06/loan_repayments_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "dataset": "loan_repayments",
+      "accepted_rows": 2,
+      "rejected_rows": 6,
+      "source_etag": "\"a23fd41e1782d6f88583c75ff4b0643e\""
+    }
+  ]
+}

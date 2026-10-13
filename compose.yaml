@@ -1,0 +1,126 @@
+name: waba-lakehouse
+services:
+  minio:
+    build: {context: ., dockerfile: infra/minio/Dockerfile}
+    command: server /data --console-address ':9001'
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    ports: ['127.0.0.1:9000:9000', '127.0.0.1:9001:9001']
+    volumes: [minio-data:/data]
+    mem_limit: 768m
+  buckets:
+    user: '0:0'
+    build: {context: ., dockerfile: infra/spark/Dockerfile}
+    depends_on: [minio]
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_DEFAULT_REGION: us-east-1
+    volumes: ['./jobs:/app/jobs:ro', 'catalog-data:/catalog', 'airflow-state:/airflow-state', 'airflow-logs:/airflow-logs']
+    entrypoint: ['python3', '/app/jobs/init_buckets.py']
+  catalog:
+    image: apache/iceberg-rest-fixture:1.9.1
+    depends_on:
+      buckets: {condition: service_completed_successfully}
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://lakehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: 'true'
+      CATALOG_URI: jdbc:sqlite:/catalog/catalog.db
+    volumes: [catalog-data:/catalog]
+    mem_limit: 768m
+  trino:
+    image: trinodb/trino:475
+    depends_on: [catalog]
+    ports: ['127.0.0.1:8080:8080']
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ./infra/trino/catalog:/etc/trino/catalog:ro
+      - ./infra/trino/config.properties:/etc/trino/config.properties:ro
+      - ./infra/trino/jvm.config:/etc/trino/jvm.config:ro
+    mem_limit: 2g
+  app:
+    build: {context: ., dockerfile: infra/app/Dockerfile}
+    depends_on:
+      buckets: {condition: service_completed_successfully}
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_DEFAULT_REGION: us-east-1
+      S3_ENDPOINT: http://minio:9000
+    ports: ['127.0.0.1:8501:8501']
+    volumes: ['./app:/app/app:ro', './src:/app/src:ro', './tests:/app/tests:ro']
+    mem_limit: 768m
+  spark:
+    build: {context: ., dockerfile: infra/spark/Dockerfile}
+    depends_on: [catalog]
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: us-east-1
+      PYTHONPATH: /app/src
+    volumes: ['./jobs:/app/jobs:ro', './src:/app/src:ro']
+    entrypoint: ['/opt/spark/bin/spark-submit']
+    command: ['--master', 'local[2]', '--driver-memory', '1g', '/app/jobs/ingest_raw.py']
+    profiles: [jobs]
+    mem_limit: 2g
+  spark-runner:
+    build: {context: ., dockerfile: infra/spark/Dockerfile}
+    depends_on: [catalog]
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: us-east-1
+      PYTHONPATH: /app/src
+      SPARK_RUNNER_TOKEN: ${SPARK_RUNNER_TOKEN:?}
+    volumes: ['./jobs:/app/jobs:ro', './src:/app/src:ro']
+    entrypoint: ['python3', '/app/jobs/spark_runner.py']
+    mem_limit: 2g
+    healthcheck:
+      test: ['CMD', 'python3', '-c', "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+  airflow:
+    build: {context: ., dockerfile: infra/airflow/Dockerfile}
+    depends_on:
+      spark-runner: {condition: service_healthy}
+      buckets: {condition: service_completed_successfully}
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__PARALLELISM: '1'
+      AIRFLOW__SCHEDULER__PARSING_PROCESSES: '1'
+      AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: '60'
+      AIRFLOW__CORE__DEFAULT_TIMEZONE: utc
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/state/airflow.db
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY:?}
+      AIRFLOW__WEBSERVER__WORKERS: '1'
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'false'
+      AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+      AIRFLOW_VAR_WABA_SPARK_RUNNER_TOKEN: ${SPARK_RUNNER_TOKEN:?}
+      AIRFLOW_VAR_WABA_SPARK_RUNNER_URL: http://spark-runner:8090
+      AIRFLOW_ADMIN_USER: ${AIRFLOW_ADMIN_USER:?}
+      AIRFLOW_ADMIN_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD:?}
+      PYTHONPATH: /app/src
+    ports: ['127.0.0.1:8081:8081']
+    volumes: ['./dags:/opt/airflow/dags:ro', './src:/app/src:ro', 'airflow-state:/opt/airflow/state', 'airflow-logs:/opt/airflow/logs']
+    mem_limit: 1536m
+    healthcheck:
+      test: ['CMD', 'python', '-c', "import urllib.request; urllib.request.urlopen('http://localhost:8081/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 90s
+      retries: 10
+volumes:
+  minio-data:
+  catalog-data:
+  airflow-state:
+  airflow-logs:

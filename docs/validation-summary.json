@@ -1,0 +1,36 @@
+{
+  "verified_at_utc": "2026-10-11T16:11:54.924544+00:00",
+  "level": 2,
+  "distinct_tests_passed": 21,
+  "test_batches": {
+    "full_suite_before_last_test": 20,
+    "business_suite_after_last_test": 6
+  },
+  "actual_airflow_dags_succeeded": 4,
+  "periodic_ingestion_enabled": true,
+  "ingestion_schedule": "*/15 * * * *",
+  "regulatory_schedule": "30 0 * * *",
+  "dashboard_views_verified": 8,
+  "country_month_replay_verified": true,
+  "loan_dates_consistent_in_silver": true,
+  "evidence_files": [
+    "level2-verification.json",
+    "airflow-verification.json",
+    "backfill-verification.json"
+  ],
+  "limitations": [
+    "Simulated FX and accounting inputs",
+    "Microfinance demonstration loan portfolio",
+    "Demonstration regulatory aggregates, not official declaration forms"
+  ],
+  "source_sha256": {
+    "jobs/raw_to_bronze.py": "56fb4dfe23650e344c90752c103ee7317daa4059c70aed45085409f1bd5f7b31",
+    "jobs/bronze_to_silver.py": "6ef5f08c2bcb9e7e1e15b64710040921acf655162e8f8078620f2f45412d418a",
+    "jobs/silver_to_gold.py": "3ab82d8d708337b409d3655d081da6755452d4c56b891aa1514e4317e486debc",
+    "jobs/regulatory_report.py": "c3279edb61947bdbc42c5ee32df7d7003e7384a6d13ad70952c6d2e25326b528",
+    "dags/waba_pipeline.py": "fad2b74fad2b1f91defe3da27c8a5a75644ba4771c9d9d3d92bd11e5c508c20f",
+    "src/waba/business_scenario.py": "18b63f29397fdcf5b24184a911a4fc96f1c768c09b0278d65721998358e4cbff",
+    "src/waba/spark_common.py": "0127cbacb5f3429cc3108d1c5e99b4119318e932df233458ffa490601343438c",
+    "app/pages/2_Indicateurs.py": "93e14729e75d2573a38f1ef180ba63cc3ba6327b682f5e2fa7357e9d90627e1f"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "default_flow_volumes_verified": true,
+  "large_file_replay_verified": true,
+  "batch_id": "volume-637888fea1ac49f391497eab61401fef",
+  "flows": {
+    "bank_transactions": {
+      "new_rows": 80000,
+      "countries": 8,
+      "rows_per_country": 10000,
+      "total_rows": 81132
+    },
+    "insurance_operations": {
+      "new_rows": 40000,
+      "countries": 8,
+      "rows_per_country": 5000,
+      "total_rows": 40026
+    },
+    "mobile_money_payments": {
+      "new_rows": 160000,
+      "countries": 8,
+      "rows_per_country": 20000,
+      "total_rows": 160026
+    },
+    "loan_repayments": {
+      "new_rows": 80000,
+      "countries": 8,
+      "rows_per_country": 10000,
+      "total_rows": 80026
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "scheduler_runs_verified": true,
+  "runs": [
+    {
+      "dag_id": "dag_ingest_raw",
+      "run_id": "verification_1587ee0617af4e5593436b41aa184069",
+      "state": "success"
+    },
+    {
+      "dag_id": "dag_bronze_to_silver",
+      "run_id": "ingestion__verification_1587ee0617af4e5593436b41aa184069",
+      "state": "success"
+    },
+    {
+      "dag_id": "dag_silver_to_gold",
+      "run_id": "silver__ingestion__verification_1587ee0617af4e5593436b41aa184069",
+      "state": "success"
+    },
+    {
+      "dag_id": "dag_regulatory_report",
+      "run_id": "verification_1587ee0617af4e5593436b41aa184069",
+      "state": "success"
+    }
+  ],
+  "regulatory_schedule": "30 0 * * *",
+  "timezone": "UTC"
+}

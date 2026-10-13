@@ -1,0 +1,28 @@
+{
+  "all_eight_tables_verified": true,
+  "countries": [
+    "CI",
+    "GH"
+  ],
+  "all_flow_replay_verified": true,
+  "results": [
+    {
+      "iteration": 1,
+      "counts": {
+        "bank_transactions": 1090,
+        "insurance_operations": 20,
+        "mobile_money_payments": 20,
+        "loan_repayments": 20
+      }
+    },
+    {
+      "iteration": 2,
+      "counts": {
+        "bank_transactions": 1090,
+        "insurance_operations": 20,
+        "mobile_money_payments": 20,
+        "loan_repayments": 20
+      }
+    }
+  ]
+}

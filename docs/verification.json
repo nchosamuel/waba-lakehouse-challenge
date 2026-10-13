@@ -1,0 +1,23 @@
+{
+  "separate_generation_verified": true,
+  "countries": [
+    "CI",
+    "GH"
+  ],
+  "new_rows": 50,
+  "replay_verified": true,
+  "empty_landing_verified": true,
+  "invalid_rows_quarantined_verified": true,
+  "results": [
+    {
+      "iteration": 1,
+      "rows": 81202,
+      "distinct_ids": 81202
+    },
+    {
+      "iteration": 2,
+      "rows": 81202,
+      "distinct_ids": 81202
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "country_month_replay_verified": true,
+  "scope": {
+    "country_codes": [
+      "CI"
+    ],
+    "date_from": "2026-02-01",
+    "date_to": "2026-02-28"
+  },
+  "all_seven_gold_tables_unchanged": true,
+  "other_countries_preserved": true,
+  "midmonth_earned_premiums_eur": 3571.42857142857,
+  "midmonth_paid_claims_eur": 0.0,
+  "future_loan_snapshot_excluded": true
+}

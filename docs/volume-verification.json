@@ -1,0 +1,26 @@
+{
+  "full_reference_volumes_verified": true,
+  "tables": {
+    "customers": {
+      "rows": 500000,
+      "unique_keys": 500000,
+      "countries": 8
+    },
+    "accounts": {
+      "rows": 800000,
+      "unique_keys": 800000,
+      "countries": 8
+    },
+    "branches": {
+      "rows": 200,
+      "unique_keys": 200,
+      "countries": 8
+    },
+    "products": {
+      "rows": 50,
+      "unique_keys": 50,
+      "countries": 8
+    }
+  },
+  "orphan_accounts": 0
+}
