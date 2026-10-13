@@ -78,3 +78,41 @@ class AppTests(unittest.TestCase):
             app.session_state["history"][0]["Ligne métier"], "Microfinance"
         )
         self.assertEqual(app.session_state["history"][0]["Lignes"], 3)
+
+    def test_realtime_option_pins_current_event_time(self):
+        import csv, io
+        from datetime import datetime, timezone
+        from waba.publisher import client
+
+        s3 = client()
+
+        def keys():
+            return {
+                obj["Key"]
+                for page in s3.get_paginator("list_objects_v2").paginate(
+                    Bucket="raw-landing", Prefix="CI/bank_transactions/"
+                )
+                for obj in page.get("Contents", [])
+            }
+
+        before_keys = keys()
+        before = datetime.now(timezone.utc).replace(tzinfo=None)
+        app = AppTest.from_file("app/main.py", default_timeout=20).run()
+        app.checkbox[0].check().run()
+        self.assertTrue(app.date_input[0].disabled)
+        app.number_input[0].set_value(3).run()
+        app.button[0].click().run()
+        self.assertFalse(app.exception)
+        self.assertFalse(app.error)
+        after = datetime.now(timezone.utc).replace(tzinfo=None)
+        added = keys() - before_keys
+        self.assertEqual(len(added), 1)
+        data = (
+            s3.get_object(Bucket="raw-landing", Key=added.pop())["Body"].read().decode()
+        )
+        rows = list(csv.DictReader(io.StringIO(data)))
+        self.assertEqual(len(rows), 3)
+        for row in rows:
+            observed = datetime.fromisoformat(row["timestamp"])
+            self.assertLessEqual(before, observed)
+            self.assertLessEqual(observed, after)

@@ -1,6 +1,6 @@
-# Périmètre et preuves de la version batch
+# Périmètre et preuves de la version locale
 
-Cette version implémente les niveaux 1 et 2 du challenge. Les niveaux 3 et 4 ne sont pas implémentés dans cette version.
+Cette version implémente les niveaux 1 et 2 du challenge. Le streaming de niveau 3 est disponible et testé dans un profil Docker local. Le niveau 4 et le déploiement Kubernetes restent à construire.
 
 | Exigence | État | Preuve / réserve |
 |---|---|---|
@@ -17,10 +17,10 @@ Cette version implémente les niveaux 1 et 2 du challenge. Les niveaux 3 et 4 ne
 | Quatre DAGs Airflow | Vérifié | Exécutions réelles du scheduler, dépendances, retries, paramètres pays/période. |
 | Reporting J+1 | Vérifié pour des agrégats de démonstration | 00h30 UTC ; données futures exclues ; primes acquises au prorata. Aucun formulaire officiel revendiqué. |
 | Déploiement vierge | Vérifié, avec correction du démarrage documentée | Volumes séparés initialement vides, quatre DAGs réussis et KPIs contrôlés ; `fresh-install-verification.json`. |
-| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 18 tests indépendants de Docker réussis dans GitHub Actions. |
+| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 20 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
 | Document technique | Disponible | `level2-design.md` : architecture, compromis, hypothèses et limites. |
 | Vidéo de 5–10 minutes | Reste à enregistrer | `demo-script.md` fournit le déroulé ; ce document ne remplace pas une vidéo. |
-| NiFi/Kafka/streaming/fraude/AML | Non implémenté dans cette version | Niveau 3 restant à construire. |
+| NiFi/Kafka/streaming/fraude/AML | Vérifié en Docker local | NiFi/Kafka, deux traitements Spark, DLQ, trois règles de fraude, AML et liquidité ; vue Lambda sans chevauchement. Kubernetes reste à déployer. |
 | Kubernetes/Superset/SSO/gouvernance/observabilité | Non implémenté dans cette version | Niveau 4 restant à construire. |
 
 Les rapports JSON existants témoignent des exécutions dont ils sont issus ; ils ne remplacent pas l'exécution des scripts de validation. Les données étant appendues par les générations et les tests, les comptages peuvent augmenter sans perte d'idempotence.

@@ -20,6 +20,8 @@ existing = {
 }
 extra = {
     "SPARK_RUNNER_TOKEN": secrets.token_urlsafe(32),
+    "NIFI_ADMIN_USER": "samuel",
+    "NIFI_ADMIN_PASSWORD": secrets.token_urlsafe(24),
     "AIRFLOW_ADMIN_USER": "samuel",
     "AIRFLOW_ADMIN_PASSWORD": secrets.token_urlsafe(24),
     "AIRFLOW_SECRET_KEY": secrets.token_urlsafe(32),

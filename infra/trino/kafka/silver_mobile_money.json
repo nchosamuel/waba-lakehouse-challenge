@@ -1,0 +1,35 @@
+{
+  "tableName": "silver_mobile_money",
+  "schemaName": "default",
+  "topicName": "silver-mobile-money",
+  "message": {
+    "dataFormat": "json",
+    "fields": [
+      {
+        "name": "event_id",
+        "type": "varchar",
+        "mapping": "payment_id"
+      },
+      {
+        "name": "country_code",
+        "type": "varchar",
+        "mapping": "country_code"
+      },
+      {
+        "name": "entity_type",
+        "type": "varchar",
+        "mapping": "entity_type"
+      },
+      {
+        "name": "event_time",
+        "type": "varchar",
+        "mapping": "timestamp"
+      },
+      {
+        "name": "amount_eur",
+        "type": "double",
+        "mapping": "amount_eur"
+      }
+    ]
+  }
+}

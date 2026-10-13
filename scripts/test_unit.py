@@ -6,6 +6,7 @@ import unittest
 suite = unittest.TestSuite()
 for pattern in (
     "test_generator.py",
+    "test_realtime_publisher.py",
     "test_reference_scale.py",
     "test_full_references.py",
     "test_business_scenario.py",

@@ -1,8 +1,8 @@
 # WABA Lakehouse
 
-Version batch locale du challenge Data Engineer BancAssur Afrique de l'Ouest : niveaux 1 et 2.
+Version locale du challenge Data Engineer BancAssur Afrique de l'Ouest : batch des niveaux 1–2 et streaming du niveau 3.
 
-Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Les niveaux 3 et 4 sont les étapes suivantes.
+Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Le niveau 3 streaming est testé dans le profil local décrit ci-dessous ; Kubernetes et le niveau 4 restent à construire.
 La génération des données est séparée de leur ingestion : Streamlit publie des CSV dans MinIO ; Spark traite les fichiers en attente et alimente Iceberg ; Trino interroge les tables.
 
 ```mermaid
@@ -215,3 +215,41 @@ GitHub Actions exécute les tests déterministes et les tests avec stockage simu
 - [Déroulé de démonstration de 5 à 10 minutes](docs/demo-script.md) ; vidéo à enregistrer.
 
 Les secrets se créent avec `python3 bootstrap.py` ; ne pas versionner `.env`. Pour un dépôt privé, partager explicitement l'accès avec les évaluateurs avant de transmettre le lien.
+
+## Niveau 3 : NiFi/Kafka, streaming et Lambda
+
+Le [modèle streaming](docs/level3-design.md) décrit les garanties, règles et limites. Le profil local utilise une seule JVM pour les deux requêtes Spark ; Airflow et le runner batch sont arrêtés pendant le streaming.
+
+Pré-requis : terminer le chargement batch des niveaux 1–2 et calculer Gold au moins une fois. Ensuite :
+
+```sh
+python3 bootstrap.py
+python3 scripts/streaming_mode.py start
+```
+
+NiFi : https://localhost:8443/nifi/ ; identifiants dans `.env`, certificat auto-signé local. Dans Streamlit, cocher **Flux temps réel · horodatage actuel**, choisir 20–100 lignes par pays pour la démonstration, puis lancer une génération ponctuelle ou continue. Les grandes générations de référence et les tests de volume restent adaptés au mode batch.
+
+Pour une cohorte déterministe de contrôles positifs/négatifs :
+
+```sh
+docker compose -f compose.yaml -f compose.streaming.yaml --profile streaming exec -T streaming python3 /app/jobs/publish_stream_fixtures.py
+python3 scripts/verify_streaming.py
+```
+
+Le fixture crée treize événements : onze valides et deux rejets. Il couvre virements répétés, AML XOF/GHS, cas sous seuil, pays inhabituel, sinistre élevé et choc de liquidité. Attendre la fin des microbatches avant le contrôle. Le rapport est stocké dans MinIO et dans `docs/streaming-verification.json`. Les alertes et l'activité bancaire Lambda sont également accessibles dans la page Indicateurs.
+
+La DLQ `dlq-financial-events` conserve JSON brut, topic, partition, offset et motifs. Les erreurs CSV irrécupérables de NiFi restent dans `archive/nifi-failures/`. Kafka conserve les messages sept jours ; les checkpoints et l'outbox sont persistants. Une reprise Kafka peut répéter un message, mais les consommateurs et la vue Lambda dédupliquent les identifiants.
+
+```sql
+SELECT * FROM iceberg.gold.fraud_alerts ORDER BY detected_at DESC;
+SELECT * FROM kafka.default.aml_events;
+SELECT * FROM iceberg.gold.lambda_daily_transaction_volume ORDER BY txn_date DESC, country_code;
+```
+
+Pour revenir au batch, avec Kafka conservé pour les lectures Lambda :
+
+```sh
+python3 scripts/streaming_mode.py batch
+```
+
+Changer de mode après drainage des files NiFi et de l'outbox. Pour arrêter uniquement le streaming : `python3 scripts/streaming_mode.py stop`. Ces commandes ne suppriment aucun volume. Le déploiement Kubernetes, la haute disponibilité et les contrôles de gouvernance restent les travaux du niveau 4 ; le profil de niveau 3 décrit ici est validé en local Docker.

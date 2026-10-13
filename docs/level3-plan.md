@@ -1,6 +1,6 @@
 # Prochain bloc : niveau 3 — streaming
 
-Statut : plan d'implémentation, pas une fonctionnalité livrée dans la version batch.
+Statut : séquence réalisée et vérifiée dans le profil streaming Docker local. Voir `level3-design.md` et les rapports `streaming-*-verification.json`. Kubernetes reste à déployer au niveau 4.
 
 ## Séquence de construction et de validation
 

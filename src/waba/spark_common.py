@@ -53,10 +53,22 @@ def create(frame, table, date_column=None):
 
 def merge(frame, table, keys, date_column=None):
     create(frame, table, date_column)
+    target = frame.sparkSession.table(table)
+    for field in frame.schema.fields:
+        if field.name not in target.columns:
+            frame.sparkSession.sql(
+                f"ALTER TABLE {table} ADD COLUMN `{field.name}` {field.dataType.simpleString()}"
+            )
     frame.createOrReplaceTempView("incoming_stage")
-    condition = " AND ".join(f"t.{k} = s.{k}" for k in keys)
+    condition = " AND ".join(f"t.`{k}` = s.`{k}`" for k in keys)
+    assignments = ", ".join(f"t.`{c}` = s.`{c}`" for c in frame.columns)
+    columns = ", ".join(f"`{c}`" for c in frame.columns)
+    values = ", ".join(f"s.`{c}`" for c in frame.columns)
+    # Updating known source columns preserves streaming provenance on matched keys.
     frame.sparkSession.sql(
-        f"MERGE INTO {table} t USING incoming_stage s ON {condition} WHEN MATCHED THEN UPDATE SET * WHEN NOT MATCHED THEN INSERT *"
+        f"MERGE INTO {table} t USING incoming_stage s ON {condition} "
+        f"WHEN MATCHED THEN UPDATE SET {assignments} "
+        f"WHEN NOT MATCHED THEN INSERT ({columns}) VALUES ({values})"
     )
     print(json.dumps({"event": "table_merged", "table": table}), flush=True)
 
