@@ -3,25 +3,27 @@
   "runs": [
     {
       "dag_id": "dag_ingest_raw",
-      "run_id": "verification_1587ee0617af4e5593436b41aa184069",
+      "run_id": "verification_901526d62bbf4a48bafd649d329e38a8",
       "state": "success"
     },
     {
       "dag_id": "dag_bronze_to_silver",
-      "run_id": "ingestion__verification_1587ee0617af4e5593436b41aa184069",
+      "run_id": "ingestion__verification_901526d62bbf4a48bafd649d329e38a8",
       "state": "success"
     },
     {
       "dag_id": "dag_silver_to_gold",
-      "run_id": "silver__ingestion__verification_1587ee0617af4e5593436b41aa184069",
+      "run_id": "silver__ingestion__verification_901526d62bbf4a48bafd649d329e38a8",
       "state": "success"
     },
     {
       "dag_id": "dag_regulatory_report",
-      "run_id": "verification_1587ee0617af4e5593436b41aa184069",
+      "run_id": "verification_901526d62bbf4a48bafd649d329e38a8",
       "state": "success"
     }
   ],
   "regulatory_schedule": "30 0 * * *",
-  "timezone": "UTC"
+  "timezone": "UTC",
+  "environment": "waba-repro-check",
+  "verified_at_utc": "2026-10-13T21:46:06.034489+00:00"
 }

@@ -47,3 +47,12 @@ Préparer le niveau 2 : définir les règles métier et les données nécessaire
 
 ## Prochaine étape actuelle
 Niveau 3 : NiFi/Kafka, validation et déduplication en streaming, détection de fraude/AML et accès Lambda dans Trino. Le niveau 2 reste un démonstrateur local : taux FX simulés, périmètre comptable explicite et reporting non officiel.
+
+## Préparation du dépôt et reproduction
+- Dépôt privé créé : https://github.com/nchosamuel/waba-lakehouse-challenge ; première version poussée, CI GitHub verte (18 tests indépendants de Docker).
+- Sélection Banque/Microfinance ajoutée aux transactions Streamlit, avec références correspondantes ; trois transactions Microfinance vérifiées dans Trino. Suite locale : 23 tests réussis.
+- Initialisation `seed_demo.py` ajoutée pour alimenter les quatre flux sur un environnement neuf avant Gold.
+- Reproduction sur volumes isolés et trois buckets initialement vides : référentiels complets, quatre DAGs réussis, sept KPIs contrôlés et huit vues Streamlit testées. Rapport : `fresh-install-verification.json`.
+- Le premier reporting planifié a été activé trop tôt pendant le test et a échoué faute de Gold ; README et helper de vérification corrigés pour l'activer après le premier calcul Gold. Ce constat reste explicite dans le rapport.
+- Explication métier et déroulé de capture ajoutés. Vidéo toujours à enregistrer ; accès des évaluateurs au dépôt privé à organiser.
+- Environnement de reproduction arrêté sans suppression des volumes ; environnement habituel restauré.

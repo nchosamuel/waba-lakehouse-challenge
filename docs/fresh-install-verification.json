@@ -1,0 +1,27 @@
+{
+  "verified_at_utc": "2026-10-13T21:46:06.034489+00:00",
+  "compose_project": "waba-repro-check",
+  "isolated_new_volumes": true,
+  "three_buckets_initially_empty": true,
+  "existing_project_data_preserved": true,
+  "compose_build_and_start_succeeded": true,
+  "full_references_verified": true,
+  "four_airflow_dags_succeeded": true,
+  "seven_gold_kpis_verified": true,
+  "dashboard_eight_views_verified": true,
+  "country_filter_verified": true,
+  "raw_event_counts": {
+    "bank_transactions": 800,
+    "insurance_operations": 2400,
+    "mobile_money_payments": 920,
+    "loan_repayments": 800
+  },
+  "bootstrap_finding": "The first scheduled regulatory attempt ran before Gold existed and failed. Documentation and verification helper now activate regulatory reporting after the first Gold run.",
+  "commands": [
+    "docker compose -p waba-repro-check up -d --build",
+    "docker compose -p waba-repro-check run --rm --entrypoint python3 spark /app/jobs/generate_full_references.py",
+    "docker compose -p waba-repro-check run --rm --entrypoint python3 spark /app/jobs/seed_demo.py",
+    "COMPOSE_PROJECT_NAME=waba-repro-check python3 scripts/verify_airflow.py",
+    "COMPOSE_PROJECT_NAME=waba-repro-check python3 scripts/verify_level2.py"
+  ]
+}

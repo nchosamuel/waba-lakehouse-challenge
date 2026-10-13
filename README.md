@@ -22,6 +22,8 @@ Ports locaux : MinIO 9000/9001, Trino 8080, Airflow 8081, Streamlit 8501.
 ## Démarrage
 
 ```sh
+git clone https://github.com/nchosamuel/waba-lakehouse-challenge.git
+cd waba-lakehouse-challenge
 python3 bootstrap.py
 docker compose up -d --build
 docker compose build spark
@@ -171,7 +173,7 @@ docker compose run --rm --entrypoint python3 spark /app/jobs/seed_demo.py
 
 Cette commande initialise les quatre flux, même sur un environnement vierge, et ajoute une petite activité bancaire/mobile aux huit pays. Le scénario crée des encours, des primes avec couverture comptable, des sinistres liés et des transferts transfrontaliers. Réexécuter sa publication conserve les mêmes IDs. Pour un autre mois : `docker compose run --rm -e SCENARIO_MONTH=2026-03-01 --entrypoint python3 spark /app/jobs/seed_business_context.py`.
 
-Dans Airflow, activer les quatre DAGs, puis déclencher `dag_ingest_raw`. Il lance automatiquement Bronze → Silver → Gold. L'ingestion est ensuite planifiée toutes les 15 minutes ; le reporting quotidien est planifié à 00h30 UTC. Une configuration de lancement sélectif :
+Dans Airflow, activer les trois DAGs ingestion/Silver/Gold, puis déclencher `dag_ingest_raw`. Activer `dag_regulatory_report` après le premier calcul Gold réussi. Il lance automatiquement Bronze → Silver → Gold. L'ingestion est ensuite planifiée toutes les 15 minutes ; le reporting quotidien est planifié à 00h30 UTC. Une configuration de lancement sélectif :
 
 ```json
 {"country_codes": ["CI"], "date_from": "2026-02-01", "date_to": "2026-02-28"}

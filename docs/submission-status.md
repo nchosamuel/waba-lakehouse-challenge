@@ -16,8 +16,8 @@ Cette version implémente les niveaux 1 et 2 du challenge. Les niveaux 3 et 4 ne
 | Sept indicateurs Gold | Vérifié avec couverture déclarée | NPL 3–8 %, loss ratio 50–85 %, délais de dix jours ouvrés pour le scénario ; opérations sans contexte signalées et exclues des ratios assurance. |
 | Quatre DAGs Airflow | Vérifié | Exécutions réelles du scheduler, dépendances, retries, paramètres pays/période. |
 | Reporting J+1 | Vérifié pour des agrégats de démonstration | 00h30 UTC ; données futures exclues ; primes acquises au prorata. Aucun formulaire officiel revendiqué. |
-| Déploiement vierge | À compléter avec le rapport de reproduction | Environnement isolé et volumes distincts ; voir `fresh-install-verification.json` lorsqu'il est disponible. |
-| Git et CI | Préparation / publication en cours | Source sans `.env` ; 18 tests indépendants de Docker dans GitHub Actions. |
+| Déploiement vierge | Vérifié, avec correction du démarrage documentée | Volumes séparés initialement vides, quatre DAGs réussis et KPIs contrôlés ; `fresh-install-verification.json`. |
+| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 18 tests indépendants de Docker réussis dans GitHub Actions. |
 | Document technique | Disponible | `level2-design.md` : architecture, compromis, hypothèses et limites. |
 | Vidéo de 5–10 minutes | Reste à enregistrer | `demo-script.md` fournit le déroulé ; ce document ne remplace pas une vidéo. |
 | NiFi/Kafka/streaming/fraude/AML | Non implémenté dans cette version | Niveau 3 restant à construire. |

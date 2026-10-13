@@ -47,7 +47,6 @@ if __name__ == "__main__":
         "dag_ingest_raw",
         "dag_bronze_to_silver",
         "dag_silver_to_gold",
-        "dag_regulatory_report",
     ):
         api("dags/" + name, "PATCH", {"is_paused": False})
     run = "verification_" + uuid.uuid4().hex
@@ -65,6 +64,7 @@ if __name__ == "__main__":
     completed.append(wait("dag_bronze_to_silver", silver))
     gold = "silver__" + silver
     completed.append(wait("dag_silver_to_gold", gold))
+    api("dags/dag_regulatory_report", "PATCH", {"is_paused": False})
     api(
         "dags/dag_regulatory_report/dagRuns",
         "POST",

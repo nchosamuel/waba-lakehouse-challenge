@@ -1,10 +1,11 @@
 {
   "verified_at_utc": "2026-10-11T16:11:54.924544+00:00",
   "level": 2,
-  "distinct_tests_passed": 21,
+  "distinct_tests_passed": 23,
   "test_batches": {
     "full_suite_before_last_test": 20,
-    "business_suite_after_last_test": 6
+    "business_suite_after_last_test": 6,
+    "submission_full_suite": 23
   },
   "actual_airflow_dags_succeeded": 4,
   "periodic_ingestion_enabled": true,
@@ -31,6 +32,21 @@
     "dags/waba_pipeline.py": "fad2b74fad2b1f91defe3da27c8a5a75644ba4771c9d9d3d92bd11e5c508c20f",
     "src/waba/business_scenario.py": "18b63f29397fdcf5b24184a911a4fc96f1c768c09b0278d65721998358e4cbff",
     "src/waba/spark_common.py": "0127cbacb5f3429cc3108d1c5e99b4119318e932df233458ffa490601343438c",
-    "app/pages/2_Indicateurs.py": "93e14729e75d2573a38f1ef180ba63cc3ba6327b682f5e2fa7357e9d90627e1f"
-  }
+    "app/pages/2_Indicateurs.py": "93e14729e75d2573a38f1ef180ba63cc3ba6327b682f5e2fa7357e9d90627e1f",
+    "src/waba/generator.py": "db43a4dd70af2d46145f87b7556ce242c6f4894b877666aa95e635babca84a57",
+    "src/waba/publisher.py": "7a9e0029b71742a078042a5e439b47ae8fb82eb356a0a4fc173750233ba69edd",
+    "jobs/ingest_raw.py": "1ef2499811a692dc066a4d2165ef8c41ab11db224f7d09b77b346998e045966a",
+    "app/main.py": "7846d6dc98a25ab89ebd42403eb7c9170ef9420b3b6d13a1253b678fad336803",
+    "jobs/seed_demo.py": "16ff858253d12657f9cae80158e484a2d0958302941f8429d7f3d854cc9b4494"
+  },
+  "additional_submission_validation": {
+    "local_full_suite_tests": 23,
+    "github_unit_tests": 18,
+    "github_actions_run": "https://github.com/nchosamuel/waba-lakehouse-challenge/actions/runs/38472189520",
+    "github_actions_conclusion": "success",
+    "microfinance_transaction_rows_verified": 3,
+    "verified_at_utc": "2026-10-13T21:46:06.034489+00:00"
+  },
+  "repository_url": "https://github.com/nchosamuel/waba-lakehouse-challenge",
+  "fresh_install_verified": true
 }
