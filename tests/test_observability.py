@@ -1,0 +1,35 @@
+"""Checkpoint commit and regulatory deadline semantics; no running services needed."""
+from datetime import datetime, timezone
+import importlib.util
+from pathlib import Path
+import tempfile
+import unittest
+
+spec=importlib.util.spec_from_file_location('observer',Path(__file__).resolve().parents[1]/'scripts/observability_exporter.py')
+observer=importlib.util.module_from_spec(spec);spec.loader.exec_module(observer)
+
+
+class ObservabilityTest(unittest.TestCase):
+    def test_ignore_uncommitted_offsets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp);(path/'commits').mkdir();(path/'offsets').mkdir()
+            (path/'commits/2').write_text('v1\n{}')
+            (path/'offsets/2').write_text('v1\n{}\n{"silver-bank-transactions":{"0":20}}\n')
+            (path/'offsets/3').write_text('v1\n{}\n{"silver-bank-transactions":{"0":999}}\n')
+            self.assertEqual(observer.committed_offsets(tmp),{('silver-bank-transactions',0):20})
+    def test_no_commit_is_not_processed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(observer.committed_offsets(tmp),{})
+    def test_deadline_boundary_and_success(self):
+        before=datetime(2026,10,14,5,59,59,tzinfo=timezone.utc)
+        due=datetime(2026,10,14,6,0,0,tzinfo=timezone.utc)
+        self.assertEqual(observer.regulatory_missed(before,[]),0)
+        self.assertEqual(observer.regulatory_missed(due,[]),1)
+        self.assertEqual(observer.regulatory_missed(due,[('failed',)]),1)
+        self.assertEqual(observer.regulatory_missed(due,[('running',)]),1)
+        self.assertEqual(observer.regulatory_missed(due,[('success',)]),0)
+    def test_deadline_uses_utc(self):
+        self.assertEqual(observer.regulatory_missed(datetime.fromisoformat('2026-10-14T14:00:00+08:00'),[]),1)
+    def test_prometheus_label_escaping(self):
+        metrics=observer.Metrics();metrics.add('test',1,label='quote" newline\n')
+        self.assertIn('label="quote\\" newline\\n"',metrics.render())

@@ -20,6 +20,8 @@ existing = {
     line.split("=", 1)[0] for line in path.read_text().splitlines() if "=" in line
 }
 extra = {
+    "GRAFANA_ADMIN_USER": "waba-monitor",
+    "GRAFANA_ADMIN_PASSWORD": secrets.token_urlsafe(24),
     "WABA_LINEAGE_ENABLED": "false",
     "OPENMETADATA_DB_PASSWORD": secrets.token_urlsafe(24),
     "OPENMETADATA_ADMIN_PASSWORD": secrets.token_urlsafe(24) + "Aa1!",

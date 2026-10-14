@@ -1,0 +1,14 @@
+{
+  "apiVersion": 1,
+  "providers": [
+    {
+      "name": "WABA",
+      "folder": "WABA",
+      "type": "file",
+      "options": {
+        "path": "/var/lib/grafana/dashboards"
+      },
+      "allowUiUpdates": false
+    }
+  ]
+}

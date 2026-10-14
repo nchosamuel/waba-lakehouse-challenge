@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
-from kubernetes import ROOT,run,kube,apply,private_env,wait_job,wait_deployment
+from kubernetes import ROOT,run,kube,apply,private_env,wait_job,wait_deployment,pause_observability
 
 
 def main():
@@ -20,6 +20,7 @@ def main():
     apps=json.loads(kube('get','sparkapplications','-n','processing','-o','json',capture=True))['items']
     if any(a.get('status',{}).get('applicationState',{}).get('state') not in ('COMPLETED','FAILED') for a in apps):
         raise RuntimeError('Stop active Spark applications before entering metadata mode')
+    pause_observability()
     kube('scale','deployment/superset','-n','serving','--replicas=0')
     kube('scale','deployment/kafka','deployment/nifi','-n','ingestion','--replicas=0')
     kube('scale','deployment/airflow','deployment/spark-runner','-n','processing','--replicas=0')

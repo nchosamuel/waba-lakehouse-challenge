@@ -3,12 +3,16 @@ import fcntl
 from pathlib import Path
 import platform
 import tempfile
-from kubernetes import ROOT,run,kube,secrets,execute,pause_metadata
+from kubernetes import ROOT,run,kube,secrets,execute,pause_metadata,pause_observability
 
 
 def main():
     lock=(ROOT/'.tools/kubernetes.lock').open('w');fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    pause_observability()
     pause_metadata()
+    kube("scale","deployment/kafka","deployment/nifi","-n","ingestion","--replicas=0")
+    kube("scale","deployment/airflow","deployment/spark-runner","-n","processing","--replicas=0")
+    kube("scale","deployment/superset","-n","serving","--replicas=0")
     environment=ROOT/'.env';lines=environment.read_text().splitlines()
     lines=[('WABA_LINEAGE_ENABLED=true' if line.startswith('WABA_LINEAGE_ENABLED=') else line) for line in lines]
     if not any(line.startswith('WABA_LINEAGE_ENABLED=') for line in lines):lines.append('WABA_LINEAGE_ENABLED=true')

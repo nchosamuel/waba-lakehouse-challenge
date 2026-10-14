@@ -5,6 +5,7 @@ import unittest
 
 suite = unittest.TestSuite()
 for pattern in (
+    "test_observability.py",
     "test_generator.py",
     "test_kubernetes.py",
     "test_realtime_publisher.py",

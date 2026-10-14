@@ -298,7 +298,7 @@ Ouvrir **http://localhost:8088** ; identifiants `SUPERSET_ADMIN_USER/PASSWORD` d
 
 Les associations compte–produit et les SLA contractuels n'existent pas dans les fichiers source : les souscriptions et SLA affichés sont des **entrées de simulation déclarées**, marquées `SUBSCRIPTIONS_SIMULATED_V1` et `SLA_SIMULATED_V1`. Le top présente jusqu'à dix produits disponibles par pays ; le petit catalogue peut en contenir moins. Les revenus consolidés combinent commissions/intérêts documentés, primes acquises modélisées et frais mobile effectivement simulés. Ils ne représentent pas les montants totaux des virements. Le scénario initial fournit février 2026 ; ajouter un autre mois pour démontrer une évolution mensuelle sur plusieurs points.
 
-Pour Streamlit ou Airflow, utiliser respectivement des port-forwards des Services `app` (namespace serving, 8501) et `airflow` (namespace processing, 8081). Les Ingress fournis sont des exemples pour un contrôleur nginx ; les vérifications locales utilisent les port-forwards. Le SSO Superset et les quatre profils sont décrits dans [sso-design.md](docs/sso-design.md). Le catalogue et le lineage sont décrits dans [openmetadata-design.md](docs/openmetadata-design.md). L’observabilité et les alertes restent à réaliser.
+Pour Streamlit ou Airflow, utiliser respectivement des port-forwards des Services `app` (namespace serving, 8501) et `airflow` (namespace processing, 8081). Les Ingress fournis sont des exemples pour un contrôleur nginx ; les vérifications locales utilisent les port-forwards. Le SSO Superset et les quatre profils sont décrits dans [sso-design.md](docs/sso-design.md). Le catalogue et le lineage sont décrits dans [openmetadata-design.md](docs/openmetadata-design.md). La supervision et ses alertes sont décrites dans [observability-design.md](docs/observability-design.md).
 
 ```sh
 python3 scripts/kubernetes.py status
@@ -319,7 +319,7 @@ Les analystes ont des restrictions de lignes côté serveur, le responsable conf
 
 Après Superset/Keycloak, garder le port-forward Keycloak et exécuter `python3 scripts/trino_sso.py`. Exposer Trino par un port-forward de `svc/trino` dans `serving`, de `8843` vers `8443`. La connexion https://localhost:8843/ui/ passe par Keycloak avec les mêmes comptes métier. `python3 scripts/verify_trino_sso.py` teste les accès directs, les restrictions pays, les vues lecteur, les tables conformité et les tentatives interdites. Les identités techniques Superset/Streamlit sont distinctes et utilisent des jetons renouvelables ; les certificats et secrets restent privés.
 
-Voir [la conception et les limites du profil local](docs/trino-sso-design.md) et [le rapport de vérification](docs/trino-sso-verification.json). Le profil Compose d'origine conserve son fonctionnement de démonstration ; les contrôles SSO concernent Kubernetes. La supervision, les alertes et la vidéo restent à réaliser.
+Voir [la conception et les limites du profil local](docs/trino-sso-design.md) et [le rapport de vérification](docs/trino-sso-verification.json). Le profil Compose d'origine conserve son fonctionnement de démonstration ; les contrôles SSO concernent Kubernetes. La supervision et les trois alertes sont décrites dans [observability-design.md](docs/observability-design.md) ; la vidéo reste à enregistrer.
 
 
 ### Catalogue OpenMetadata et lineage
@@ -327,3 +327,10 @@ Voir [la conception et les limites du profil local](docs/trino-sso-design.md) et
 `python3 scripts/metadata_mode.py` active le mode catalogue en ménageant la mémoire du Mac. `python3 scripts/metadata_ingestion.py` découvre les tables Trino via un Job Kubernetes ; la découverte quotidienne est planifiée à 02h15 UTC. `python3 scripts/capture_lineage.py` exécute les trois étapes batch pour CI avec capture du plan Spark, puis réactiver le mode catalogue et la découverte pour importer leurs dépendances.
 
 Ouvrir http://localhost:8585 après un port-forward du Service `openmetadata` dans `governance`, `8585:8585`. Compte `waba-catalog-admin@example.invalid`, mot de passe généré dans `.env`. Voir [les instructions et limites](docs/openmetadata-design.md) et [les preuves](docs/openmetadata-verification.json) : 59 tables/vues, neuf Gold documentées, 38 colonnes PII et 42 liens de lineage. `account_number` et `iban` sont absents des tables d'origine ; leurs règles de tagging ont été vérifiées sur une fixture vide retirée ensuite. Aucun échantillon de données n'est collecté.
+
+
+### Supervision et alertes Grafana
+
+`python3 scripts/observability_mode.py --ingestion` active Prometheus/Grafana/Loki/Alloy et la collecte réelle Kafka/NiFi. Ouvrir http://localhost:3000/d/waba-health après un port-forward de `svc/grafana` dans `monitoring`, `3000:3000`. Les identifiants `GRAFANA_ADMIN_USER/PASSWORD` restent dans `.env`. Le dashboard montre disponibilité des services, durée Spark par périmètre pays, retard des checkpoints Kafka, débit NiFi, erreurs Airflow et journaux JSON.
+
+`python3 scripts/verify_observability.py` déclenche les trois alertes via des signaux **demo** distincts des observations réelles, conserve le délai fraude de cinq minutes, vérifie les notifications locales et remet les signaux à zéro. `python3 scripts/verify_observability_spark.py` vérifie un vrai job CI, ses métriques natives et ses logs. Ces scripts nécessitent aussi les port-forwards Prometheus `9090:9090` et Loki `3100:3100` dans `monitoring`. Voir [les preuves et limites](docs/observability-design.md). Le collector Alloy remplace explicitement Promtail en fin de maintenance ; un démarrage simultané de toute la plateforme et une sécurité de production ne sont pas revendiqués.

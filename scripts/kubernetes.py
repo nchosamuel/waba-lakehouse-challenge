@@ -162,6 +162,15 @@ def secrets():
     kube("apply", "--server-side", "-f", "-", data=json.dumps(bi_secret))
 
 
+def pause_observability():
+    for namespace,names in [('monitoring',['prometheus','loki','grafana']),('processing',['alloy','observability-exporter'])]:
+        resources=json.loads(kube("get","deployments","-n",namespace,"-o","json",capture=True))["items"]
+        present=["deployment/"+r["metadata"]["name"] for r in resources if r["metadata"]["name"] in names]
+        if present:
+            kube("scale",*present,"-n",namespace,"--replicas=0")
+            kube("wait","--for=delete","pod","-n",namespace,"-l","app in ("+",".join(names)+")","--timeout=120s")
+
+
 def pause_metadata():
     exists=subprocess.run([KUBECTL,"--context",CONTEXT,"get","deployment/openmetadata","-n","governance"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0
     if not exists:return
@@ -481,6 +490,7 @@ def seed():
 
 
 def streaming():
+    pause_observability()
     pause_metadata()
     applications = json.loads(
         kube("get", "sparkapplications", "-n", "processing", "-o", "json", capture=True)
@@ -561,6 +571,7 @@ def streaming():
 
 
 def batch():
+    pause_observability()
     pause_metadata()
     kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
     scale_identity(0)
@@ -597,6 +608,7 @@ def batch():
 
 
 def bi():
+    pause_observability()
     pause_metadata()
     kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
     scale_identity(0)
@@ -744,9 +756,10 @@ def main():
         except BlockingIOError:
             raise RuntimeError("Another Kubernetes lifecycle command is running")
     if args.action == "status":
-        for ns in ("ingestion", "processing", "serving"):
+        for ns in ("ingestion", "processing", "serving", "governance", "monitoring"):
             kube("get", "pods,pvc", "-n", ns)
     elif args.action == "stop":
+        pause_observability()
         pause_metadata()
         # Let the operator clean up the streaming driver/executor before stopping it.
         applications = json.loads(

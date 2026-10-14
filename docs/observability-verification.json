@@ -1,0 +1,48 @@
+{
+  "verified_at_utc": "2026-10-14T14:58:26.458912+00:00",
+  "native_kubernetes": true,
+  "images_architecture": "arm64",
+  "versions": {
+    "prometheus": "3.5.0",
+    "grafana": "12.2.0",
+    "loki": "3.5.5",
+    "alloy": "1.10.2",
+    "kafka_python": "2.2.15"
+  },
+  "telemetry_sources": {
+    "kubernetes": 1,
+    "spark": 1,
+    "kafka": 1,
+    "nifi": 1,
+    "airflow": 1
+  },
+  "dashboard_panels": 14,
+  "datasources": [
+    "waba-loki",
+    "waba-prometheus"
+  ],
+  "native_spark_job_verified": "waba-regulatory-report-fc99b301",
+  "native_executor_metric_names_count": 39,
+  "live_regulatory_deadline_alert": true,
+  "demo_alert_instances_all_normal": true,
+  "three_demo_alerts_and_local_notifications_verified": "observability-alert-verification.json",
+  "spark_json_logging_verified": "observability-spark-verification.json",
+  "service_account_secret_read_denied": true,
+  "service_account_spark_create_denied": true,
+  "service_account_log_read_allowed": true,
+  "unit_tests_passed": 28,
+  "ui_tests_passed": 6,
+  "manifest_server_dry_run_passed": true,
+  "prometheus_syntax_check_passed": true,
+  "browser_evidence": [
+    "screenshots/grafana-health.png",
+    "screenshots/grafana-logs.png",
+    "screenshots/grafana-alerts-firing.png"
+  ],
+  "limitations": [
+    "Profiles are sequential on the local Mac; no simultaneous complete platform verification",
+    "AML lag uses the shared silver_to_gold checkpoint, not a separate Kafka consumer group",
+    "Whole-job durations per country scope; no fabricated per-country timing for shared runs",
+    "Alloy replaces Promtail; local services are not production hardened"
+  ]
+}

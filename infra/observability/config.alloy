@@ -1,0 +1,32 @@
+discovery.kubernetes "pods" {
+  role = "pod"
+  namespaces { names = ["ingestion", "processing", "serving", "governance", "monitoring"] }
+}
+discovery.relabel "logs" {
+  targets = discovery.kubernetes.pods.targets
+  rule { source_labels = ["__meta_kubernetes_namespace"]
+    target_label = "namespace" }
+  rule { source_labels = ["__meta_kubernetes_pod_name"]
+    target_label = "pod" }
+  rule { source_labels = ["__meta_kubernetes_pod_container_name"]
+    target_label = "container" }
+}
+loki.source.kubernetes "pods" {
+  targets = discovery.relabel.logs.output
+  forward_to = [loki.process.json.receiver]
+}
+local.file_match "airflow" {
+  path_targets = [{"__path__" = "/airflow-logs/dag_id=*/run_id=*/task_id=*/*.log", "namespace" = "processing", "component" = "airflow-task"}]
+}
+loki.source.file "airflow" {
+  targets = local.file_match.airflow.targets
+  forward_to = [loki.process.json.receiver]
+}
+loki.process "json" {
+  stage.json { expressions = {"event" = "event", "job" = "job", "country_code" = "country_code", "level" = "level"} }
+  stage.labels { values = {"event" = "", "job" = "", "country_code" = "", "level" = ""} }
+  forward_to = [loki.write.local.receiver]
+}
+loki.write "local" {
+  endpoint { url = "http://loki.monitoring:3100/loki/api/v1/push" }
+}

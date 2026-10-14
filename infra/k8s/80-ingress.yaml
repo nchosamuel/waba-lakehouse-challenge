@@ -168,6 +168,70 @@
           }
         ]
       }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "Ingress",
+      "metadata": {
+        "name": "grafana",
+        "namespace": "monitoring"
+      },
+      "spec": {
+        "ingressClassName": "nginx",
+        "rules": [
+          {
+            "host": "grafana.waba.local",
+            "http": {
+              "paths": [
+                {
+                  "path": "/",
+                  "pathType": "Prefix",
+                  "backend": {
+                    "service": {
+                      "name": "grafana",
+                      "port": {
+                        "number": 3000
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "networking.k8s.io/v1",
+      "kind": "Ingress",
+      "metadata": {
+        "name": "openmetadata",
+        "namespace": "governance"
+      },
+      "spec": {
+        "ingressClassName": "nginx",
+        "rules": [
+          {
+            "host": "openmetadata.waba.local",
+            "http": {
+              "paths": [
+                {
+                  "path": "/",
+                  "pathType": "Prefix",
+                  "backend": {
+                    "service": {
+                      "name": "openmetadata",
+                      "port": {
+                        "number": 8585
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
     }
   ]
 }

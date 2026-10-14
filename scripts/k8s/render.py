@@ -455,6 +455,8 @@ for ns, mappings in {
     "serving": [("app", 8501), ("trino", 8080), ("superset", 8088)],
     "processing": [("airflow", 8081)],
     "ingestion": [("nifi", 8443)],
+    "monitoring": [("grafana", 3000)],
+    "governance": [("openmetadata", 8585)],
 }.items():
     for name, port in mappings:
         ingresses.append(

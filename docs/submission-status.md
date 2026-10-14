@@ -1,6 +1,6 @@
 # Périmètre et preuves de la version locale
 
-Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Superset et son SSO Keycloak constituent les premières parties du niveau 4 ; Le catalogue/lineage OpenMetadata est vérifié ; observabilité et alertes restent à construire.
+Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Les composants du niveau 4 sont vérifiés par profils locaux : Superset/SSO, catalogue/lineage et supervision. Le lancement intégral simultané, l’Ingress TLS et la sécurité de production ne sont pas validés ; la vidéo reste à enregistrer.
 
 | Exigence | État | Preuve / réserve |
 |---|---|---|
@@ -17,7 +17,7 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | Quatre DAGs Airflow | Vérifié | Exécutions réelles du scheduler, dépendances, retries, paramètres pays/période. |
 | Reporting J+1 | Vérifié pour des agrégats de démonstration | 00h30 UTC ; données futures exclues ; primes acquises au prorata. Aucun formulaire officiel revendiqué. |
 | Déploiement vierge | Vérifié, avec correction du démarrage documentée | Volumes séparés initialement vides, quatre DAGs réussis et KPIs contrôlés ; `fresh-install-verification.json`. |
-| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 23 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
+| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 28 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
 | Document technique | Disponible | `technical-writeup.md` : synthèse des niveaux livrés ; documents de conception détaillés associés. |
 | Vidéo de 5–10 minutes | Reste à enregistrer | `demo-script.md` fournit le déroulé ; ce document ne remplace pas une vidéo. |
 | NiFi/Kafka/streaming/fraude/AML | Vérifié en Docker et Kubernetes local | NiFi/Kafka, deux traitements Spark, DLQ, trois règles de fraude, AML et liquidité ; vue Lambda sans chevauchement ; reprise et rejeux vérifiés. |
@@ -26,6 +26,6 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | Keycloak / SSO Superset | Vérifié localement | Quatre profils ; restrictions serveur des huit analystes, lecteur limité aux agrégats, conformité aux deux tables réglementaires, déconnexion IdP ; `sso-verification.json`. |
 | SSO Trino et restrictions SQL | Vérifié localement | HTTPS, connexion/déconnexion Keycloak ; quatre profils, huit analystes restreints, dix vues lecteur, deux tables conformité ; accès HTTP SQL et usurpation refusés ; `trino-sso-verification.json`. |
 | OpenMetadata / lineage / PII | Vérifié localement avec périmètre déclaré | 59 tables/vues découvertes, neuf Gold documentées, 38 colonnes PII ; 29 événements Spark, 42 liens et chemin raw→Bronze→Silver→Gold vérifié API/UI. Règles account_number/iban testées sur fixture vide, colonnes absentes des données d’origine. |
-| Observabilité / alertes | Reste à réaliser | Prometheus/Grafana/Loki et alertes restent à construire. |
+| Observabilité / alertes | Vérifié localement avec adaptations déclarées | Prometheus/Grafana/Loki/Alloy ; cinq sources de télémétrie ; scrape Spark natif et logs JSON sur un vrai job CI ; trois règles Grafana testées via signaux demo distincts, notifications locales et retour à Normal. Lag du checkpoint partagé fraude/AML ; durées par périmètre pays, pas par pays d’un job commun. |
 
 Les rapports JSON existants témoignent des exécutions dont ils sont issus ; ils ne remplacent pas l'exécution des scripts de validation. Les données étant appendues par les générations et les tests, les comptages peuvent augmenter sans perte d'idempotence.
