@@ -17,7 +17,7 @@ Ce deuxième traitement utilise un journal durable et des agrégations Spark de 
 
 Les checkpoints sont dans un volume persistant, distinct pour chaque requête. Les tables sont fusionnées par identifiant/pays. Un outbox Iceberg enregistre les messages à publier ; Kafka est acquitté avant le marquage `published`. Un crash entre acquittement et marquage peut produire une répétition Kafka : **la publication est au moins une fois**, les consommateurs et les lectures Lambda dédupliquent par identifiant. Le démarrage reprend également les messages d'outbox non publiés.
 
-Les deux callbacks partagent un verrou d'écriture ; ils ne manipulent pas simultanément les vues temporaires et le journal de publication. Les métadonnées Iceberg sont rafraîchies avant la lecture de l'outbox. Les assertions de reprise contrôlent les valeurs métier et les identifiants, pas seulement le démarrage d'un processus.
+Les deux callbacks partagent un verrou d'écriture ; ils ne manipulent pas simultanément les vues temporaires et le journal de publication. Les métadonnées Iceberg sont rafraîchies avant la lecture de l'outbox et du journal Gold après chaque écriture. Le test de plusieurs lots sur K8s a révélé une lecture obsolète du journal après une première cohorte : ce rafraîchissement garantit que le second lot participe aux règles. Les assertions de reprise contrôlent les valeurs métier et les identifiants, pas seulement le démarrage d'un processus.
 
 Les événements plus anciens que le watermark peuvent être écartés par Spark ; leurs fichiers CSV restent disponibles et doivent être pris en charge en batch/backfill. Utiliser la journée UTC courante pour une démonstration streaming. `failOnDataLoss=true` empêche de reprendre silencieusement un checkpoint dont les offsets ont expiré. Kafka conserve les messages sept jours dans ce profil local.
 
@@ -43,7 +43,7 @@ Une recomposition Gold met aussi à jour les identifiants couverts. Les modes ba
 
 ## Ressources et limites de déploiement
 
-Airflow et le runner batch sont arrêtés en mode streaming. Kafka a un heap de 384 MB, NiFi 768 MB et Spark 1 GB ; Trino et MinIO restent accessibles. Le profil Docker est testé sur Apple Silicon. Le mode local garde un seul broker, une réplication de un et des checkpoints sur volume local. La configuration Kubernetes, la haute disponibilité et la gouvernance restent au niveau 4 ; cette validation locale ne vaut pas une validation de déploiement Kubernetes.
+Airflow et le runner batch sont arrêtés en mode streaming. Kafka a un heap de 384 MB, NiFi 768 MB et Spark 1 GB ; Trino et MinIO restent accessibles. Le profil Docker est testé sur Apple Silicon. Le mode local garde un seul broker, une réplication de un et des checkpoints sur volume local. Le socle est également vérifié sur Kubernetes kind avec Spark Operator : voir `kubernetes-design.md` et les rapports `kubernetes-*.json`. La haute disponibilité, le SSO, la gouvernance et l’observabilité restent à construire.
 
 NiFi utilise HTTPS avec certificat auto-signé et mot de passe généré. Le helper local accepte ce certificat uniquement sur localhost ; une chaîne de confiance réelle et TLS/SASL Kafka sont des travaux de production ultérieurs.
 

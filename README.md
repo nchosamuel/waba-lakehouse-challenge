@@ -2,7 +2,7 @@
 
 Version locale du challenge Data Engineer BancAssur Afrique de l'Ouest : batch des niveaux 1–2 et streaming du niveau 3.
 
-Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Le niveau 3 streaming est testé dans le profil local décrit ci-dessous ; Kubernetes et le niveau 4 restent à construire.
+Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Le niveau 3 est vérifié en Docker et sur Kubernetes local. Les trois dashboards Superset sont disponibles ; le SSO, le catalogue de gouvernance et l’observabilité du niveau 4 restent à construire.
 La génération des données est séparée de leur ingestion : Streamlit publie des CSV dans MinIO ; Spark traite les fichiers en attente et alimente Iceberg ; Trino interroge les tables.
 
 ```mermaid
@@ -252,4 +252,57 @@ Pour revenir au batch, avec Kafka conservé pour les lectures Lambda :
 python3 scripts/streaming_mode.py batch
 ```
 
-Changer de mode après drainage des files NiFi et de l'outbox. Pour arrêter uniquement le streaming : `python3 scripts/streaming_mode.py stop`. Ces commandes ne suppriment aucun volume. Le déploiement Kubernetes, la haute disponibilité et les contrôles de gouvernance restent les travaux du niveau 4 ; le profil de niveau 3 décrit ici est validé en local Docker.
+Changer de mode après drainage des files NiFi et de l'outbox. Pour arrêter uniquement le streaming : `python3 scripts/streaming_mode.py stop`. Ces commandes ne suppriment aucun volume. Le profil Kubernetes du socle est décrit ci-dessous. La haute disponibilité et les contrôles de gouvernance du niveau 4 restent à construire.
+
+## Kubernetes local et Superset
+
+Le [modèle Kubernetes](docs/kubernetes-design.md) décrit l'exécution distribuée, les PVC et les limites du profil. Les volumes Kubernetes sont indépendants de Compose. Le helper arrête les services Compose de ce projet avant de lancer kind et conserve leurs données.
+
+Prérequis : Docker Desktop (environ 8 Go), kind 0.33.0, Helm 4.3.0 ; kubectl 1.32.3 et cluster kind Kubernetes 1.32.3. Sur macOS :
+
+```sh
+brew install kind helm
+python3 scripts/k8s/install_kubectl.py
+python3 scripts/kubernetes.py start
+python3 scripts/kubernetes.py seed
+```
+
+Le bootstrap publie les référentiels complets et le scénario comptable, puis exécute successivement les jobs Spark via Spark Operator. Les fichiers `infra/k8s/*.yaml` sont des documents YAML au format JSON, lisibles sans bibliothèque Python supplémentaire. Les ConfigMaps sont régénérables avec `python3 scripts/k8s/render.py` ; les Secrets privés ne sont pas générés dans ces fichiers.
+
+Vérifier les mêmes assertions métier sur Kubernetes :
+
+```sh
+WABA_RUNTIME=kubernetes WABA_REPORT_PATH=docs/kubernetes-medallion-verification.json python3 scripts/verify_level2.py
+python3 scripts/kubernetes.py streaming
+.tools/kubectl --context kind-waba -n processing get sparkapplications
+```
+
+Après démarrage des deux requêtes, publier la cohorte de fraude depuis le driver :
+
+```sh
+.tools/kubectl --context kind-waba -n processing exec waba-streaming-driver -- python3 /app/jobs/publish_stream_fixtures.py
+WABA_RUNTIME=kubernetes python3 scripts/create_lambda_view.py
+WABA_RUNTIME=kubernetes WABA_REPORT_PATH=docs/kubernetes-streaming-verification.json python3 scripts/verify_streaming.py
+```
+
+Attendre les microbatches avant la vérification. Pour l'orchestration batch, `python3 scripts/kubernetes.py batch` arrête le streaming, conserve ses checkpoints et démarre Airflow avec un runner qui soumet des SparkApplications. Les DAGs restent initialement en pause ; suivre la procédure d'activation de la section Airflow après le premier calcul Gold. Drainer les files avant le changement de mode.
+
+Pour les tableaux de bord métier :
+
+```sh
+python3 scripts/kubernetes.py bi
+.tools/kubectl --context kind-waba -n serving port-forward svc/superset 8088:8088
+```
+
+Ouvrir **http://localhost:8088** ; identifiants `SUPERSET_ADMIN_USER/PASSWORD` dans `.env`. Les trois dashboards sont Performance Commerciale Groupe, Risque et Conformité Réglementaire, Mobile Money et Transferts. Ils utilisent des données Trino et un filtre pays. `python3 scripts/verify_superset.py` contrôle les requêtes de chaque graphique et leur filtrage CI.
+
+Les associations compte–produit et les SLA contractuels n'existent pas dans les fichiers source : les souscriptions et SLA affichés sont des **entrées de simulation déclarées**, marquées `SUBSCRIPTIONS_SIMULATED_V1` et `SLA_SIMULATED_V1`. Le top présente jusqu'à dix produits disponibles par pays ; le petit catalogue peut en contenir moins. Les revenus consolidés combinent commissions/intérêts documentés, primes acquises modélisées et frais mobile effectivement simulés. Ils ne représentent pas les montants totaux des virements. Le scénario initial fournit février 2026 ; ajouter un autre mois pour démontrer une évolution mensuelle sur plusieurs points.
+
+Pour Streamlit ou Airflow, utiliser respectivement des port-forwards des Services `app` (namespace serving, 8501) et `airflow` (namespace processing, 8081). Les Ingress fournis sont des exemples pour un contrôleur nginx ; les vérifications locales utilisent les port-forwards. Le SSO, OpenMetadata, l'observabilité et les alertes du niveau 4 restent à implémenter.
+
+```sh
+python3 scripts/kubernetes.py status
+python3 scripts/kubernetes.py stop
+```
+
+`stop` conserve cluster et PVC. Aucune commande du helper ne supprime les données persistantes.

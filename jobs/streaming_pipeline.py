@@ -181,6 +181,9 @@ def silver_to_gold_impl(batch, batch_id):
         ["country_code", "event_id"],
         "txn_date",
     )
+    # foreachBatch uses a cloned SparkSession; refresh the shared reader's cached
+    # Iceberg snapshot after the writer commits a later microbatch.
+    spark.catalog.refreshTable("iceberg.gold.streaming_event_ledger")
     history = spark.table("iceberg.gold.streaming_event_ledger")
     maximum = history.agg(F.max("event_time")).first()[0]
     recent = history.filter(

@@ -1,6 +1,7 @@
 """Reproducible NiFi flow, with runtime-only credentials and bounded queues."""
 
 import json
+import os
 import time
 from pathlib import Path
 from nifi_api import NiFi, private_env
@@ -277,5 +278,7 @@ report = {
     "queue_limit_bytes": "16 MB",
     "credentials": "runtime only",
 }
-Path("docs/nifi-flow-verification.json").write_text(json.dumps(report, indent=2) + "\n")
+Path(
+    os.environ.get("WABA_NIFI_REPORT_PATH", "docs/nifi-flow-verification.json")
+).write_text(json.dumps(report, indent=2) + "\n")
 print(json.dumps(report))

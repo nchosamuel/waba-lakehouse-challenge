@@ -20,8 +20,7 @@ WITH unique_stream AS (
 )
 SELECT country_code,entity_type,txn_date,transaction_type,sum(transaction_count) AS transaction_count,sum(total_amount_eur) AS total_amount_eur
 FROM combined GROUP BY 1,2,3,4"""
-subprocess.run(
-    ["docker", "compose", "exec", "-T", "trino", "trino", "--execute", sql],
-    cwd=ROOT,
-    check=True,
-)
+from verification_runtime import query
+
+query(sql)
+print("Lambda view created.")

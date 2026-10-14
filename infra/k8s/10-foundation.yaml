@@ -1,0 +1,769 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "minio-data",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "8Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "catalog-data",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "minio",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "minio"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "minio"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "minio",
+                "image": "waba/minio:20261014",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 9000
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/data"
+                  }
+                ],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/minio/health/live",
+                    "port": 9000
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/minio/health/live",
+                    "port": 9000
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/minio/health/live",
+                    "port": 9000
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                },
+                "command": [
+                  "minio"
+                ],
+                "args": [
+                  "server",
+                  "/data",
+                  "--console-address",
+                  ":9001"
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "minio-data"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "minio",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "minio"
+        },
+        "ports": [
+          {
+            "name": "p9000",
+            "port": 9000,
+            "targetPort": 9000
+          },
+          {
+            "name": "p9001",
+            "port": 9001,
+            "targetPort": 9001
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "catalog",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "catalog"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "catalog"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "catalog",
+                "image": "apache/iceberg-rest-fixture:1.9.1",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8181
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "AWS_REGION",
+                    "value": "us-east-1"
+                  },
+                  {
+                    "name": "CATALOG_WAREHOUSE",
+                    "value": "s3://lakehouse/"
+                  },
+                  {
+                    "name": "CATALOG_IO__IMPL",
+                    "value": "org.apache.iceberg.aws.s3.S3FileIO"
+                  },
+                  {
+                    "name": "CATALOG_S3_ENDPOINT",
+                    "value": "http://minio:9000"
+                  },
+                  {
+                    "name": "CATALOG_S3_PATH__STYLE__ACCESS",
+                    "value": "true"
+                  },
+                  {
+                    "name": "CATALOG_URI",
+                    "value": "jdbc:sqlite:/catalog/catalog.db"
+                  },
+                  {
+                    "name": "JAVA_TOOL_OPTIONS",
+                    "value": "-Xmx384m"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/catalog"
+                  }
+                ],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/v1/config",
+                    "port": 8181
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/v1/config",
+                    "port": 8181
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/v1/config",
+                    "port": 8181
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "catalog-data"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false,
+            "initContainers": [
+              {
+                "name": "catalog-owner",
+                "image": "waba/spark:20261014",
+                "command": [
+                  "python3",
+                  "-c",
+                  "import os; os.chown('/catalog',1000,1000)"
+                ],
+                "securityContext": {
+                  "runAsUser": 0
+                },
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/catalog"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "catalog",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "catalog"
+        },
+        "ports": [
+          {
+            "name": "p8181",
+            "port": 8181,
+            "targetPort": 8181
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "minio",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "minio.ingestion.svc.cluster.local"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "minio",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "minio.ingestion.svc.cluster.local"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "catalog",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "catalog.processing.svc.cluster.local"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "catalog",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "catalog.processing.svc.cluster.local"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "kafka",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "kafka.ingestion.svc.cluster.local"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "kafka",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "type": "ExternalName",
+        "externalName": "kafka.ingestion.svc.cluster.local"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "trino-catalog",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "iceberg.properties": "connector.name=iceberg\niceberg.catalog.type=rest\niceberg.rest-catalog.uri=http://catalog:8181\niceberg.rest-catalog.vended-credentials-enabled=false\nfs.native-s3.enabled=true\ns3.endpoint=http://minio:9000\ns3.region=us-east-1\ns3.path-style-access=true\ns3.aws-access-key=${ENV:MINIO_ROOT_USER}\ns3.aws-secret-key=${ENV:MINIO_ROOT_PASSWORD}\n",
+        "kafka.properties": "connector.name=kafka\nkafka.nodes=kafka:9092\nkafka.table-names=default.silver_bank_transactions,default.silver_insurance_operations,default.silver_mobile_money,default.fraud_alerts,default.aml_events,default.liquidity_alerts\nkafka.table-description-dir=/etc/trino/kafka\nkafka.hide-internal-columns=false\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "trino-config",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "config.properties": "coordinator=true\nnode-scheduler.include-coordinator=true\nhttp-server.http.port=8080\ndiscovery.uri=http://localhost:8080\nquery.max-memory=512MB\nquery.max-memory-per-node=512MB\nmemory.heap-headroom-per-node=256MB\n",
+        "jvm.config": "-server\n-Xmx1G\n-XX:+UseG1GC\n-XX:G1HeapRegionSize=32M\n-XX:+ExitOnOutOfMemoryError\n-Djdk.attach.allowAttachSelf=true\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "trino-kafka",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "aml_events.json": "{\n  \"tableName\": \"aml_events\",\n  \"schemaName\": \"default\",\n  \"topicName\": \"gold-aml-events\",\n  \"message\": {\n    \"dataFormat\": \"json\",\n    \"fields\": [\n      {\n        \"name\": \"alert_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"alert_id\"\n      },\n      {\n        \"name\": \"country_code\",\n        \"type\": \"varchar\",\n        \"mapping\": \"country_code\"\n      },\n      {\n        \"name\": \"entity_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"entity_type\"\n      },\n      {\n        \"name\": \"rule\",\n        \"type\": \"varchar\",\n        \"mapping\": \"rule\"\n      },\n      {\n        \"name\": \"subject_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"subject_id\"\n      },\n      {\n        \"name\": \"event_count\",\n        \"type\": \"bigint\",\n        \"mapping\": \"event_count\"\n      },\n      {\n        \"name\": \"amount_eur\",\n        \"type\": \"double\",\n        \"mapping\": \"amount_eur\"\n      },\n      {\n        \"name\": \"detected_at\",\n        \"type\": \"varchar\",\n        \"mapping\": \"detected_at\"\n      }\n    ]\n  }\n}\n",
+        "fraud_alerts.json": "{\n  \"tableName\": \"fraud_alerts\",\n  \"schemaName\": \"default\",\n  \"topicName\": \"gold-fraud-alerts\",\n  \"message\": {\n    \"dataFormat\": \"json\",\n    \"fields\": [\n      {\n        \"name\": \"alert_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"alert_id\"\n      },\n      {\n        \"name\": \"country_code\",\n        \"type\": \"varchar\",\n        \"mapping\": \"country_code\"\n      },\n      {\n        \"name\": \"entity_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"entity_type\"\n      },\n      {\n        \"name\": \"rule\",\n        \"type\": \"varchar\",\n        \"mapping\": \"rule\"\n      },\n      {\n        \"name\": \"subject_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"subject_id\"\n      },\n      {\n        \"name\": \"event_count\",\n        \"type\": \"bigint\",\n        \"mapping\": \"event_count\"\n      },\n      {\n        \"name\": \"amount_eur\",\n        \"type\": \"double\",\n        \"mapping\": \"amount_eur\"\n      },\n      {\n        \"name\": \"detected_at\",\n        \"type\": \"varchar\",\n        \"mapping\": \"detected_at\"\n      }\n    ]\n  }\n}\n",
+        "silver_insurance_operations.json": "{\n  \"tableName\": \"silver_insurance_operations\",\n  \"schemaName\": \"default\",\n  \"topicName\": \"silver-insurance-operations\",\n  \"message\": {\n    \"dataFormat\": \"json\",\n    \"fields\": [\n      {\n        \"name\": \"event_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"operation_id\"\n      },\n      {\n        \"name\": \"country_code\",\n        \"type\": \"varchar\",\n        \"mapping\": \"country_code\"\n      },\n      {\n        \"name\": \"entity_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"entity_type\"\n      },\n      {\n        \"name\": \"event_time\",\n        \"type\": \"varchar\",\n        \"mapping\": \"timestamp\"\n      },\n      {\n        \"name\": \"amount_eur\",\n        \"type\": \"double\",\n        \"mapping\": \"amount_eur\"\n      }\n    ]\n  }\n}\n",
+        "liquidity_alerts.json": "{\n  \"tableName\": \"liquidity_alerts\",\n  \"schemaName\": \"default\",\n  \"topicName\": \"gold-liquidity-alerts\",\n  \"message\": {\n    \"dataFormat\": \"json\",\n    \"fields\": [\n      {\n        \"name\": \"alert_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"alert_id\"\n      },\n      {\n        \"name\": \"country_code\",\n        \"type\": \"varchar\",\n        \"mapping\": \"country_code\"\n      },\n      {\n        \"name\": \"entity_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"entity_type\"\n      },\n      {\n        \"name\": \"rule\",\n        \"type\": \"varchar\",\n        \"mapping\": \"rule\"\n      },\n      {\n        \"name\": \"subject_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"subject_id\"\n      },\n      {\n        \"name\": \"event_count\",\n        \"type\": \"bigint\",\n        \"mapping\": \"event_count\"\n      },\n      {\n        \"name\": \"amount_eur\",\n        \"type\": \"double\",\n        \"mapping\": \"amount_eur\"\n      },\n      {\n        \"name\": \"detected_at\",\n        \"type\": \"varchar\",\n        \"mapping\": \"detected_at\"\n      }\n    ]\n  }\n}\n",
+        "silver_bank_transactions.json": "{\n  \"tableName\": \"silver_bank_transactions\",\n  \"schemaName\": \"default\",\n  \"topicName\": \"silver-bank-transactions\",\n  \"message\": {\n    \"dataFormat\": \"json\",\n    \"fields\": [\n      {\n        \"name\": \"event_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"transaction_id\"\n      },\n      {\n        \"name\": \"country_code\",\n        \"type\": \"varchar\",\n        \"mapping\": \"country_code\"\n      },\n      {\n        \"name\": \"entity_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"entity_type\"\n      },\n      {\n        \"name\": \"event_time\",\n        \"type\": \"varchar\",\n        \"mapping\": \"timestamp\"\n      },\n      {\n        \"name\": \"txn_date\",\n        \"type\": \"varchar\",\n        \"mapping\": \"txn_date\"\n      },\n      {\n        \"name\": \"transaction_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"transaction_type\"\n      },\n      {\n        \"name\": \"transaction_status\",\n        \"type\": \"varchar\",\n        \"mapping\": \"transaction_status\"\n      },\n      {\n        \"name\": \"amount_eur\",\n        \"type\": \"double\",\n        \"mapping\": \"amount_eur\"\n      },\n      {\n        \"name\": \"account_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"account_id\"\n      }\n    ]\n  }\n}\n",
+        "silver_mobile_money.json": "{\n  \"tableName\": \"silver_mobile_money\",\n  \"schemaName\": \"default\",\n  \"topicName\": \"silver-mobile-money\",\n  \"message\": {\n    \"dataFormat\": \"json\",\n    \"fields\": [\n      {\n        \"name\": \"event_id\",\n        \"type\": \"varchar\",\n        \"mapping\": \"payment_id\"\n      },\n      {\n        \"name\": \"country_code\",\n        \"type\": \"varchar\",\n        \"mapping\": \"country_code\"\n      },\n      {\n        \"name\": \"entity_type\",\n        \"type\": \"varchar\",\n        \"mapping\": \"entity_type\"\n      },\n      {\n        \"name\": \"event_time\",\n        \"type\": \"varchar\",\n        \"mapping\": \"timestamp\"\n      },\n      {\n        \"name\": \"amount_eur\",\n        \"type\": \"double\",\n        \"mapping\": \"amount_eur\"\n      }\n    ]\n  }\n}\n"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "trino",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "trino"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "trino"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "trino",
+                "image": "trinodb/trino:475",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "2Gi"
+                  }
+                },
+                "env": [],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "trino-catalog",
+                    "mountPath": "/etc/trino/catalog"
+                  },
+                  {
+                    "name": "trino-config",
+                    "mountPath": "/etc/trino/config.properties",
+                    "subPath": "config.properties"
+                  },
+                  {
+                    "name": "trino-config",
+                    "mountPath": "/etc/trino/jvm.config",
+                    "subPath": "jvm.config"
+                  },
+                  {
+                    "name": "trino-kafka",
+                    "mountPath": "/etc/trino/kafka"
+                  }
+                ],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/v1/info",
+                    "port": 8080
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/v1/info",
+                    "port": 8080
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/v1/info",
+                    "port": 8080
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "trino-catalog",
+                "configMap": {
+                  "name": "trino-catalog"
+                }
+              },
+              {
+                "name": "trino-config",
+                "configMap": {
+                  "name": "trino-config"
+                }
+              },
+              {
+                "name": "trino-kafka",
+                "configMap": {
+                  "name": "trino-kafka"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "trino",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "trino"
+        },
+        "ports": [
+          {
+            "name": "p8080",
+            "port": 8080,
+            "targetPort": 8080
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "app",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "app"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "app"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "app",
+                "image": "waba/app:20261014",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8501
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "PYTHONPATH",
+                    "value": "/app/src"
+                  },
+                  {
+                    "name": "S3_ENDPOINT",
+                    "value": "http://minio:9000"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/_stcore/health",
+                    "port": 8501
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/_stcore/health",
+                    "port": 8501
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/_stcore/health",
+                    "port": 8501
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "app",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "app"
+        },
+        "ports": [
+          {
+            "name": "p8501",
+            "port": 8501,
+            "targetPort": 8501
+          }
+        ]
+      }
+    }
+  ]
+}

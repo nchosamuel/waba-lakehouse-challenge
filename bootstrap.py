@@ -19,6 +19,9 @@ existing = {
     line.split("=", 1)[0] for line in path.read_text().splitlines() if "=" in line
 }
 extra = {
+    "SUPERSET_ADMIN_USER": "samuel",
+    "SUPERSET_ADMIN_PASSWORD": secrets.token_urlsafe(24),
+    "SUPERSET_SECRET_KEY": secrets.token_urlsafe(32),
     "SPARK_RUNNER_TOKEN": secrets.token_urlsafe(32),
     "NIFI_ADMIN_USER": "samuel",
     "NIFI_ADMIN_PASSWORD": secrets.token_urlsafe(24),

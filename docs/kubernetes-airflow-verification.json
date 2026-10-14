@@ -1,0 +1,11 @@
+{
+  "verified_at_utc": "2026-10-13T23:56:10.400821+00:00",
+  "four_dags_loaded": true,
+  "scheduler_run": "native_check_20261013T235509",
+  "dag_id": "dag_regulatory_report",
+  "state": "success",
+  "country_codes": [
+    "CI"
+  ],
+  "spark_operator_submission_via_authenticated_runner": true
+}

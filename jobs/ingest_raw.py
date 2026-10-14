@@ -4,6 +4,8 @@ import csv
 import io
 import json
 import tempfile
+import os
+import uuid
 from pathlib import Path
 from pyspark import StorageLevel
 import boto3
@@ -26,8 +28,15 @@ settings = {
     "spark.sql.catalog.iceberg.s3.endpoint": "http://minio:9000",
     "spark.sql.catalog.iceberg.s3.path-style-access": "true",
     "spark.sql.shuffle.partitions": "2",
+    "spark.sql.ui.retainedExecutions": "25",
+    "spark.ui.retainedJobs": "25",
+    "spark.ui.retainedStages": "50",
     "spark.sql.session.timeZone": "UTC",
     "spark.sql.csv.parser.columnPruning.enabled": "false",
+    "spark.hadoop.fs.s3a.endpoint": "http://minio:9000",
+    "spark.hadoop.fs.s3a.path.style.access": "true",
+    "spark.hadoop.fs.s3a.connection.ssl.enabled": "false",
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider",
 }
 for key, value in settings.items():
     builder = builder.config(key, value)
@@ -90,6 +99,15 @@ def ingest(key, name, country):
             T.StructField("_corrupt_record", T.StringType(), True),
         ]
     )
+    shared_key = None
+    read_path = str(normalized_path)
+    if os.environ.get("WABA_SHARED_STAGING") == "true":
+        # Executors run in different pods and cannot read the driver's /tmp.
+        # Each immutable staging object is isolated to this attempt; originals
+        # remain untouched. Failures retain staging for diagnosis/backfill.
+        shared_key = "processing-staging/" + uuid.uuid4().hex + "/normalized.csv"
+        s3.upload_file(str(normalized_path), "archive", shared_key)
+        read_path = "s3a://archive/" + shared_key
     parsed = (
         spark.read.option("header", True)
         .option("mode", "PERMISSIVE")
@@ -97,7 +115,7 @@ def ingest(key, name, country):
         .option("multiLine", True)
         .option("columnNameOfCorruptRecord", "_corrupt_record")
         .schema(schema)
-        .csv(str(normalized_path))
+        .csv(read_path)
         .persist(StorageLevel.DISK_ONLY)
     )
     parsed.count()  # Materialize before querying Spark's corrupt-record column.
@@ -167,9 +185,13 @@ def ingest(key, name, country):
         flush=True,
     )
     print(json.dumps(report), flush=True)
-    frame.unpersist()
-    parsed.unpersist()
+    frame.unpersist(blocking=True)
+    parsed.unpersist(blocking=True)
     temp.cleanup()
+    if shared_key:
+        s3.delete_object(
+            Bucket="archive", Key=shared_key
+        )  # Only this attempt's temporary object.
 
 
 keys = [

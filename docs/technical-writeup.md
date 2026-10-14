@@ -1,0 +1,51 @@
+# WABA — architecture, choix et limites
+
+## 1. Périmètre livré
+
+La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO, les politiques d'accès par rôle/pays, OpenMetadata et l'observabilité du niveau 4 restent à réaliser : cette version est un prototype local vérifié, pas une plateforme de production complète.
+
+Le dépôt contient l'application de génération, les traitements PySpark, quatre DAGs, la configuration automatisée de NiFi, les ressources Kubernetes et des scripts de validation indépendants. Les rapports JSON documentent des exécutions réelles ; leurs comptages peuvent évoluer à chaque nouvelle génération. La vidéo est volontairement différée jusqu'à la fin des fonctionnalités.
+
+## 2. Socle et données
+
+Streamlit publie des CSV dans MinIO, organisés par pays et flux. Le référentiel complet comporte 500 000 clients, 800 000 comptes, 200 agences et 50 produits. Les fichiers par pays bornent la mémoire utilisée pendant la génération ; les tables logiques consolident les huit pays. Les identifiants sont fictifs et pseudonymes, sans IBAN ou numéro bancaire réel.
+
+MinIO porte les fichiers entrants, les tables Iceberg et les archives. Le catalogue REST Iceberg conserve ses métadonnées dans une base SQLite persistante pour la démonstration. Trino expose les couches raw, Bronze, Silver et Gold. Iceberg permet de fusionner par identifiant/pays plutôt que d'appendre aveuglément les mêmes événements.
+
+L'ingestion impose les contrats de schéma, contrôle les références, la devise, les montants et les doublons internes au fichier. Les rejets conservent données brutes, numéro de ligne et motifs dans une quarantaine ; une référence invalide bloque le chargement. L'original est archivé avant suppression du fichier événement entrant. Les référentiels restent disponibles et leur empreinte évite une relecture inutile. Bronze, Silver et Gold sont des matérialisations physiques distinctes.
+
+## 3. Modèles métier et orchestration
+
+Silver enrichit les événements avec les clients, comptes, agences et produits, et normalise les montants en EUR avec un FX simulé daté. Les taux 2026 utilisés sont 655,957 XOF/EUR et 12,5 GHS/EUR ; ils ne sont pas des cours de marché. Le traitement conserve le XOF pour la Guinée selon le sujet, mais ne la classe pas dans le périmètre UEMOA réel utilisé pour les corridors et agrégats concernés.
+
+Les fichiers ne donnent pas les encours de crédit ni les primes acquises. Un scénario versionné apporte des positions de prêts et un contexte comptable explicite. Le NPL utilise l'encours en défaut divisé par l'encours total, jamais les échéances. Le ratio assurance utilise les primes acquises et les sinistres payés liés. Les opérations sans contexte comptable restent signalées et exclues des ratios concernés. Les seuils BCEAO/CIMA mentionnés dans les graphiques sont ceux du challenge ; aucun formulaire officiel ni conformité réglementaire actuelle n'est revendiqué.
+
+Airflow orchestre ingestion → Bronze → Silver → Gold, avec dépendances, pool d'un traitement, retries et journal d'échec. Un quatrième DAG produit le reporting J+1 à 00h30 UTC, paramétrable par pays et période. Le scheduler et les jobs ont été exécutés réellement. Sur Kubernetes, le runner authentifié soumet des SparkApplications via l'API du cluster et refuse les écritures concurrentes ; ses permissions restent limitées à ces ressources dans processing.
+
+## 4. Streaming et Lambda
+
+NiFi surveille les fichiers événements, convertit les CSV en JSON, ajoute leur provenance et publie dans Kafka. Les files sont persistantes et bornées ; les erreurs de conversion sont archivées, et les échecs d'accès/publication restent en reprise. Kafka utilise un broker KRaft local, trois partitions par topic et sept jours de rétention.
+
+Deux requêtes Structured Streaming partagent un processus de pilotage : Raw → Silver, puis Silver → Gold. Une validation commune aux deux modes évite des règles incompatibles. Les rejets streaming rejoignent une DLQ avec payload, topic, partition, offset et motifs. Le watermark et la déduplication portent sur dix minutes. Un timestamp futur invalide ne peut pas faire avancer arbitrairement ce watermark.
+
+Un journal Iceberg durable fournit les événements des fenêtres de cinq minutes glissant d'une minute. Les règles couvrent transactions bancaires répétées de forte valeur, pays d'émission inhabituel et sinistre supérieur à trois primes annuelles du contrat simulé ; AML et liquidité ont leurs propres alertes. L'entrée annuelle assurance et la politique de liquidité sont explicitement fictives. Le journal est rafraîchi après chaque commit pour éviter qu'un second lot soit évalué depuis une ancienne vue du catalogue.
+
+L'outbox est acquitté par Kafka avant d'être marqué publié. Un crash dans cet intervalle peut répéter un message : la publication est au moins une fois. Les consommateurs et lectures Lambda dédupliquent les identifiants. Les événements trop anciens peuvent être écartés par le watermark ; leurs originaux restent disponibles pour un backfill batch.
+
+La vue Lambda additionne Gold batch aux messages Silver Kafka non couverts par les identifiants du dernier calcul batch, après déduplication Kafka. Les modes d'écriture sont exclusifs dans ce profil. Une cible de production devra publier atomiquement la version des agrégats et sa frontière de couverture ; les deux tables ne constituent pas une transaction globale.
+
+## 5. Kubernetes, consommation et validation
+
+Le déploiement utilise cinq namespaces par domaine. MinIO, catalogue, Kafka, NiFi, Airflow et checkpoints ont des PVC. Le code est inclus dans les images, les configurations dans des ConfigMaps et les valeurs privées dans des Secrets injectés au démarrage. Les helpers ciblent explicitement kind-waba et ne suppriment pas le cluster ou ses volumes.
+
+Spark Operator lance un driver et un executor distincts. La normalisation CSV passe par un staging MinIO unique par tentative : le `/tmp` du driver n'est pas lisible dans un autre Pod. Les checkpoints sont partagés entre driver et executor, car l'état de déduplication est écrit côté executor. Le PVC ReadWriteOnce convient au nœud unique ; une cible multi-nœud exige une stratégie de stockage partagé validée. Les ressources, probes et rétention des historiques Spark ont été ajustées après les premiers essais, dont les échecs sont documentés.
+
+Superset interroge Trino pour performance commerciale, risque et mobile money, avec filtre pays. Le NPL est consolidé par pays avant la coloration, les ratios sont pondérés par leurs dénominateurs. Les associations compte–produit et les SLA manquants sont ajoutés comme scénarios identifiés. Le catalogue peut comporter moins de dix produits par pays, et le scénario initial ne fournit qu'un mois d'ARPC : le rendu conserve ces limites au lieu d'inventer une tendance.
+
+Les vérifications couvrent les 1,3 million de lignes de référence, l'unicité et les trois matérialisations, les résultats comptables attendus, la génération ponctuelle/continue, quatre flux streaming, cas positifs/négatifs de risque, DLQ, plusieurs lots, rejeux et redémarrages Kafka/NiFi/Spark, ainsi que les totaux Lambda. Superset est contrôlé par API et inspection visuelle ; une requête correcte ne suffit pas à garantir un graphique correctement enregistré.
+
+Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et session BI administrateur restent des compromis de démonstration. Haute disponibilité, TLS d'entrée, SSO et autorisations négatives, catalogue/lineage et métriques/logs/alertes testées sont les étapes suivantes, distinctes des capacités déjà vérifiées.
+
+## Preuves détaillées
+
+Consulter `submission-status.md`, `kubernetes-*-verification.json`, `streaming-*-verification.json`, `superset-verification.json` et les documents de conception associés. Le README fournit la reproduction et les modes d'exécution.

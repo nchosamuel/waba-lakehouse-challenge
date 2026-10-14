@@ -5,44 +5,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT.parent.parent / "work"
+from verification_runtime import output, query, report_path
+
 fixture = json.loads(
-    subprocess.check_output(
+    output(
+        "app",
         [
-            "docker",
-            "compose",
-            "exec",
-            "-T",
-            "app",
             "python",
             "-c",
             "from waba.publisher import client; print(client().get_object(Bucket='archive',Key='reports/streaming/latest-fixture.json')['Body'].read().decode())",
         ],
-        cwd=ROOT,
-        text=True,
     )
 )
 ids = fixture["event_ids"]
-
-
-def query(sql):
-    output = subprocess.check_output(
-        [
-            "docker",
-            "compose",
-            "exec",
-            "-T",
-            "trino",
-            "trino",
-            "--output-format",
-            "CSV",
-            "--execute",
-            sql,
-        ],
-        cwd=ROOT,
-        text=True,
-        stderr=subprocess.DEVNULL,
-    )
-    return list(csv.reader(io.StringIO(output)))
 
 
 def count(sql):
@@ -126,25 +101,7 @@ lambda_total = float(
     )[0][0]
 )
 assert abs(lambda_total - batch - fresh) < 0.01, (lambda_total, batch, fresh)
-raw = subprocess.check_output(
-    [
-        "docker",
-        "compose",
-        "-f",
-        "compose.yaml",
-        "-f",
-        "compose.streaming.yaml",
-        "--profile",
-        "streaming",
-        "exec",
-        "-T",
-        "streaming",
-        "python3",
-        "/app/jobs/inspect_stream_kafka.py",
-    ],
-    cwd=ROOT,
-    text=True,
-)
+raw = output("streaming", ["python3", "/app/jobs/inspect_stream_kafka.py"])
 kafka = json.loads(raw)
 for topic in (
     "raw-bank-transactions",
@@ -177,7 +134,7 @@ result = {
     "lambda_total_eur": lambda_total,
     "kafka": kafka,
 }
-(ROOT / "docs" / "streaming-verification.json").write_text(
+report_path("streaming-verification.json").write_text(
     json.dumps(result, indent=2) + "\n"
 )
 print(json.dumps(result))
