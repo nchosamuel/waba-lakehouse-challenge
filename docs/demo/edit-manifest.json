@@ -1,0 +1,138 @@
+{
+  "duration_seconds": 554,
+  "normal_speed": true,
+  "voice_track": false,
+  "burned_in_french_subtitles": true,
+  "montage_by_local_profiles": true,
+  "segments": [
+    {
+      "source": "intro.png",
+      "source_start_seconds": 0,
+      "duration_seconds": 18,
+      "chapter": "Pr\u00e9sentation",
+      "output_start_seconds": 0
+    },
+    {
+      "source": "01-generation.webm",
+      "source_start_seconds": 0,
+      "duration_seconds": 76,
+      "chapter": "G\u00e9n\u00e9ration ponctuelle",
+      "output_start_seconds": 18
+    },
+    {
+      "source": "01-generation.webm",
+      "source_start_seconds": 96,
+      "duration_seconds": 44,
+      "chapter": "G\u00e9n\u00e9ration continue",
+      "output_start_seconds": 94
+    },
+    {
+      "source": "01-generation.webm",
+      "source_start_seconds": 238,
+      "duration_seconds": 23,
+      "chapter": "Arr\u00eat du flux",
+      "output_start_seconds": 138
+    },
+    {
+      "source": "03-pipeline-succes.webm",
+      "source_start_seconds": 0,
+      "duration_seconds": 20,
+      "chapter": "Pipeline natif",
+      "output_start_seconds": 161
+    },
+    {
+      "source": "03-pipeline-succes.webm",
+      "source_start_seconds": 60,
+      "duration_seconds": 25,
+      "chapter": "Reporting",
+      "output_start_seconds": 181
+    },
+    {
+      "source": "02-indicateurs.webm",
+      "source_start_seconds": 75,
+      "duration_seconds": 30,
+      "chapter": "Indicateurs",
+      "output_start_seconds": 206
+    },
+    {
+      "source": "04-nifi.webm",
+      "source_start_seconds": 415.53,
+      "duration_seconds": 35,
+      "chapter": "Ingestion streaming",
+      "output_start_seconds": 236
+    },
+    {
+      "source": "05-trino-fraude.webm",
+      "source_start_seconds": 0,
+      "duration_seconds": 30,
+      "chapter": "Requ\u00eates Trino",
+      "output_start_seconds": 271
+    },
+    {
+      "source": "05-trino-fraude.webm",
+      "source_start_seconds": 90,
+      "duration_seconds": 35,
+      "chapter": "Fraude m\u00e9tier",
+      "output_start_seconds": 301
+    },
+    {
+      "source": "05-trino-fraude.webm",
+      "source_start_seconds": 180,
+      "duration_seconds": 30,
+      "chapter": "Vue Lambda",
+      "output_start_seconds": 336
+    },
+    {
+      "source": "07-superset.webm",
+      "source_start_seconds": 0,
+      "duration_seconds": 25,
+      "chapter": "Superset \u00b7 performance",
+      "output_start_seconds": 366
+    },
+    {
+      "source": "07-superset.webm",
+      "source_start_seconds": 547.87,
+      "duration_seconds": 25,
+      "chapter": "Filtre pays",
+      "output_start_seconds": 391,
+      "normal_speed_capture_seconds": 8,
+      "held_verified_result_frame": "superset-ci-qa.png",
+      "held_result_seconds": 17
+    },
+    {
+      "source": "08-superset-risque.webm",
+      "source_start_seconds": 5,
+      "duration_seconds": 35,
+      "chapter": "Superset \u00b7 risque",
+      "output_start_seconds": 416
+    },
+    {
+      "source": "09-superset-mobile.webm",
+      "source_start_seconds": 5,
+      "duration_seconds": 35,
+      "chapter": "Superset \u00b7 mobile money",
+      "output_start_seconds": 451
+    },
+    {
+      "source": "06-supervision.webm",
+      "source_start_seconds": 5,
+      "duration_seconds": 25,
+      "chapter": "Supervision",
+      "output_start_seconds": 486
+    },
+    {
+      "source": "06-supervision.webm",
+      "source_start_seconds": 87,
+      "duration_seconds": 25,
+      "chapter": "Alertes v\u00e9rifi\u00e9es",
+      "output_start_seconds": 511
+    },
+    {
+      "source": "conclusion.png",
+      "source_start_seconds": 0,
+      "duration_seconds": 18,
+      "chapter": "Bilan",
+      "output_start_seconds": 536
+    }
+  ]
+}

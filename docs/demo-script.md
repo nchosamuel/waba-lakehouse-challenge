@@ -1,6 +1,6 @@
 # Démonstration finale — 5 à 10 minutes
 
-Statut : scénario prêt ; **vidéo à enregistrer**. Les preuves des composants sont disponibles dans le dépôt. Le tournage doit montrer les résultats réellement visibles ; les signaux d’alertes techniques de démonstration sont identifiés comme tels.
+Statut : capture réalisée, montage de **9 min 14 s**, sous-titres français intégrés ; fichier vérifié visuellement. Voir `demo/WABA_Demo_FR.mp4` et `demo/WABA_Demo_FR.srt`. Les preuves des composants sont disponibles dans le dépôt. Le tournage doit montrer les résultats réellement visibles ; les signaux d’alertes techniques de démonstration sont identifiés comme tels.
 
 | Temps | À montrer | Explication |
 |---|---|---|
@@ -37,3 +37,9 @@ ORDER BY country_code, product_line;
 ```
 
 Après capture, vérifier durée, lisibilité et absence de secrets. Ajouter le lien de la vidéo au dépôt ; ce script et les captures ne remplacent pas la vidéo demandée.
+
+## Capture livrée
+
+La vidéo livrée dure 9 min 14 s, sans voix, avec sous-titres français intégrés. Elle montre la génération CI/GH ponctuelle et continue, des exécutions Airflow réussies, les indicateurs, le flux NiFi, les résultats de véritables requêtes Trino et des alertes de la cohorte, les trois dashboards Superset avec filtre CI, puis la supervision. L’écran de requêtes est explicitement un rapport en lecture seule construit depuis les résultats réellement obtenus ; il ne simule pas un éditeur SQL.
+
+Les séquences sont montées par profils locaux ; les attentes sont écourtées. La capture vérifiée du résultat du filtre CI est maintenue 17 secondes pour faciliter la lecture. Les écrans d’authentification et les secrets ne sont pas filmés. Les preuves détaillées de SSO, OpenMetadata et déclenchement des alertes techniques restent dans les rapports et captures associés ; elles ne sont pas toutes rejouées dans ce montage.

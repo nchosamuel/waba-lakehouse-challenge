@@ -54,6 +54,11 @@ for rule in (
     "CLAIM_OVER_THREE_ANNUAL_PREMIUMS",
 ):
     assert rules.get(rule, 0) > 0, rule
+# Check this cohort, rather than allowing historical alerts to satisfy the rules.
+for rule, key in (("UNUSUAL_COUNTRY_FOR_PROFILE", "unusual_country"),
+                  ("CLAIM_OVER_THREE_ANNUAL_PREMIUMS", "claim_large")):
+    assert count(f"SELECT count(*) FROM iceberg.gold.fraud_alerts WHERE rule='{rule}' AND subject_id='{ids[key]}'") == 1, (rule, ids[key])
+assert count(f"SELECT count(*) FROM iceberg.gold.fraud_alerts a JOIN iceberg.gold.streaming_event_ledger l ON a.country_code=l.country_code AND a.subject_id=l.subject_id AND a.window_start<=l.event_time AND a.window_end>l.event_time WHERE a.rule='MULTIPLE_HIGH_VALUE_TRANSFERS' AND a.event_count>=2 AND l.event_id='{ids['large_0']}'") > 0
 for key in ("aml_xof", "aml_ghs"):
     assert (
         count(
@@ -127,6 +132,7 @@ result = {
     "accepted_events": actual,
     "rejected_fixture_events": 2,
     "fraud_rule_counts": rules,
+    "current_cohort_three_fraud_rules_verified": True,
     "aml_xof_and_ghs_verified": True,
     "negative_cases_verified": True,
     "liquidity_alert_verified": True,

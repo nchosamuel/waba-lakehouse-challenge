@@ -259,7 +259,7 @@
                     "memory": "128Mi"
                   },
                   "limits": {
-                    "memory": "1536Mi"
+                    "memory": "2Gi"
                   }
                 },
                 "env": [

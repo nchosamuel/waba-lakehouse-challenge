@@ -5,9 +5,14 @@ import json
 import time
 import urllib.request
 import urllib.parse
+import urllib.error
+import http.client
 import uuid
 from pathlib import Path
 from run_pipeline import env
+from verification_runtime import report_path
+from datetime import datetime, timezone
+import os
 
 ROOT = Path(__file__).resolve().parents[1]
 credentials = env()
@@ -25,8 +30,19 @@ def api(path, method="GET", body=None):
         method=method,
         headers={"Authorization": "Basic " + auth, "Content-Type": "application/json"},
     )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        return json.load(response)
+    # Only reads are retried: a lost POST response must not create a second run.
+    attempts = 20 if method == "GET" else 1
+    for attempt in range(attempts):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as exc:
+            if method != "GET" or exc.code not in (500, 502, 503, 504) or attempt == attempts-1:
+                raise
+        except (urllib.error.URLError, http.client.HTTPException, TimeoutError):
+            if attempt == attempts-1:
+                raise
+        time.sleep(3)
 
 
 def wait(dag, run):
@@ -75,6 +91,8 @@ if __name__ == "__main__":
     api("dags/dag_ingest_raw", "PATCH", {"is_paused": True})
     result = {
         "scheduler_runs_verified": True,
+        "verified_at_utc": datetime.now(timezone.utc).isoformat(),
+        "runtime": os.environ.get("WABA_RUNTIME", "compose"),
         "runs": [
             {"dag_id": r["dag_id"], "run_id": r["dag_run_id"], "state": r["state"]}
             for r in completed
@@ -82,7 +100,7 @@ if __name__ == "__main__":
         "regulatory_schedule": "30 0 * * *",
         "timezone": "UTC",
     }
-    (ROOT / "docs" / "airflow-verification.json").write_text(
+    report_path("airflow-verification.json").write_text(
         json.dumps(result, indent=2) + "\n"
     )
     print(json.dumps(result))

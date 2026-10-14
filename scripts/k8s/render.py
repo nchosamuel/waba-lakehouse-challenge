@@ -434,7 +434,7 @@ batch += [
         "processing",
         "waba/airflow:20261014",
         8081,
-        "1536Mi",
+        "2Gi",
         replicas=0,
         env=airflow_env,
         volumes=[volume("state", "airflow-state"), volume("logs", "airflow-logs")],

@@ -14,6 +14,10 @@ flowchart LR
   Spark --> Archive[MinIO : archive]
 ```
 
+## Démonstration vidéo
+
+[Vidéo sous-titrée · 9 min 14 s](docs/demo/WABA_Demo_FR.mp4) · [Sous-titres SRT](docs/demo/WABA_Demo_FR.srt). Captures réelles montées par profils locaux ; les limites du déploiement sont annoncées.
+
 ## Prérequis
 Docker Desktop démarré, Docker Compose v2, Python 3 pour initialiser les secrets locaux.
 Mac Apple Silicon compatible ; moteur Docker doté d'environ 8 Go de RAM.
@@ -212,7 +216,7 @@ GitHub Actions exécute les tests déterministes et les tests avec stockage simu
 - [Explication des encours et des primes acquises](docs/business-explanation.md).
 - [Write-up technique : architecture, règles et limites](docs/level2-design.md).
 - [État de conformité et preuves](docs/submission-status.md).
-- [Déroulé de démonstration de 5 à 10 minutes](docs/demo-script.md) ; vidéo à enregistrer.
+- [Déroulé de démonstration de 5 à 10 minutes](docs/demo-script.md) ; [vidéo sous-titrée disponible](docs/demo/WABA_Demo_FR.mp4).
 
 Les secrets se créent avec `python3 bootstrap.py` ; ne pas versionner `.env`. Pour un dépôt privé, partager explicitement l'accès avec les évaluateurs avant de transmettre le lien.
 
@@ -319,7 +323,7 @@ Les analystes ont des restrictions de lignes côté serveur, le responsable conf
 
 Après Superset/Keycloak, garder le port-forward Keycloak et exécuter `python3 scripts/trino_sso.py`. Exposer Trino par un port-forward de `svc/trino` dans `serving`, de `8843` vers `8443`. La connexion https://localhost:8843/ui/ passe par Keycloak avec les mêmes comptes métier. `python3 scripts/verify_trino_sso.py` teste les accès directs, les restrictions pays, les vues lecteur, les tables conformité et les tentatives interdites. Les identités techniques Superset/Streamlit sont distinctes et utilisent des jetons renouvelables ; les certificats et secrets restent privés.
 
-Voir [la conception et les limites du profil local](docs/trino-sso-design.md) et [le rapport de vérification](docs/trino-sso-verification.json). Le profil Compose d'origine conserve son fonctionnement de démonstration ; les contrôles SSO concernent Kubernetes. La supervision et les trois alertes sont décrites dans [observability-design.md](docs/observability-design.md) ; la vidéo reste à enregistrer.
+Voir [la conception et les limites du profil local](docs/trino-sso-design.md) et [le rapport de vérification](docs/trino-sso-verification.json). Le profil Compose d'origine conserve son fonctionnement de démonstration ; les contrôles SSO concernent Kubernetes. La supervision et les trois alertes sont décrites dans [observability-design.md](docs/observability-design.md) ; la [vidéo sous-titrée](docs/demo/WABA_Demo_FR.mp4) est livrée.
 
 
 ### Catalogue OpenMetadata et lineage
@@ -349,3 +353,8 @@ Le traitement Gold publie `gold.lambda_batch_transactions` dans un seul commit I
 En profil batch kind préparé, les fixtures isolées se vérifient avec `WABA_RUNTIME=kubernetes python3 scripts/verify_review_fixes.py --run-spark`. Le second contrôle utilise Trino et retire uniquement ses deux tables de test synthétiques. Les rapports sont dans `docs/review-fixes-verification.json` et `docs/regulatory-coverage-verification.json`.
 
 En profil supervision avec NiFi actif : `python3 scripts/verify_telemetry_failure.py` introduit temporairement un mauvais mot de passe dans le collecteur seul, vérifie l’alerte réelle et restaure la configuration privée dans un bloc `finally`. NiFi et ses données restent inchangés. `python3 scripts/verify_observability.py` vérifie les trois règles de démonstration séparées et remet leurs signaux à zéro.
+
+
+Le contrôle natif complet après revue nécessite Airflow avec une limite mémoire de 2 GiB. Sur le moteur Docker local de 7,65 GiB, Trino est mis en pause pendant les grands traitements batch, puis réactivé pour les contrôles SQL. Les premiers essais concomitants ont provoqué des arrêts mémoire ; leur historique est conservé. La validation de la chaîne corrigée est dans `docs/review-airflow-verification.json` (ou `review-airflow-verification.json` depuis ce dossier).
+
+Pour les grandes ingestions sur ce Mac : `python3 scripts/kubernetes.py batch --lean` met Trino en pause pendant le traitement. Après réussite des DAGs, réactiver la consultation avec `.tools/kubectl --context kind-waba -n serving scale deployment/trino --replicas=1`, puis attendre son démarrage. Les validations SQL utilisent alors ce service réactivé. Les pipelines restent sérialisés ; cela ne valide pas le lancement complet simultané demandé au niveau 4.

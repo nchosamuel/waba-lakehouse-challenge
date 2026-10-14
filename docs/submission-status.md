@@ -1,6 +1,6 @@
 # Périmètre et preuves de la version locale
 
-Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Les composants du niveau 4 sont vérifiés par profils locaux : Superset/SSO, catalogue/lineage et supervision. Le lancement intégral simultané, l’Ingress TLS et la sécurité de production ne sont pas validés ; la vidéo reste à enregistrer.
+Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Les composants du niveau 4 sont vérifiés par profils locaux : Superset/SSO, catalogue/lineage et supervision. Le lancement intégral simultané, l’Ingress TLS et la sécurité de production ne sont pas validés ; la vidéo sous-titrée de 9 min 14 s est livrée.
 
 | Exigence | État | Preuve / réserve |
 |---|---|---|
@@ -19,9 +19,9 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | Déploiement vierge | Vérifié, avec correction du démarrage documentée | Volumes séparés initialement vides, quatre DAGs réussis et KPIs contrôlés ; `fresh-install-verification.json`. |
 | Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 33 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
 | Document technique | Disponible | `technical-writeup.md` : synthèse des niveaux livrés ; documents de conception détaillés associés. |
-| Vidéo de 5–10 minutes | Reste à enregistrer | `demo-script.md` fournit le déroulé ; ce document ne remplace pas une vidéo. |
+| Vidéo de 5–10 minutes | Livrée · 9 min 14 s | `demo/WABA_Demo_FR.mp4`, sous-titres français intégrés et fichier SRT ; montage par profils locaux explicitement annoncé. |
 | NiFi/Kafka/streaming/fraude/AML | Vérifié en Docker et Kubernetes local | NiFi/Kafka, deux traitements Spark, DLQ, trois règles de fraude, AML et liquidité ; vue Lambda sans chevauchement ; reprise et rejeux vérifiés. |
-| Kubernetes du socle | Vérifié en kind ARM64 | Sept composants, Spark Operator, driver/executor distincts, PVC, probes ; namespaces séparés ; un DAG exécuté par le scheduler sur K8s et quatre chargés. Ingress fourni comme exemple, contrôleur/TLS non testé. |
+| Kubernetes du socle | Vérifié en kind ARM64 | Sept composants, Spark Operator, driver/executor distincts, PVC, probes ; namespaces séparés ; quatre DAGs exécutés sur K8s après correction du profil mémoire. Ingress fourni comme exemple, contrôleur/TLS non testé. |
 | Superset | Vérifié | Trois dashboards, onze graphiques depuis Trino ; filtre CI testé par API et affichage inspecté. Souscriptions et SLA explicitement simulés. |
 | Keycloak / SSO Superset | Vérifié localement | Quatre profils ; restrictions serveur des huit analystes, lecteur limité aux agrégats, conformité aux deux tables réglementaires, déconnexion IdP ; `sso-verification.json`. |
 | SSO Trino et restrictions SQL | Vérifié localement | HTTPS, connexion/déconnexion Keycloak ; quatre profils, huit analystes restreints, dix vues lecteur, deux tables conformité ; accès HTTP SQL et usurpation refusés ; `trino-sso-verification.json`. |
@@ -41,3 +41,6 @@ Le scheduler Airflow a créé et terminé le run `scheduled__2026-10-13T00:30:00
 - Les règles individuelles streaming examinent chaque événement accepté ; les fenêtres multi-transactions sont recalculées autour de ces événements. Le watermark conserve sa politique explicite de rejet des événements trop anciens.
 - Trois règles réelles et trois règles de démonstration séparées ; alertes supplémentaires sur collecteur attendu indisponible, mesures périmées et exporteur absent. `telemetry-failure-verification.json` prouve une panne réelle de connexion du collecteur NiFi et sa résolution, sans interrompre la fraîcheur des autres sources.
 - `regulatory-coverage-verification.json` vérifie les 40 agrégats CIMA de février pour huit pays contre Gold, avec couverture fraîche du scénario. Chaque rapport produit désormais `coverage.json` : un succès technique avec données absentes ou anciennes ne certifie pas la couverture métier. La politique de fraîcheur d’un jour est une hypothèse de démonstration, pas une règle réglementaire officielle. Le retard du rattrapage d’octobre reste conservé.
+
+
+Le contrôle natif complet après revue nécessite Airflow avec une limite mémoire de 2 GiB. Sur le moteur Docker local de 7,65 GiB, Trino est mis en pause pendant les grands traitements batch, puis réactivé pour les contrôles SQL. Les premiers essais concomitants ont provoqué des arrêts mémoire ; leur historique est conservé. La validation de la chaîne corrigée est dans `docs/review-airflow-verification.json` (ou `review-airflow-verification.json` depuis ce dossier).

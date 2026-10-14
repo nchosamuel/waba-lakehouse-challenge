@@ -1,0 +1,47 @@
+{
+  "verified_at_utc": "2026-10-14T16:32:32.050368+00:00",
+  "runtime": "native Kubernetes Spark Operator",
+  "four_dags_succeeded": true,
+  "explicit_chaining_verified": true,
+  "runs": [
+    {
+      "dag_id": "dag_ingest_raw",
+      "dag_run_id": "scheduled__2026-10-14T16:00:00+00:00",
+      "run_type": "scheduled",
+      "state": "success",
+      "start_date": "2026-10-14T16:27:31.405876+00:00",
+      "end_date": "2026-10-14T16:28:49.097245+00:00"
+    },
+    {
+      "dag_id": "dag_bronze_to_silver",
+      "dag_run_id": "ingestion__scheduled__2026-10-14T16:00:00+00:00",
+      "run_type": "manual",
+      "state": "success",
+      "start_date": "2026-10-14T16:28:49.090840+00:00",
+      "end_date": "2026-10-14T16:30:23.749933+00:00"
+    },
+    {
+      "dag_id": "dag_silver_to_gold",
+      "dag_run_id": "silver__ingestion__scheduled__2026-10-14T16:00:00+00:00",
+      "run_type": "manual",
+      "state": "success",
+      "start_date": "2026-10-14T16:30:24.784296+00:00",
+      "end_date": "2026-10-14T16:31:02.040732+00:00"
+    },
+    {
+      "dag_id": "dag_regulatory_report",
+      "dag_run_id": "review_regulatory_4096ea94a59e4d9caf3b8ee68db58dd1",
+      "run_type": "manual",
+      "state": "success",
+      "start_date": "2026-10-14T16:31:57.449284+00:00",
+      "end_date": "2026-10-14T16:32:29.929329+00:00"
+    }
+  ],
+  "airflow_memory_limit": "2Gi",
+  "trino_paused_during_large_batch": true,
+  "regulatory_report_date": "2026-02-28",
+  "regulatory_schedule": "30 0 * * *",
+  "on_time_current_report_certified": false,
+  "earlier_failed_runs_retained": true,
+  "memory_note": "The first broad batch overlapped serving and exhausted Trino/Airflow memory. The successful chain uses Airflow 2Gi and pauses Trino during writes."
+}

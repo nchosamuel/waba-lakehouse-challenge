@@ -1,0 +1,16 @@
+{
+  "duration_seconds": 553.93,
+  "display_duration": "09:14",
+  "size_bytes": 5098250,
+  "sha256": "5b223e2b95420c1e4b965804ba7524c8c42dacf223136334accceb7e3b1b7cb0",
+  "codec": "H.264",
+  "pixel_format": "yuv420p",
+  "dimensions": "1600x1120",
+  "audio_track": false,
+  "french_subtitles_burned_in": true,
+  "full_decode_passed": true,
+  "all_18_chapter_midpoints_visually_inspected": true,
+  "authentication_screens_excluded": true,
+  "ci_filter_result_held_seconds": 17,
+  "normal_speed_recordings_with_explicit_profile_montage": true
+}

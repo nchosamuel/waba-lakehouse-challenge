@@ -570,9 +570,10 @@ def streaming():
     )
 
 
-def batch():
+def batch(lean=False):
     pause_observability()
     pause_metadata()
+    kube("scale", "deployment/trino", "-n", "serving", "--replicas=" + str(int(not lean)))
     kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
     scale_identity(0)
     kube("scale", "deployment/nifi", "-n", "ingestion", "--replicas=0")
@@ -746,7 +747,10 @@ def main():
             "stop",
         ),
     )
+    parser.add_argument("--lean", action="store_true", help="Batch only: pause Trino during large writes on the local memory budget")
     args = parser.parse_args()
+    if args.lean and args.action != "batch":
+        parser.error("--lean is only supported with batch")
     lock_directory = ROOT / ".tools"
     lock_directory.mkdir(exist_ok=True)
     lock = (lock_directory / "kubernetes.lock").open("w")
@@ -810,6 +814,8 @@ def main():
         for ns in ("ingestion", "processing", "serving", "governance"):
             kube("scale", "deployment", "--all", "-n", ns, "--replicas=0")
         print("Workloads stopped; cluster and all PVCs preserved.")
+    elif args.action == "batch":
+        batch(lean=args.lean)
     else:
         globals()[args.action]()
 

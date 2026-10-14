@@ -11,7 +11,7 @@ Dépôt privé : https://github.com/nchosamuel/waba-lakehouse-challenge ; branch
 1. **Niveaux 1 et 2** : huit pays et quatre métiers, tailles et intégrité des référentiels, schémas/nomenclature, ingestion, quarantaine, idempotence et backfill, conversions monétaires, calcul des indicateurs et reporting J+1. Vérifier les formules et les périodes, notamment les primes acquises et l’antériorité des encours.
 2. **Niveau 3** : flux NiFi/Kafka, deux requêtes Spark checkpointées, rejets, fraude/AML/liquidité, livraison/rejeu/reprise et vue Lambda sans chevauchement.
 3. **Niveau 4** : Kubernetes, dashboards et filtres, SSO et restrictions négatives, catalogue et lineage, collecte réelle des métriques/logs, sémantique et déclenchement des trois alertes.
-4. **Livrables** : démarrage reproductible, versions/dependencies, CI, document technique, absence de secrets, scénario et vidéo réelle de 5–10 minutes. La vidéo reste à enregistrer.
+4. **Livrables** : démarrage reproductible, versions/dependencies, CI, document technique, absence de secrets, scénario et vidéo réelle de 5–10 minutes. La vidéo sous-titrée est disponible dans `docs/demo/WABA_Demo_FR.mp4` ; vérifier aussi le montage et ses limites déclarées.
 
 Pour chaque écart, donner l’exigence, le fichier et la ligne concernés, le comportement observé et le correctif minimal. Séparer les blocages de soumission, les limites explicitement acceptables dans une démo et les améliorations de production. Prioriser ce qui doit être corrigé avant la soumission prévue le 14 octobre à 23:59 UTC/Abidjan.
 

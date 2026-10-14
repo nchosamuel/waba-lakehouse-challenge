@@ -41,3 +41,6 @@ Un seul broker Kafka, réplication de un, bases SQLite et stockage local : ce pr
 - [SparkApplications Kubeflow](https://spark.kubeflow.org/en/latest/user-guide/writing-sparkapplication.html)
 - [Images multi-plateforme : problème connu de kind](https://kind.sigs.k8s.io/docs/user/known-issues/)
 - [Hadoop 3.3.4 et S3A](https://hadoop.apache.org/docs/r3.3.4/hadoop-aws/tools/hadoop-aws/index.html)
+
+
+Le contrôle natif complet après revue nécessite Airflow avec une limite mémoire de 2 GiB. Sur le moteur Docker local de 7,65 GiB, Trino est mis en pause pendant les grands traitements batch, puis réactivé pour les contrôles SQL. Les premiers essais concomitants ont provoqué des arrêts mémoire ; leur historique est conservé. La validation de la chaîne corrigée est dans `docs/review-airflow-verification.json` (ou `review-airflow-verification.json` depuis ce dossier).

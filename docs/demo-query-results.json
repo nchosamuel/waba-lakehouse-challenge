@@ -1,0 +1,104 @@
+{
+  "executed_at_utc": "2026-10-14T17:07:53.310027+00:00",
+  "runtime": "Trino 475 on Kubernetes",
+  "fixture_batch": "7996fb5d4cb94a86877b94020c474c8d",
+  "results": [
+    {
+      "section": "raw",
+      "sql": "SELECT country_code, COUNT(*) AS transactions\nFROM iceberg.raw.bank_transactions\nGROUP BY 1 ORDER BY 1;",
+      "rows": [
+        [
+          "BF",
+          100
+        ],
+        [
+          "BJ",
+          100
+        ],
+        [
+          "CI",
+          279
+        ],
+        [
+          "GH",
+          252
+        ],
+        [
+          "GN",
+          100
+        ],
+        [
+          "ML",
+          100
+        ],
+        [
+          "SN",
+          180
+        ],
+        [
+          "TG",
+          100
+        ]
+      ]
+    },
+    {
+      "section": "fraud",
+      "sql": "SELECT rule, country_code, COUNT(*) AS alerts\nFROM iceberg.gold.fraud_alerts\nWHERE detected_at >= TIMESTAMP '2026-10-14 16:36:42'\nGROUP BY 1,2 ORDER BY 1,2;",
+      "rows": [
+        [
+          "CLAIM_OVER_THREE_ANNUAL_PREMIUMS",
+          "CI",
+          1
+        ],
+        [
+          "MULTIPLE_HIGH_VALUE_TRANSFERS",
+          "CI",
+          10
+        ],
+        [
+          "UNUSUAL_COUNTRY_FOR_PROFILE",
+          "SN",
+          1
+        ]
+      ]
+    },
+    {
+      "section": "lambda",
+      "sql": "SELECT country_code, SUM(total_amount_eur) AS total_eur\nFROM iceberg.gold.lambda_daily_transaction_volume\nGROUP BY 1 ORDER BY 1;",
+      "rows": [
+        [
+          "BF",
+          100921.59852
+        ],
+        [
+          "BJ",
+          100921.59852
+        ],
+        [
+          "CI",
+          36798049.06723701
+        ],
+        [
+          "GH",
+          10155906.560000002
+        ],
+        [
+          "GN",
+          100921.59851999999
+        ],
+        [
+          "ML",
+          100921.59852
+        ],
+        [
+          "SN",
+          142414.20398
+        ],
+        [
+          "TG",
+          100921.59852
+        ]
+      ]
+    }
+  ]
+}
