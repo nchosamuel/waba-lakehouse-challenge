@@ -4,12 +4,21 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch, MagicMock
+import sys
 
 spec=importlib.util.spec_from_file_location('observer',Path(__file__).resolve().parents[1]/'scripts/observability_exporter.py')
 observer=importlib.util.module_from_spec(spec);spec.loader.exec_module(observer)
 
 
 class ObservabilityTest(unittest.TestCase):
+    def test_paused_kafka_never_starts_network_client(self):
+        kafka=MagicMock()
+        with patch.object(observer,'kube',return_value={'spec':{'replicas':0}}), patch.dict(sys.modules,{'kafka':kafka}):
+            with self.assertRaisesRegex(RuntimeError,'deliberately paused'):
+                observer.kafka_metrics(observer.Metrics())
+        kafka.KafkaConsumer.assert_not_called()
+
     def test_ignore_uncommitted_offsets(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp);(path/'commits').mkdir();(path/'offsets').mkdir()

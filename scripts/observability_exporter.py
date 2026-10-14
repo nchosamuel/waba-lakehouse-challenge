@@ -78,6 +78,9 @@ def committed_offsets(directory):
 
 
 def kafka_metrics(m):
+    deployment=kube('/apis/apps/v1/namespaces/ingestion/deployments/kafka')
+    if deployment['spec'].get('replicas',1)==0:
+        raise RuntimeError('Kafka deliberately paused')
     from kafka import KafkaConsumer, TopicPartition
     health=json.loads(Path('/checkpoints/stream-health.json').read_text())
     heartbeat=datetime.fromisoformat(health['heartbeat_utc'])

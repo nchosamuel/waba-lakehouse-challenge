@@ -334,3 +334,10 @@ Ouvrir http://localhost:8585 après un port-forward du Service `openmetadata` da
 `python3 scripts/observability_mode.py --ingestion` active Prometheus/Grafana/Loki/Alloy et la collecte réelle Kafka/NiFi. Ouvrir http://localhost:3000/d/waba-health après un port-forward de `svc/grafana` dans `monitoring`, `3000:3000`. Les identifiants `GRAFANA_ADMIN_USER/PASSWORD` restent dans `.env`. Le dashboard montre disponibilité des services, durée Spark par périmètre pays, retard des checkpoints Kafka, débit NiFi, erreurs Airflow et journaux JSON.
 
 `python3 scripts/verify_observability.py` déclenche les trois alertes via des signaux **demo** distincts des observations réelles, conserve le délai fraude de cinq minutes, vérifie les notifications locales et remet les signaux à zéro. `python3 scripts/verify_observability_spark.py` vérifie un vrai job CI, ses métriques natives et ses logs. Ces scripts nécessitent aussi les port-forwards Prometheus `9090:9090` et Loki `3100:3100` dans `monitoring`. Voir [les preuves et limites](docs/observability-design.md). Le collector Alloy remplace explicitement Promtail en fin de maintenance ; un démarrage simultané de toute la plateforme et une sécurité de production ne sont pas revendiqués.
+
+
+### Rattrapage du reporting et revue finale
+
+`python3 scripts/catch_up_regulatory_report.py` réactive Airflow et le runner, laisse le scheduler créer le run quotidien attendu et vérifie les seize fichiers ainsi que le retour de l’alerte réelle à Normal. Il conserve le retard observé, ne change ni la planification ni l’échéance et ne crée pas un run manuel présenté comme planifié. Prometheus/Grafana doivent être accessibles via les port-forwards de supervision. Kafka/NiFi restent arrêtés pour la mémoire ; Airflow et le DAG réglementaire restent actifs.
+
+La preuve datée est dans [regulatory-catch-up-verification.json](docs/regulatory-catch-up-verification.json). Les données simulées restent celles de février : le reporting courant peut utiliser des encours anciens et n’avoir aucune opération d’assurance du mois courant. Voir [le dossier pour la revue indépendante](docs/review-handoff.md) avant soumission.

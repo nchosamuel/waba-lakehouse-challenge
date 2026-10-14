@@ -49,7 +49,7 @@ Loki utilise un stockage local avec rétention de 72 heures, une seule réplique
 
 L’évaluation se fait toutes les 30 secondes. Les règles ont des instances `scenario=live` et `scenario=demo` ; l’exporter conserve les observations réelles et fournit les signaux de test sous des noms de métriques **distincts** `waba_demo_*`. Les règles de production ne sont ni réécrites ni mises en pause pour la vérification.
 
-Les notifications sont exclusivement envoyées à un webhook du cluster. Celui-ci conserve seulement date, statut et quelques labels techniques dans un PVC, puis écrit un événement JSON recueilli par Loki. Aucun email, message externe ou notification à un tiers n’est envoyé. Les alertes de démonstration sont remises à zéro et leur retour à Normal est vérifié. Une vraie alerte peut rester active : dans cette démo, aucun run planifié du jour n’a réussi avant l’échéance ; le job de contrôle manuel pour février ne la fait pas disparaître.
+Les notifications sont exclusivement envoyées à un webhook du cluster. Celui-ci conserve seulement date, statut et quelques labels techniques dans un PVC, puis écrit un événement JSON recueilli par Loki. Aucun email, message externe ou notification à un tiers n’est envoyé. Les alertes de démonstration sont remises à zéro et leur retour à Normal est vérifié. Lors de la vérification initiale, l’alerte réelle était active : aucun run planifié du jour n’avait réussi avant l’échéance, et le contrôle manuel pour février ne la faisait pas disparaître. Le rattrapage du run planifié a ensuite été réalisé ; voir `regulatory-catch-up-verification.json`. L’alerte d’état courant est revenue à Normal, mais les timestamps Airflow et le rapport conservent le dépassement de 06 h UTC.
 
 ```sh
 python3 scripts/verify_observability.py
