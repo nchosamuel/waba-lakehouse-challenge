@@ -1,6 +1,9 @@
 """Shared Iceberg configuration and atomic, scoped writes."""
 
 import json
+import os
+from datetime import datetime, timezone
+import uuid
 from pyspark.sql import SparkSession, functions as F
 from waba.pipeline_config import scope
 
@@ -51,6 +54,29 @@ def create(frame, table, date_column=None):
         writer.tableProperty("format-version", "2").create()
 
 
+def record_lineage(frame, output):
+    """Persist actual analyzed Spark table dependencies after successful writes."""
+    if os.environ.get("WABA_LINEAGE_ENABLED") != "true":
+        return
+    import boto3
+    import re
+    inputs=set()
+    leaves=frame._jdf.queryExecution().analyzed().collectLeaves()
+    for index in range(leaves.size()):
+        leaf=leaves.apply(index)
+        if leaf.getClass().getSimpleName() == "DataSourceV2Relation":
+            name=str(leaf.table().name()).replace("`", "")
+            if re.fullmatch(r"iceberg\.(raw|bronze|silver|gold)\.[a-z0-9_]+",name) and name != output:
+                inputs.add(name)
+    event={"event":"spark_table_lineage","application_id":frame.sparkSession.sparkContext.applicationId,
+           "application_name":frame.sparkSession.sparkContext.appName,"recorded_at_utc":datetime.now(timezone.utc).isoformat(),
+           "inputs":sorted(inputs),"output":output,"capture":"analyzed_DataSourceV2Relation"}
+    boto3.client("s3",endpoint_url="http://minio.ingestion:9000").put_object(Bucket="archive",
+        Key="governance-lineage/"+frame.sparkSession.sparkContext.applicationId+"/"+uuid.uuid4().hex+".json",
+        Body=json.dumps(event).encode(),ContentType="application/json")
+    print(json.dumps(event),flush=True)
+
+
 def merge(frame, table, keys, date_column=None):
     create(frame, table, date_column)
     target = frame.sparkSession.table(table)
@@ -70,6 +96,7 @@ def merge(frame, table, keys, date_column=None):
         f"WHEN MATCHED THEN UPDATE SET {assignments} "
         f"WHEN NOT MATCHED THEN INSERT ({columns}) VALUES ({values})"
     )
+    record_lineage(frame, table)
     print(json.dumps({"event": "table_merged", "table": table}), flush=True)
 
 
@@ -77,6 +104,7 @@ def replace_countries(frame, table, date_column):
     """Recompute all history of selected countries, preserving every other country."""
     create(frame, table, date_column)
     frame.writeTo(table).overwrite(F.col("country_code").isin(scope()[0]))
+    record_lineage(frame, table)
     print(
         json.dumps(
             {

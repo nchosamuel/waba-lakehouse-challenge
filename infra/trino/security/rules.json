@@ -10,7 +10,7 @@
       "allow": "all"
     },
     {
-      "group": "service_bi|service_dashboard|compliance_officer|viewer|country_(CI|SN|ML|BF|GN|TG|BJ|GH)",
+      "group": "service_metadata|service_bi|service_dashboard|compliance_officer|viewer|country_(CI|SN|ML|BF|GN|TG|BJ|GH)",
       "catalog": "iceberg",
       "allow": "read-only"
     },
@@ -56,6 +56,13 @@
       "privileges": [
         "SELECT",
         "GRANT_SELECT"
+      ]
+    },
+    {
+      "group": "service_metadata",
+      "catalog": "iceberg",
+      "privileges": [
+        "SELECT"
       ]
     },
     {

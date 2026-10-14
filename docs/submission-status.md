@@ -1,6 +1,6 @@
 # Périmètre et preuves de la version locale
 
-Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Superset et son SSO Keycloak constituent les premières parties du niveau 4 ; Gouvernance et observabilité restent à construire.
+Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Superset et son SSO Keycloak constituent les premières parties du niveau 4 ; Le catalogue/lineage OpenMetadata est vérifié ; observabilité et alertes restent à construire.
 
 | Exigence | État | Preuve / réserve |
 |---|---|---|
@@ -25,6 +25,7 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | Superset | Vérifié | Trois dashboards, onze graphiques depuis Trino ; filtre CI testé par API et affichage inspecté. Souscriptions et SLA explicitement simulés. |
 | Keycloak / SSO Superset | Vérifié localement | Quatre profils ; restrictions serveur des huit analystes, lecteur limité aux agrégats, conformité aux deux tables réglementaires, déconnexion IdP ; `sso-verification.json`. |
 | SSO Trino et restrictions SQL | Vérifié localement | HTTPS, connexion/déconnexion Keycloak ; quatre profils, huit analystes restreints, dix vues lecteur, deux tables conformité ; accès HTTP SQL et usurpation refusés ; `trino-sso-verification.json`. |
-| Gouvernance / observabilité | Reste à réaliser | OpenMetadata, Prometheus/Grafana/Loki et alertes restent à construire. |
+| OpenMetadata / lineage / PII | Vérifié localement avec périmètre déclaré | 59 tables/vues découvertes, neuf Gold documentées, 38 colonnes PII ; 29 événements Spark, 42 liens et chemin raw→Bronze→Silver→Gold vérifié API/UI. Règles account_number/iban testées sur fixture vide, colonnes absentes des données d’origine. |
+| Observabilité / alertes | Reste à réaliser | Prometheus/Grafana/Loki et alertes restent à construire. |
 
 Les rapports JSON existants témoignent des exécutions dont ils sont issus ; ils ne remplacent pas l'exécution des scripts de validation. Les données étant appendues par les générations et les tests, les comptages peuvent augmenter sans perte d'idempotence.

@@ -566,3 +566,30 @@ write("46-trino-security.yaml", [
     resource("ConfigMap","trino-secure-config","serving",data={"config.properties":(ROOT/"infra/trino/security/config.properties").read_text(),"jvm.config":(ROOT/"infra/trino/jvm.config").read_text()}),
     resource("ConfigMap","trino-security","serving",data={n:(ROOT/"infra/trino/security"/n).read_text() for n in ("access-control.properties","rules.json")}),
     secure, service("trino","serving",[8080,8443])])
+
+metadata_env = {
+    "DB_DRIVER_CLASS":"org.postgresql.Driver","DB_SCHEME":"postgresql","DB_HOST":"metadata-db","DB_PORT":"5432","DB_PARAMS":"","OM_DATABASE":"openmetadata_db","DB_USER":"openmetadata",
+    "DB_CONNECTION_POOL_INITIAL_SIZE":"2","DB_CONNECTION_POOL_MIN_SIZE":"2","DB_CONNECTION_POOL_MAX_SIZE":"8",
+    "ELASTICSEARCH_HOST":"metadata-search","ELASTICSEARCH_PORT":"9200","SEARCH_TYPE":"opensearch","ELASTICSEARCH_SCHEME":"http",
+    "AUTHENTICATION_PROVIDER":"basic","AUTHENTICATION_ENABLE_SELF_SIGNUP":"false","AUTHORIZER_ADMIN_PRINCIPALS":"[waba-catalog-admin]","AUTHORIZER_PRINCIPAL_DOMAIN":"example.invalid",
+    "AUTHENTICATION_PUBLIC_KEYS":"[http://openmetadata:8585/api/v1/system/config/jwks]",
+    "RSA_PUBLIC_KEY_FILE_PATH":"/keys/public_key.der","RSA_PRIVATE_KEY_FILE_PATH":"/keys/private_key.der","JWT_ISSUER":"waba-catalog","JWT_KEY_ID":"waba-local-catalog",
+    "PIPELINE_SERVICE_CLIENT_ENABLED":"false","PIPELINE_SERVICE_CLIENT_CLASS_NAME":"org.openmetadata.service.clients.pipeline.noop.NoopClient",
+    "OPENMETADATA_HEAP_OPTS":"-Xms256m -Xmx768m","SERVER_HOST_API_URL":"http://openmetadata:8585/api",
+}
+metadata_db = deployment("metadata-db","governance","postgres:15.12",5432,"512Mi",replicas=0,
+    env={"POSTGRES_USER":"openmetadata","POSTGRES_DB":"openmetadata_db","PGDATA":"/var/lib/postgresql/data/pgdata"},
+    volumes=[volume("state","metadata-db")],mounts=[mount("state","/var/lib/postgresql/data")],fs_group=999,
+    probe={"exec":{"command":["pg_isready","-U","openmetadata","-d","openmetadata_db"]}})
+metadata_search = deployment("metadata-search","governance","opensearchproject/opensearch:2.19.1",9200,"1Gi",replicas=0,
+    env={"discovery.type":"single-node","DISABLE_INSTALL_DEMO_CONFIG":"true","DISABLE_SECURITY_PLUGIN":"true","OPENSEARCH_JAVA_OPTS":"-Xms256m -Xmx512m","bootstrap.memory_lock":"false"},
+    volumes=[volume("state","metadata-search")],mounts=[mount("state","/usr/share/opensearch/data")],fs_group=1000,
+    probe={"httpGet":{"path":"/_cluster/health","port":9200}})
+metadata_server = deployment("openmetadata","governance","docker.getcollate.io/openmetadata/server:1.9.0",8585,"1536Mi",replicas=0,
+    env=metadata_env,volumes=[{"name":"keys","secret":{"secretName":"waba-metadata-keys"}}],mounts=[mount("keys","/keys")],
+    probe={"httpGet":{"path":"/api/v1/system/version","port":8585}})
+for item in (metadata_db,metadata_search,metadata_server):
+    item["spec"]["template"]["spec"]["containers"][0]["envFrom"]=[{"secretRef":{"name":"waba-metadata-runtime"}}]
+write("50-openmetadata.yaml",[pvc("metadata-db","governance","2Gi"),pvc("metadata-search","governance","2Gi"),metadata_db,service("metadata-db","governance",[5432]),metadata_search,service("metadata-search","governance",[9200]),metadata_server,service("openmetadata","governance",[8585,8586])])
+
+write("55-metadata-ingestion.yaml",[{"apiVersion":"batch/v1","kind":"CronJob","metadata":{"name":"metadata-discovery","namespace":"governance"},"spec":{"schedule":"15 2 * * *","timeZone":"Etc/UTC","concurrencyPolicy":"Forbid","successfulJobsHistoryLimit":2,"failedJobsHistoryLimit":2,"jobTemplate":{"spec":{"backoffLimit":1,"activeDeadlineSeconds":600,"template":{"metadata":{"labels":{"app":"metadata-discovery"}},"spec":{"restartPolicy":"Never","automountServiceAccountToken":False,"containers":[{"name":"metadata-discovery","image":"waba/metadata-ingestion:20261014","imagePullPolicy":"IfNotPresent","envFrom":[{"secretRef":{"name":"waba-metadata-pipeline"}}],"resources":{"requests":{"memory":"128Mi","cpu":"100m"},"limits":{"memory":"512Mi"}},"volumeMounts":[{"name":"trust","mountPath":"/etc/waba","readOnly":True}]}],"volumes":[{"name":"trust","secret":{"secretName":"waba-metadata-trust"}}]}}}}}}])

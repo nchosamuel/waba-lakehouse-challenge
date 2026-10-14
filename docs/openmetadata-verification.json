@@ -1,0 +1,85 @@
+{
+  "verified_at_utc": "2026-10-14T12:55:14.960226+00:00",
+  "openmetadata_version": "1.9.0",
+  "native_kubernetes_verified": true,
+  "tables_discovered": 59,
+  "schemas": [
+    "bi",
+    "bronze",
+    "gold",
+    "raw",
+    "silver"
+  ],
+  "gold_curation": [
+    {
+      "table": "daily_transaction_volume",
+      "owner": "WABA_BANK_MICROFINANCE",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "npl_ratio_by_country",
+      "owner": "WABA_MICROFINANCE",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "customer_arpu_monthly",
+      "owner": "WABA_BANK_MICROFINANCE",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "loss_ratio_by_product",
+      "owner": "WABA_INSURANCE",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "claims_processing_time",
+      "owner": "WABA_INSURANCE",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "mobile_money_daily_flow",
+      "owner": "WABA_MOBILE_MONEY",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "cross_border_transfers",
+      "owner": "WABA_MOBILE_MONEY",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "regulatory_bceao_daily",
+      "owner": "WABA_BANK_MICROFINANCE",
+      "glossary_and_regulatory_tags_verified": true
+    },
+    {
+      "table": "regulatory_cima_daily",
+      "owner": "WABA_INSURANCE",
+      "glossary_and_regulatory_tags_verified": true
+    }
+  ],
+  "pii_columns_tagged": 38,
+  "sensitive_identifiers_present": [
+    "account_id",
+    "customer_id",
+    "loan_account_id",
+    "subject_id"
+  ],
+  "account_number_and_iban_absent_from_original_tables": true,
+  "automatic_new_table_discovery_verified": true,
+  "empty_probe_customer_account_number_iban_tagging_verified": true,
+  "probe_source_dropped_and_catalog_soft_deleted": true,
+  "lineage_events": 29,
+  "lineage_edges": 42,
+  "raw_bronze_silver_gold_live_api_path_verified": true,
+  "runtime_capture": "actual analyzed Spark DataSourceV2Relation leaves after successful CI writes",
+  "row_samples_collected": false,
+  "external_cronjob": "metadata-discovery at 02:15 UTC, paused outside metadata mode",
+  "browser_lineage_and_pii_verified": true,
+  "browser_evidence": [
+    "docs/screenshots/openmetadata-lineage.png",
+    "docs/screenshots/openmetadata-pii.png",
+    "docs/screenshots/openmetadata-gold.png"
+  ],
+  "unit_tests_passed": 23,
+  "ui_tests_passed": 6
+}

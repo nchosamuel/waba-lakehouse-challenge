@@ -28,7 +28,7 @@ def credentials():
 
 def query(sql):
     secured=enabled()
-    endpoint='https://trino:8443' if secured else 'http://trino:8080'
+    endpoint=os.environ.get('TRINO_ENDPOINT', 'https://trino:8443' if secured else 'http://trino:8080')
     headers={'X-Trino-User':'service-account-'+os.environ['TRINO_SERVICE_CLIENT'] if secured else 'waba-dashboard'}
     if secured:
         headers['Authorization']='Bearer '+credentials()

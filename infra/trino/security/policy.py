@@ -11,6 +11,7 @@ def policy():
     tables=[{'group':admin,'privileges':['SELECT','INSERT','DELETE','UPDATE','OWNERSHIP','GRANT_SELECT']},
             {'user':'service-account-waba-validation','catalog':'iceberg','schema':'silver|gold|bi','privileges':['SELECT','GRANT_SELECT']},
             {'user':'service-account-waba-validation','catalog':'kafka','schema':'default','table':'silver_bank_transactions','privileges':['SELECT','GRANT_SELECT']},
+            {'group':'service_metadata','catalog':'iceberg','privileges':['SELECT']},
             {'group':'service_bi','catalog':'iceberg','schema':'silver|gold|bi','privileges':['SELECT']},
             {'group':'service_dashboard','catalog':'iceberg','schema':'gold','privileges':['SELECT']},
             {'group':'compliance_officer','catalog':'iceberg','schema':'gold','table':'regulatory_bceao_daily|regulatory_cima_daily','privileges':['SELECT']},
@@ -18,7 +19,7 @@ def policy():
     tables += [{'group':'country_'+c,'catalog':'iceberg','schema':'raw|bronze|silver|gold|bi','privileges':['SELECT'],'filter':"country_code = '"+c+"'"} for c in COUNTRIES]
     tables += [{'privileges':[]}]
     return {'catalogs':[{'group':admin,'allow':'all'}, {'user':'service-account-waba-validation','catalog':'iceberg|kafka','allow':'all'},
-                        {'group':'service_bi|service_dashboard|compliance_officer|viewer|country_('+ '|'.join(COUNTRIES)+')','catalog':'iceberg','allow':'read-only'},
+                        {'group':'service_metadata|service_bi|service_dashboard|compliance_officer|viewer|country_('+ '|'.join(COUNTRIES)+')','catalog':'iceberg','allow':'read-only'},
                         {'allow':'none'}],
             'schemas':[{'group':admin,'owner':True},{'owner':False}],
             'tables':tables, 'impersonation':[],

@@ -2,7 +2,7 @@
 
 ## 1. Périmètre livré
 
-La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO Superset et ses politiques d'accès par rôle/pays sont vérifiés. OpenMetadata et l'observabilité du niveau 4 restent à réaliser : cette version est un prototype local vérifié, pas une plateforme de production complète.
+La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO Superset et ses politiques d'accès par rôle/pays sont vérifiés. OpenMetadata et le lineage sont vérifiés ; l'observabilité du niveau 4 reste à réaliser : cette version est un prototype local vérifié, pas une plateforme de production complète.
 
 Le dépôt contient l'application de génération, les traitements PySpark, quatre DAGs, la configuration automatisée de NiFi, les ressources Kubernetes et des scripts de validation indépendants. Les rapports JSON documentent des exécutions réelles ; leurs comptages peuvent évoluer à chaque nouvelle génération. La vidéo est volontairement différée jusqu'à la fin des fonctionnalités.
 
@@ -44,7 +44,7 @@ Superset interroge Trino pour performance commerciale, risque et mobile money, a
 
 Les vérifications couvrent les 1,3 million de lignes de référence, l'unicité et les trois matérialisations, les résultats comptables attendus, la génération ponctuelle/continue, quatre flux streaming, cas positifs/négatifs de risque, DLQ, plusieurs lots, rejeux et redémarrages Kafka/NiFi/Spark, ainsi que les totaux Lambda. Superset est contrôlé par API et inspection visuelle ; une requête correcte ne suffit pas à garantir un graphique correctement enregistré.
 
-Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et base Keycloak H2 restent des compromis de démonstration. Haute disponibilité, TLS d'entrée, catalogue/lineage et métriques/logs/alertes testées sont les étapes suivantes, distinctes des capacités déjà vérifiées.
+Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et base Keycloak H2 restent des compromis de démonstration. Haute disponibilité, TLS d'entrée, métriques/logs/alertes testées sont les étapes suivantes, distinctes des capacités déjà vérifiées.
 
 ## Preuves détaillées
 
@@ -59,3 +59,8 @@ Keycloak 26.4.0 est déployé sur Kubernetes avec PVC. Superset 5.0.0 utilise un
 ### Complément : sécurité SQL Trino
 
 Trino 475 impose HTTPS et utilise Keycloak pour la Web UI et les clients SQL. Les rôles proviennent d'une claim signée réservée aux clients Trino. Les analystes sont filtrés par pays sur raw/Bronze/Silver/Gold/BI ; le lecteur uniquement sur dix vues agrégées SECURITY DEFINER ; la conformité uniquement sur les deux tables Gold réglementaires. Les connexions techniques BI, indicateurs et vérification sont distinctes. Les noms d'utilisateur fournis sans jeton et toute usurpation sont refusés. La Web UI, la déconnexion, les huit pays, les permissions négatives et les graphiques ont été contrôlés. Le certificat local est vérifié par les clients. Trino 475 accepte l'absence d'audience : les clients actuels en reçoivent une explicite et les droits SQL ne sont pas transmis dans les jetons des autres applications. Le compte propriétaire interne des vues a les seuls droits de lecture/délégation nécessaires hors de son jeton. Les preuves et limites sont dans trino-sso-design.md et trino-sso-verification.json. Ce profil local ne protège pas à lui seul le réseau et tous les services du stockage.
+
+
+### Complément : catalogue et traçabilité
+
+OpenMetadata 1.9.0, PostgreSQL et OpenSearch ARM64 sont déployés avec stockage persistant. Un Job/CronJob externe découvre 59 tables/vues Trino par HTTPS et une identité dédiée en lecture seule ; aucun échantillon n’est collecté. Neuf tables Gold reçoivent descriptions, équipe WABA propriétaire, glossaire financier et tags réglementaires pertinents. Les noms de champs et leur contexte permettent de taguer 38 colonnes sensibles. Les colonnes account_number/iban absentes des sources ne sont pas inventées ; leurs règles sont testées sur une fixture vide retirée. Les helpers Spark capturent leurs entrées Iceberg réelles après écriture et archivent 29 événements ; 42 liens sont importés avec leurs pipelines. Le chemin raw→Bronze→Silver→Gold est vérifié par API et dans l’UI. La capture est au niveau table et ne couvre pas toutes les écritures streaming/SQL ; elle n’est pas transactionnelle avec le commit. Le mode catalogue et le mode traitements sont séparés en mémoire. Les preuves et limites de sécurité/routage du profil local sont dans openmetadata-design.md.

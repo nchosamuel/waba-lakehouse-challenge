@@ -1,0 +1,589 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "metadata-db",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "2Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "metadata-search",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "2Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "metadata-db",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "metadata-db"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "metadata-db"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "metadata-db",
+                "image": "postgres:15.12",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 5432
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "POSTGRES_USER",
+                    "value": "openmetadata"
+                  },
+                  {
+                    "name": "POSTGRES_DB",
+                    "value": "openmetadata_db"
+                  },
+                  {
+                    "name": "PGDATA",
+                    "value": "/var/lib/postgresql/data/pgdata"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-metadata-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "state",
+                    "mountPath": "/var/lib/postgresql/data"
+                  }
+                ],
+                "startupProbe": {
+                  "exec": {
+                    "command": [
+                      "pg_isready",
+                      "-U",
+                      "openmetadata",
+                      "-d",
+                      "openmetadata_db"
+                    ]
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "exec": {
+                    "command": [
+                      "pg_isready",
+                      "-U",
+                      "openmetadata",
+                      "-d",
+                      "openmetadata_db"
+                    ]
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "exec": {
+                    "command": [
+                      "pg_isready",
+                      "-U",
+                      "openmetadata",
+                      "-d",
+                      "openmetadata_db"
+                    ]
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "state",
+                "persistentVolumeClaim": {
+                  "claimName": "metadata-db"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false,
+            "securityContext": {
+              "fsGroup": 999
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "metadata-db",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "metadata-db"
+        },
+        "ports": [
+          {
+            "name": "p5432",
+            "port": 5432,
+            "targetPort": 5432
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "metadata-search",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "metadata-search"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "metadata-search"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "metadata-search",
+                "image": "opensearchproject/opensearch:2.19.1",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 9200
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "1Gi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "discovery.type",
+                    "value": "single-node"
+                  },
+                  {
+                    "name": "DISABLE_INSTALL_DEMO_CONFIG",
+                    "value": "true"
+                  },
+                  {
+                    "name": "DISABLE_SECURITY_PLUGIN",
+                    "value": "true"
+                  },
+                  {
+                    "name": "OPENSEARCH_JAVA_OPTS",
+                    "value": "-Xms256m -Xmx512m"
+                  },
+                  {
+                    "name": "bootstrap.memory_lock",
+                    "value": "false"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-metadata-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "state",
+                    "mountPath": "/usr/share/opensearch/data"
+                  }
+                ],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/_cluster/health",
+                    "port": 9200
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/_cluster/health",
+                    "port": 9200
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/_cluster/health",
+                    "port": 9200
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "state",
+                "persistentVolumeClaim": {
+                  "claimName": "metadata-search"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false,
+            "securityContext": {
+              "fsGroup": 1000
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "metadata-search",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "metadata-search"
+        },
+        "ports": [
+          {
+            "name": "p9200",
+            "port": 9200,
+            "targetPort": 9200
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "openmetadata",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "openmetadata"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "openmetadata"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "openmetadata",
+                "image": "docker.getcollate.io/openmetadata/server:1.9.0",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8585
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "1536Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "DB_DRIVER_CLASS",
+                    "value": "org.postgresql.Driver"
+                  },
+                  {
+                    "name": "DB_SCHEME",
+                    "value": "postgresql"
+                  },
+                  {
+                    "name": "DB_HOST",
+                    "value": "metadata-db"
+                  },
+                  {
+                    "name": "DB_PORT",
+                    "value": "5432"
+                  },
+                  {
+                    "name": "DB_PARAMS",
+                    "value": ""
+                  },
+                  {
+                    "name": "OM_DATABASE",
+                    "value": "openmetadata_db"
+                  },
+                  {
+                    "name": "DB_USER",
+                    "value": "openmetadata"
+                  },
+                  {
+                    "name": "DB_CONNECTION_POOL_INITIAL_SIZE",
+                    "value": "2"
+                  },
+                  {
+                    "name": "DB_CONNECTION_POOL_MIN_SIZE",
+                    "value": "2"
+                  },
+                  {
+                    "name": "DB_CONNECTION_POOL_MAX_SIZE",
+                    "value": "8"
+                  },
+                  {
+                    "name": "ELASTICSEARCH_HOST",
+                    "value": "metadata-search"
+                  },
+                  {
+                    "name": "ELASTICSEARCH_PORT",
+                    "value": "9200"
+                  },
+                  {
+                    "name": "SEARCH_TYPE",
+                    "value": "opensearch"
+                  },
+                  {
+                    "name": "ELASTICSEARCH_SCHEME",
+                    "value": "http"
+                  },
+                  {
+                    "name": "AUTHENTICATION_PROVIDER",
+                    "value": "basic"
+                  },
+                  {
+                    "name": "AUTHENTICATION_ENABLE_SELF_SIGNUP",
+                    "value": "false"
+                  },
+                  {
+                    "name": "AUTHORIZER_ADMIN_PRINCIPALS",
+                    "value": "[waba-catalog-admin]"
+                  },
+                  {
+                    "name": "AUTHORIZER_PRINCIPAL_DOMAIN",
+                    "value": "example.invalid"
+                  },
+                  {
+                    "name": "AUTHENTICATION_PUBLIC_KEYS",
+                    "value": "[http://openmetadata:8585/api/v1/system/config/jwks]"
+                  },
+                  {
+                    "name": "RSA_PUBLIC_KEY_FILE_PATH",
+                    "value": "/keys/public_key.der"
+                  },
+                  {
+                    "name": "RSA_PRIVATE_KEY_FILE_PATH",
+                    "value": "/keys/private_key.der"
+                  },
+                  {
+                    "name": "JWT_ISSUER",
+                    "value": "waba-catalog"
+                  },
+                  {
+                    "name": "JWT_KEY_ID",
+                    "value": "waba-local-catalog"
+                  },
+                  {
+                    "name": "PIPELINE_SERVICE_CLIENT_ENABLED",
+                    "value": "false"
+                  },
+                  {
+                    "name": "PIPELINE_SERVICE_CLIENT_CLASS_NAME",
+                    "value": "org.openmetadata.service.clients.pipeline.noop.NoopClient"
+                  },
+                  {
+                    "name": "OPENMETADATA_HEAP_OPTS",
+                    "value": "-Xms256m -Xmx768m"
+                  },
+                  {
+                    "name": "SERVER_HOST_API_URL",
+                    "value": "http://openmetadata:8585/api"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-metadata-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "keys",
+                    "mountPath": "/keys"
+                  }
+                ],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/api/v1/system/version",
+                    "port": 8585
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/api/v1/system/version",
+                    "port": 8585
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/api/v1/system/version",
+                    "port": 8585
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "keys",
+                "secret": {
+                  "secretName": "waba-metadata-keys"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "openmetadata",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "openmetadata"
+        },
+        "ports": [
+          {
+            "name": "p8585",
+            "port": 8585,
+            "targetPort": 8585
+          },
+          {
+            "name": "p8586",
+            "port": 8586,
+            "targetPort": 8586
+          }
+        ]
+      }
+    }
+  ]
+}

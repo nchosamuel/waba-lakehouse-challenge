@@ -1,0 +1,350 @@
+{
+  "verified_at_utc": "2026-10-14T12:57:55.584009+00:00",
+  "source": "Trino information_schema via dedicated OAuth2 client and verified HTTPS",
+  "tables_discovered": 59,
+  "schemas": [
+    "bi",
+    "bronze",
+    "gold",
+    "raw",
+    "silver"
+  ],
+  "gold_curated": [
+    "claims_processing_time",
+    "cross_border_transfers",
+    "customer_arpu_monthly",
+    "daily_transaction_volume",
+    "loss_ratio_by_product",
+    "mobile_money_daily_flow",
+    "npl_ratio_by_country",
+    "regulatory_bceao_daily",
+    "regulatory_cima_daily"
+  ],
+  "pii_columns": [
+    {
+      "table": "bronze.accounts",
+      "column": "account_id"
+    },
+    {
+      "table": "bronze.accounts",
+      "column": "customer_id"
+    },
+    {
+      "table": "bronze.bank_transactions",
+      "column": "account_id"
+    },
+    {
+      "table": "bronze.bank_transactions",
+      "column": "customer_id"
+    },
+    {
+      "table": "bronze.customers",
+      "column": "customer_id"
+    },
+    {
+      "table": "bronze.insurance_operations",
+      "column": "account_id"
+    },
+    {
+      "table": "bronze.insurance_operations",
+      "column": "customer_id"
+    },
+    {
+      "table": "bronze.loan_positions",
+      "column": "loan_account_id"
+    },
+    {
+      "table": "bronze.loan_positions",
+      "column": "customer_id"
+    },
+    {
+      "table": "bronze.loan_repayments",
+      "column": "loan_account_id"
+    },
+    {
+      "table": "bronze.loan_repayments",
+      "column": "customer_id"
+    },
+    {
+      "table": "gold.aml_events",
+      "column": "subject_id"
+    },
+    {
+      "table": "gold.fraud_alerts",
+      "column": "subject_id"
+    },
+    {
+      "table": "gold.liquidity_alerts",
+      "column": "subject_id"
+    },
+    {
+      "table": "gold.streaming_event_ledger",
+      "column": "subject_id"
+    },
+    {
+      "table": "raw.accounts",
+      "column": "account_id"
+    },
+    {
+      "table": "raw.accounts",
+      "column": "customer_id"
+    },
+    {
+      "table": "raw.bank_transactions",
+      "column": "account_id"
+    },
+    {
+      "table": "raw.bank_transactions",
+      "column": "customer_id"
+    },
+    {
+      "table": "raw.customers",
+      "column": "customer_id"
+    },
+    {
+      "table": "raw.insurance_operations",
+      "column": "account_id"
+    },
+    {
+      "table": "raw.insurance_operations",
+      "column": "customer_id"
+    },
+    {
+      "table": "raw.loan_repayments",
+      "column": "loan_account_id"
+    },
+    {
+      "table": "raw.loan_repayments",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.account_product_subscriptions",
+      "column": "account_id"
+    },
+    {
+      "table": "silver.accounts",
+      "column": "account_id"
+    },
+    {
+      "table": "silver.accounts",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.bank_transactions",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.bank_transactions",
+      "column": "account_id"
+    },
+    {
+      "table": "silver.customers",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.insurance_operations",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.insurance_operations",
+      "column": "account_id"
+    },
+    {
+      "table": "silver.insurance_risk_contracts",
+      "column": "account_id"
+    },
+    {
+      "table": "silver.insurance_risk_contracts",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.loan_positions",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.loan_positions",
+      "column": "loan_account_id"
+    },
+    {
+      "table": "silver.loan_repayments",
+      "column": "customer_id"
+    },
+    {
+      "table": "silver.loan_repayments",
+      "column": "loan_account_id"
+    }
+  ],
+  "lineage_events_read": 29,
+  "lineage_edges": [
+    [
+      "iceberg.bronze.accounting_context",
+      "iceberg.silver.insurance_operations"
+    ],
+    [
+      "iceberg.bronze.accounting_context",
+      "iceberg.silver.loan_repayments"
+    ],
+    [
+      "iceberg.bronze.accounts",
+      "iceberg.silver.accounts"
+    ],
+    [
+      "iceberg.bronze.bank_transactions",
+      "iceberg.silver.bank_transactions"
+    ],
+    [
+      "iceberg.bronze.branches",
+      "iceberg.silver.branches"
+    ],
+    [
+      "iceberg.bronze.customers",
+      "iceberg.silver.customers"
+    ],
+    [
+      "iceberg.bronze.insurance_operations",
+      "iceberg.silver.insurance_operations"
+    ],
+    [
+      "iceberg.bronze.loan_positions",
+      "iceberg.silver.loan_positions"
+    ],
+    [
+      "iceberg.bronze.loan_repayments",
+      "iceberg.silver.loan_repayments"
+    ],
+    [
+      "iceberg.bronze.mobile_money_payments",
+      "iceberg.silver.mobile_money_payments"
+    ],
+    [
+      "iceberg.bronze.products",
+      "iceberg.silver.products"
+    ],
+    [
+      "iceberg.raw.accounts",
+      "iceberg.bronze.accounts"
+    ],
+    [
+      "iceberg.raw.bank_transactions",
+      "iceberg.bronze.bank_transactions"
+    ],
+    [
+      "iceberg.raw.branches",
+      "iceberg.bronze.branches"
+    ],
+    [
+      "iceberg.raw.customers",
+      "iceberg.bronze.customers"
+    ],
+    [
+      "iceberg.raw.insurance_operations",
+      "iceberg.bronze.insurance_operations"
+    ],
+    [
+      "iceberg.raw.loan_repayments",
+      "iceberg.bronze.loan_repayments"
+    ],
+    [
+      "iceberg.raw.mobile_money_payments",
+      "iceberg.bronze.mobile_money_payments"
+    ],
+    [
+      "iceberg.raw.products",
+      "iceberg.bronze.products"
+    ],
+    [
+      "iceberg.silver.accounts",
+      "iceberg.silver.bank_transactions"
+    ],
+    [
+      "iceberg.silver.accounts",
+      "iceberg.silver.insurance_operations"
+    ],
+    [
+      "iceberg.silver.accounts",
+      "iceberg.silver.loan_positions"
+    ],
+    [
+      "iceberg.silver.accounts",
+      "iceberg.silver.loan_repayments"
+    ],
+    [
+      "iceberg.silver.bank_transactions",
+      "iceberg.gold.batch_transaction_membership"
+    ],
+    [
+      "iceberg.silver.bank_transactions",
+      "iceberg.gold.customer_arpu_monthly"
+    ],
+    [
+      "iceberg.silver.bank_transactions",
+      "iceberg.gold.daily_transaction_volume"
+    ],
+    [
+      "iceberg.silver.branches",
+      "iceberg.silver.bank_transactions"
+    ],
+    [
+      "iceberg.silver.customers",
+      "iceberg.silver.bank_transactions"
+    ],
+    [
+      "iceberg.silver.customers",
+      "iceberg.silver.insurance_operations"
+    ],
+    [
+      "iceberg.silver.customers",
+      "iceberg.silver.loan_repayments"
+    ],
+    [
+      "iceberg.silver.customers",
+      "iceberg.silver.mobile_money_payments"
+    ],
+    [
+      "iceberg.silver.insurance_operations",
+      "iceberg.gold.claims_processing_time"
+    ],
+    [
+      "iceberg.silver.insurance_operations",
+      "iceberg.gold.insurance_accounting_coverage"
+    ],
+    [
+      "iceberg.silver.insurance_operations",
+      "iceberg.gold.loss_ratio_by_product"
+    ],
+    [
+      "iceberg.silver.loan_positions",
+      "iceberg.gold.npl_ratio_by_country"
+    ],
+    [
+      "iceberg.silver.loan_repayments",
+      "iceberg.gold.customer_arpu_monthly"
+    ],
+    [
+      "iceberg.silver.mobile_money_payments",
+      "iceberg.gold.cross_border_transfers"
+    ],
+    [
+      "iceberg.silver.mobile_money_payments",
+      "iceberg.gold.mobile_money_daily_flow"
+    ],
+    [
+      "iceberg.silver.products",
+      "iceberg.silver.bank_transactions"
+    ],
+    [
+      "iceberg.silver.products",
+      "iceberg.silver.insurance_operations"
+    ],
+    [
+      "iceberg.silver.products",
+      "iceberg.silver.loan_repayments"
+    ],
+    [
+      "iceberg.silver.products",
+      "iceberg.silver.mobile_money_payments"
+    ]
+  ],
+  "lineage_unresolved": [],
+  "row_samples_collected": false
+}

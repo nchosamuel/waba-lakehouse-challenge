@@ -23,7 +23,7 @@ def configure():
             return json.loads(content) if content else None
     mapper={'name':'waba-roles','protocol':'openid-connect','protocolMapper':'oidc-usermodel-realm-role-mapper','config':{'claim.name':'waba_trino_roles','multivalued':'true','jsonType.label':'String','id.token.claim':'true','access.token.claim':'true','userinfo.token.claim':'true'}}
     audience={'name':'trino-audience','protocol':'openid-connect','protocolMapper':'oidc-audience-mapper','config':{'included.client.audience':'waba-trino','access.token.claim':'true','id.token.claim':'false'}}
-    clients=[('waba-trino','KEYCLOAK_TRINO_SECRET',None),('waba-bi','KEYCLOAK_BI_SERVICE_SECRET','service_bi'),('waba-validation','KEYCLOAK_VALIDATION_SERVICE_SECRET','service_validation'),('waba-dashboard','KEYCLOAK_DASHBOARD_SERVICE_SECRET','service_dashboard')]
+    clients=[('waba-trino','KEYCLOAK_TRINO_SECRET',None),('waba-bi','KEYCLOAK_BI_SERVICE_SECRET','service_bi'),('waba-validation','KEYCLOAK_VALIDATION_SERVICE_SECRET','service_validation'),('waba-dashboard','KEYCLOAK_DASHBOARD_SERVICE_SECRET','service_dashboard'),('waba-metadata','KEYCLOAK_METADATA_SERVICE_SECRET','service_metadata')]
     for client_id,key,role in clients:
         definition={'clientId':client_id,'enabled':True,'protocol':'openid-connect','publicClient':False,'secret':values[key],
                     'standardFlowEnabled':not bool(role),'directAccessGrantsEnabled':False,'serviceAccountsEnabled':bool(role),
@@ -51,7 +51,7 @@ def configure():
         api('clients/'+superset['id']+'/protocol-mappers/models/'+found['id'],dict(own_audience,id=found['id']),'PUT')
     else:
         api('clients/'+superset['id']+'/protocol-mappers/models',own_audience,'POST')
-    print('Trino and three scoped service clients configured; direct password grants disabled.')
+    print('Trino and scoped service clients configured; direct password grants disabled.')
 
 
 if __name__=='__main__':

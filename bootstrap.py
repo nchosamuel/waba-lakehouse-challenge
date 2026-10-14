@@ -1,5 +1,6 @@
 from pathlib import Path
 import secrets
+import base64
 
 path = Path(__file__).parent / ".env"
 if not path.exists():
@@ -19,6 +20,11 @@ existing = {
     line.split("=", 1)[0] for line in path.read_text().splitlines() if "=" in line
 }
 extra = {
+    "WABA_LINEAGE_ENABLED": "false",
+    "OPENMETADATA_DB_PASSWORD": secrets.token_urlsafe(24),
+    "OPENMETADATA_ADMIN_PASSWORD": secrets.token_urlsafe(24) + "Aa1!",
+    "OPENMETADATA_FERNET_KEY": base64.urlsafe_b64encode(secrets.token_bytes(32)).decode(),
+    "KEYCLOAK_METADATA_SERVICE_SECRET": secrets.token_urlsafe(32),
     "WABA_TRINO_SSO_ENABLED": "false",
     "KEYCLOAK_TRINO_SECRET": secrets.token_urlsafe(32),
     "KEYCLOAK_BI_SERVICE_SECRET": secrets.token_urlsafe(32),

@@ -65,6 +65,7 @@ def secrets():
         "AWS_DEFAULT_REGION": "us-east-1",
         "PYTHONPATH": "/app/src",
     }
+    cloud["WABA_LINEAGE_ENABLED"] = values.get("WABA_LINEAGE_ENABLED", "false")
     scopes = {
         "ingestion": {
             "MINIO_ROOT_USER": values["MINIO_ROOT_USER"],
@@ -161,12 +162,36 @@ def secrets():
     kube("apply", "--server-side", "-f", "-", data=json.dumps(bi_secret))
 
 
+def pause_metadata():
+    exists=subprocess.run([KUBECTL,"--context",CONTEXT,"get","deployment/openmetadata","-n","governance"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0
+    if not exists:return
+    jobs=json.loads(kube("get","jobs","-n","governance","-l","app=metadata-discovery","-o","json",capture=True))["items"]
+    if any(j.get("status",{}).get("active",0) for j in jobs):
+        raise RuntimeError("Wait for the active metadata discovery job before switching modes")
+    kube("patch","cronjob/metadata-discovery","-n","governance","--type=merge","-p",'{"spec":{"suspend":true}}')
+    kube("scale","deployment/openmetadata","deployment/metadata-search","deployment/metadata-db","-n","governance","--replicas=0")
+    kube("wait","--for=delete","pod","-n","governance","-l","app in (openmetadata,metadata-search,metadata-db)","--field-selector=status.phase!=Succeeded,status.phase!=Failed","--timeout=120s")
+
+
 def scale_identity(replicas):
     if replicas == 0 and private_env().get("WABA_TRINO_SSO_ENABLED") == "true":
         return  # Secured Trino clients still need the issuer for renewable tokens.
     exists = subprocess.run([KUBECTL,"--context",CONTEXT,"get","deployment/keycloak","-n","governance"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
     if exists:
         kube("scale","deployment/keycloak","-n","governance","--replicas="+str(replicas))
+
+
+def wait_job(name, namespace, timeout=600):
+    deadline=time.monotonic()+timeout
+    while time.monotonic()<deadline:
+        status=json.loads(kube("get","job/"+name,"-n",namespace,"-o","json",capture=True)).get("status",{})
+        conditions={c["type"]:c["status"] for c in status.get("conditions",[])}
+        if conditions.get("Complete")=="True":
+            return
+        if conditions.get("Failed")=="True":
+            raise RuntimeError("Job failed; inspect preserved logs: "+namespace+"/"+name)
+        time.sleep(2)
+    raise TimeoutError("Job did not complete: "+namespace+"/"+name)
 
 
 def wait_deployment(name, namespace):
@@ -456,6 +481,7 @@ def seed():
 
 
 def streaming():
+    pause_metadata()
     applications = json.loads(
         kube("get", "sparkapplications", "-n", "processing", "-o", "json", capture=True)
     )["items"]
@@ -535,6 +561,7 @@ def streaming():
 
 
 def batch():
+    pause_metadata()
     kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
     scale_identity(0)
     kube("scale", "deployment/nifi", "-n", "ingestion", "--replicas=0")
@@ -570,6 +597,7 @@ def batch():
 
 
 def bi():
+    pause_metadata()
     kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
     scale_identity(0)
     kube("scale", "deployment/nifi", "-n", "ingestion", "--replicas=0")
@@ -719,6 +747,7 @@ def main():
         for ns in ("ingestion", "processing", "serving"):
             kube("get", "pods,pvc", "-n", ns)
     elif args.action == "stop":
+        pause_metadata()
         # Let the operator clean up the streaming driver/executor before stopping it.
         applications = json.loads(
             kube(
