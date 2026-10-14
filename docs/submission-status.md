@@ -44,3 +44,5 @@ Le scheduler Airflow a créé et terminé le run `scheduled__2026-10-13T00:30:00
 
 
 Le contrôle natif complet après revue nécessite Airflow avec une limite mémoire de 2 GiB. Sur le moteur Docker local de 7,65 GiB, Trino est mis en pause pendant les grands traitements batch, puis réactivé pour les contrôles SQL. Les premiers essais concomitants ont provoqué des arrêts mémoire ; leur historique est conservé. La validation de la chaîne corrigée est dans `docs/review-airflow-verification.json` (ou `review-airflow-verification.json` depuis ce dossier).
+
+Pour la revue et la soumission de cette version, utiliser la branche `feature/level-3-streaming` : https://github.com/nchosamuel/waba-lakehouse-challenge/tree/feature/level-3-streaming. La PR #1 reste en brouillon pour permettre la revue indépendante ; ne pas confondre cette branche avec la version de la branche par défaut.

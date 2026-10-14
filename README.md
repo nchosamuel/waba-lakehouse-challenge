@@ -26,7 +26,7 @@ Ports locaux : MinIO 9000/9001, Trino 8080, Airflow 8081, Streamlit 8501.
 ## Démarrage
 
 ```sh
-git clone https://github.com/nchosamuel/waba-lakehouse-challenge.git
+git clone --branch feature/level-3-streaming https://github.com/nchosamuel/waba-lakehouse-challenge.git
 cd waba-lakehouse-challenge
 python3 bootstrap.py
 docker compose up -d --build
