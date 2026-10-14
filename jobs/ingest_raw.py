@@ -4,6 +4,8 @@ import csv
 import io
 import json
 import tempfile
+import os
+import uuid
 from pathlib import Path
 from pyspark import StorageLevel
 import boto3
@@ -12,6 +14,7 @@ from waba.contracts import REFERENCES, FLOW_PREFIX, SCHEMAS, KEYS
 from waba.generator import COUNTRIES
 from botocore.exceptions import ClientError
 from waba.pipeline_config import scope
+from waba.quality import validate, add_reason
 
 selected_countries, date_from, date_to = scope()
 
@@ -25,8 +28,15 @@ settings = {
     "spark.sql.catalog.iceberg.s3.endpoint": "http://minio:9000",
     "spark.sql.catalog.iceberg.s3.path-style-access": "true",
     "spark.sql.shuffle.partitions": "2",
+    "spark.sql.ui.retainedExecutions": "25",
+    "spark.ui.retainedJobs": "25",
+    "spark.ui.retainedStages": "50",
     "spark.sql.session.timeZone": "UTC",
     "spark.sql.csv.parser.columnPruning.enabled": "false",
+    "spark.hadoop.fs.s3a.endpoint": "http://minio:9000",
+    "spark.hadoop.fs.s3a.path.style.access": "true",
+    "spark.hadoop.fs.s3a.connection.ssl.enabled": "false",
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.EnvironmentVariableCredentialsProvider",
 }
 for key, value in settings.items():
     builder = builder.config(key, value)
@@ -42,186 +52,6 @@ TYPE_MAP = {
     "int": T.IntegerType(),
     "boolean": T.BooleanType(),
 }
-
-
-def add_reason(frame, condition, reason):
-    previous = F.when(F.length("reject_reason") > 0, F.col("reject_reason"))
-    return frame.withColumn(
-        "reject_reason",
-        F.when(F.coalesce(condition, F.lit(False)), F.col("reject_reason")).otherwise(
-            F.concat_ws("; ", previous, F.lit(reason))
-        ),
-    )
-
-
-def validate(frame, name, country):
-    frame = frame.withColumn("reject_reason", F.lit(""))
-
-    def check(condition, reason):
-        nonlocal frame
-        frame = add_reason(frame, condition, reason)
-
-    def link(reference, columns, reason):
-        nonlocal frame
-        marker = "_reference_exists"
-        reference = (
-            reference.select(*columns).distinct().withColumn(marker, F.lit(True))
-        )
-        frame = frame.join(reference, columns, "left")
-        frame = add_reason(frame, F.col(marker).isNotNull(), reason).drop(marker)
-
-    check(
-        F.coalesce(F.col("_structure_error"), F.lit("")) == "",
-        "Wrong number of CSV columns",
-    )
-    check(F.col("_corrupt_record").isNull(), "Malformed CSV or incompatible type")
-    check(
-        (F.col("country_code") == country)
-        & F.col(KEYS[name]).isNotNull()
-        & (F.length(F.col(KEYS[name])) > 0)
-        & F.col("entity_type").isin(
-            "BANK", "INSURANCE", "MOBILE_MONEY", "MICROFINANCE"
-        ),
-        "Invalid country, key or entity",
-    )
-    if "currency" in frame.columns:
-        check(
-            F.col("currency") == ("GHS" if country == "GH" else "XOF"),
-            "Invalid currency",
-        )
-    customers = lambda: spark.table("iceberg.raw.customers").filter(
-        F.col("country_code") == country
-    )
-    accounts = lambda: spark.table("iceberg.raw.accounts").filter(
-        F.col("country_code") == country
-    )
-    if name == "accounts":
-        link(
-            customers(),
-            ["customer_id", "country_code", "entity_type"],
-            "Orphan account customer",
-        )
-    if name not in FLOW_PREFIX:
-        return frame
-    check(F.col("timestamp").isNotNull(), "Missing event timestamp")
-    amount = "amount_due" if name == "loan_repayments" else "amount"
-    check(
-        (F.col(amount) > 0) & ~F.isnan(amount) & (F.abs(F.col(amount)) != float("inf")),
-        "Invalid amount",
-    )
-    if name == "bank_transactions":
-        check(
-            F.col("transaction_status").isin("SUCCESS", "FAILED", "REVERSED")
-            & (F.col("fee_amount") >= 0)
-            & F.col("entity_type").isin("BANK", "MICROFINANCE"),
-            "Invalid banking status",
-        )
-        link(
-            accounts(),
-            ["account_id", "customer_id", "country_code", "entity_type"],
-            "Bank account/customer mismatch",
-        )
-        beneficiaries = accounts().select(
-            F.col("account_id").alias("beneficiary_account"), "country_code"
-        )
-        link(
-            beneficiaries, ["beneficiary_account", "country_code"], "Orphan beneficiary"
-        )
-        link(
-            spark.table("iceberg.raw.branches"),
-            ["branch_id", "country_code", "entity_type"],
-            "Orphan branch",
-        )
-    elif name == "insurance_operations":
-        check(
-            (F.col("entity_type") == "INSURANCE")
-            & F.col("operation_type").isin(
-                "PREMIUM_PAYMENT",
-                "CLAIM_SUBMISSION",
-                "CLAIM_PAYMENT",
-                "POLICY_RENEWAL",
-                "POLICY_CANCELLATION",
-            ),
-            "Invalid insurance operation",
-        )
-        link(
-            accounts().filter("account_type = 'INSURANCE_POLICY'"),
-            ["account_id", "customer_id", "country_code", "entity_type"],
-            "Invalid policy account/customer",
-        )
-        claim = F.col("operation_type").startswith("CLAIM")
-        check(
-            (
-                ~claim
-                & F.col("claim_status").isNull()
-                & F.col("processing_days").isNull()
-            )
-            | (
-                claim
-                & F.col("claim_status").isin("PENDING", "APPROVED", "REJECTED", "PAID")
-                & (F.col("processing_days") >= 0)
-            ),
-            "Invalid claim fields",
-        )
-    elif name == "mobile_money_payments":
-        check(
-            (F.col("entity_type") == "MOBILE_MONEY")
-            & (F.col("sender_country") == country)
-            & F.col("status").isin("SUCCESS", "FAILED", "PENDING")
-            & (F.col("fee_amount") >= 0),
-            "Invalid mobile payment",
-        )
-        refs = spark.table("iceberg.raw.customers").filter(
-            "entity_type = 'MOBILE_MONEY'"
-        )
-        link(
-            refs.select(
-                F.col("customer_id").alias("sender_id"),
-                F.col("country_code").alias("sender_country"),
-            ),
-            ["sender_id", "sender_country"],
-            "Orphan sender",
-        )
-        link(
-            refs.select(
-                F.col("customer_id").alias("receiver_id"),
-                F.col("country_code").alias("receiver_country"),
-            ),
-            ["receiver_id", "receiver_country"],
-            "Orphan receiver",
-        )
-    else:
-        check(
-            F.col("repayment_status").isin("ON_TIME", "LATE", "DEFAULT")
-            & (F.col("amount_paid") >= 0)
-            & (F.col("days_overdue") >= 0)
-            & F.col("due_date").isNotNull(),
-            "Invalid loan repayment",
-        )
-        refs = (
-            accounts()
-            .filter("account_type = 'LOAN'")
-            .withColumnRenamed("account_id", "loan_account_id")
-        )
-        link(
-            refs,
-            ["loan_account_id", "customer_id", "country_code", "entity_type"],
-            "Invalid loan account",
-        )
-        check(
-            (
-                (F.col("repayment_status") == "DEFAULT")
-                & F.col("payment_date").isNull()
-                & (F.col("amount_paid") == 0)
-            )
-            | (
-                (F.col("repayment_status") != "DEFAULT")
-                & F.col("payment_date").isNotNull()
-            ),
-            "Invalid repayment dates/status",
-        )
-
-    return frame
 
 
 def ingest(key, name, country):
@@ -269,6 +99,15 @@ def ingest(key, name, country):
             T.StructField("_corrupt_record", T.StringType(), True),
         ]
     )
+    shared_key = None
+    read_path = str(normalized_path)
+    if os.environ.get("WABA_SHARED_STAGING") == "true":
+        # Executors run in different pods and cannot read the driver's /tmp.
+        # Each immutable staging object is isolated to this attempt; originals
+        # remain untouched. Failures retain staging for diagnosis/backfill.
+        shared_key = "processing-staging/" + uuid.uuid4().hex + "/normalized.csv"
+        s3.upload_file(str(normalized_path), "archive", shared_key)
+        read_path = "s3a://archive/" + shared_key
     parsed = (
         spark.read.option("header", True)
         .option("mode", "PERMISSIVE")
@@ -276,11 +115,11 @@ def ingest(key, name, country):
         .option("multiLine", True)
         .option("columnNameOfCorruptRecord", "_corrupt_record")
         .schema(schema)
-        .csv(str(normalized_path))
+        .csv(read_path)
         .persist(StorageLevel.DISK_ONLY)
     )
     parsed.count()  # Materialize before querying Spark's corrupt-record column.
-    frame = validate(parsed, name, country)
+    frame = validate(parsed, name, country, spark)
     identity = [KEYS[name], "country_code"]
     duplicates = frame.groupBy(*identity).count().filter("count > 1").select(*identity)
     duplicates = duplicates.withColumn("_duplicate_key", F.lit(True))
@@ -346,9 +185,13 @@ def ingest(key, name, country):
         flush=True,
     )
     print(json.dumps(report), flush=True)
-    frame.unpersist()
-    parsed.unpersist()
+    frame.unpersist(blocking=True)
+    parsed.unpersist(blocking=True)
     temp.cleanup()
+    if shared_key:
+        s3.delete_object(
+            Bucket="archive", Key=shared_key
+        )  # Only this attempt's temporary object.
 
 
 keys = [

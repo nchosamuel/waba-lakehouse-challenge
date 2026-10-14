@@ -1,0 +1,681 @@
+{
+  "uid": "waba-health",
+  "title": "WABA \u2014 Sant\u00e9 des pipelines",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "15s",
+  "timezone": "utc",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "tags": [
+    "WABA",
+    "local",
+    "observability"
+  ],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Services actifs \u2014 r\u00e9plicas pr\u00eats",
+      "description": "Comparer avec les r\u00e9plicas demand\u00e9s : 0 demand\u00e9 signifie un arr\u00eat volontaire.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_component_ready_replicas",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Services demand\u00e9s \u2014 0 = pause volontaire",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_component_desired_replicas",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Disponibilit\u00e9 des collecteurs",
+      "description": "0 signifie mesure indisponible ; aucune valeur r\u00e9elle remplac\u00e9e par z\u00e9ro.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_telemetry_available",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Dur\u00e9e des jobs Spark par p\u00e9rim\u00e8tre pays",
+      "description": "Dur\u00e9e du job entier. CI indique un traitement CI ; ALL indique un traitement partag\u00e9, pas une mesure ind\u00e9pendante par pays.",
+      "type": "table",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 8,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Pays / p\u00e9rim\u00e8tre"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Traitement"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "\u00c9tat"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Dur\u00e9e"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Application"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_spark_job_duration_seconds",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "indexByName": {
+              "country_scope": 0,
+              "exported_job": 1,
+              "state": 2,
+              "Value": 3,
+              "application": 4
+            },
+            "renameByName": {
+              "country_scope": "Pays / p\u00e9rim\u00e8tre",
+              "exported_job": "Traitement",
+              "state": "\u00c9tat",
+              "Value": "Dur\u00e9e",
+              "application": "Application"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Retard Kafka \u2014 fraude / AML",
+      "description": "Offsets fin broker moins offsets du dernier micro-lot Spark committ\u00e9. silver_to_gold ex\u00e9cute fraude, AML et liquidit\u00e9 ; pas un consumer group Kafka ind\u00e9pendant.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_kafka_query_lag_messages{scenario=\"live\"}",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Dur\u00e9e du dernier micro-lot conserv\u00e9",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_spark_stream_batch_duration_seconds",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "D\u00e9bit NiFi \u2014 FlowFiles sortants / seconde",
+      "description": "Moyenne calcul\u00e9e depuis les statistiques NiFi sur cinq minutes ; pas un compteur cumulatif.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_nifi_flowfiles_out_5m / 300",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Taux d\u2019erreur des DAGs \u2014 derni\u00e8res 24 h",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_airflow_error_ratio_24h",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Rapport r\u00e9glementaire \u2014 \u00e9ch\u00e9ance 06 h UTC",
+      "description": "1 si le run planifi\u00e9 dont l\u2019intervalle se termine aujourd\u2019hui n\u2019est pas r\u00e9ussi apr\u00e8s 06 h UTC. Un run manuel ne valide pas l\u2019\u00e9ch\u00e9ance.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_regulatory_deadline_missed{scenario=\"live\"}",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Fra\u00eecheur du heartbeat streaming",
+      "description": "",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 32,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_stream_heartbeat_age_seconds",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Signaux de d\u00e9monstration des alertes",
+      "description": "Injection de test s\u00e9par\u00e9e des observations r\u00e9elles. Retour \u00e0 z\u00e9ro apr\u00e8s v\u00e9rification.",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{__name__=~\"waba_demo_.*\"}",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": false,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Journaux centralis\u00e9s \u2014 \u00e9v\u00e9nements JSON Spark",
+      "type": "logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "waba-loki"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{namespace=\"processing\", event=~\".*batch_committed|spark_table_lineage|regulatory_report_completed\"} | json"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending"
+      }
+    },
+    {
+      "id": 13,
+      "title": "Fra\u00eecheur globale des mesures",
+      "description": "\u00c2ge du dernier cycle de collecte ; une valeur ancienne rend les mesures suspectes.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 120
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "time() - waba_exporter_collection_timestamp_seconds",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Streaming attendu \u2014 0 = arr\u00eat\u00e9",
+      "description": "Le fichier de sant\u00e9 et les checkpoints persistent m\u00eame lorsque le traitement est arr\u00eat\u00e9.",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "waba-prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 48,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "gray",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "waba_stream_expected",
+          "legendFormat": "{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}",
+          "instant": true,
+          "format": "time_series"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+1
+00:00:00,000 --> 00:00:18,000
+PRÉSENTATION
+Plateforme WABA : huit pays, quatre métiers, données fictives.
+Capture des applications réelles, montée par profils locaux.
+
+2
+00:00:18,000 --> 00:01:34,000
+GÉNÉRATION PONCTUELLE
+Streamlit : sélection CI et GH, puis 25 transactions par pays.
+Les clés proviennent des référentiels existants.
+
+3
+00:01:34,000 --> 00:02:18,000
+GÉNÉRATION CONTINUE
+Le mode continu dépose de nouveaux lots à intervalle paramétrable.
+La session navigateur doit rester ouverte.
+
+4
+00:02:18,000 --> 00:02:41,000
+ARRÊT DU FLUX
+Les fichiers et leurs chemins sont visibles dans les lots déposés.
+La génération continue est arrêtée avant le traitement batch.
+
+5
+00:02:41,000 --> 00:03:01,000
+PIPELINE NATIF
+La chaîne planifiée ingestion → Silver → Gold a réussi sur Kubernetes.
+Spark Operator exécute les jobs avec driver et exécuteur distincts.
+
+6
+00:03:01,000 --> 00:03:26,000
+REPORTING
+Le rapport de février réussit sur la période simulée alimentée.
+Succès technique, couverture métier et respect du délai sont distingués.
+
+7
+00:03:26,000 --> 00:03:56,000
+INDICATEURS
+NPL = encours en défaut / encours total.
+Les encours représentent le capital restant à rembourser, simulé ici.
+
+8
+00:03:56,000 --> 00:04:31,000
+INGESTION STREAMING
+NiFi : ListS3 → FetchS3Object → conversion JSON → Kafka.
+La cohorte a atteint Kafka en 3,1 secondes au maximum.
+
+9
+00:04:31,000 --> 00:05:01,000
+REQUÊTES TRINO
+Requêtes réellement exécutées via Trino ; cet écran rassemble leurs résultats.
+Les tables Raw contiennent les huit pays.
+
+10
+00:05:01,000 --> 00:05:36,000
+FRAUDE MÉTIER
+Les trois règles produisent des alertes : montants répétés, pays inhabituel,
+sinistre supérieur à trois primes annuelles. Plusieurs fenêtres peuvent se chevaucher.
+
+11
+00:05:36,000 --> 00:06:06,000
+VUE LAMBDA
+La vue combine les faits batch Iceberg et les messages Kafka dédupliqués.
+Une photographie batch atomique évite les pertes lors des interruptions.
+
+12
+00:06:06,000 --> 00:06:31,000
+SUPERSET · PERFORMANCE
+Revenus par pays et activité, ARPC, carte et produits.
+Les souscriptions sont explicitement simulées.
+
+13
+00:06:31,000 --> 00:06:56,000
+FILTRE PAYS
+Sélection et application du filtre CI, puis capture du résultat.
+La vue filtrée est maintenue pour faciliter la lecture.
+
+14
+00:06:56,000 --> 00:07:31,000
+SUPERSET · RISQUE
+NPL, sinistres/primes, AML et délais de traitement.
+Primes acquises : part de la prime correspondant à la période couverte.
+
+15
+00:07:31,000 --> 00:08:06,000
+SUPERSET · MOBILE MONEY
+Activité par heure, corridors transfrontaliers et taux d’échec.
+Les données affichées proviennent des requêtes Trino.
+
+16
+00:08:06,000 --> 00:08:31,000
+SUPERVISION
+Prometheus, Grafana et Loki : métriques et journaux techniques.
+Les services volontairement arrêtés sont distingués des mesures indisponibles.
+
+17
+00:08:31,000 --> 00:08:56,000
+ALERTES VÉRIFIÉES
+Trois règles réelles, trois règles de démo séparées et trois règles de disponibilité.
+Les démos ont déclenché, notifié localement puis retrouvé l’état Normal.
+
+18
+00:08:56,000 --> 00:09:14,000
+BILAN
+33 tests unitaires et validations natives documentées.
+Profils locaux successifs ; lancement intégral simultané et Ingress non validés.

@@ -13,6 +13,10 @@ TABLES = {
     "Paiements mobiles": "mobile_money_daily_flow",
     "Transferts entre pays": "cross_border_transfers",
     "Couverture comptable assurance": "insurance_accounting_coverage",
+    "Fraude · alertes": "fraud_alerts",
+    "AML · alertes": "aml_events",
+    "Liquidité · alertes": "liquidity_alerts",
+    "Activité bancaire · batch + temps réel": "lambda_daily_transaction_volume",
 }
 
 
@@ -25,29 +29,21 @@ def query(table, countries):
         raise ValueError("Unsupported analytics query")
     literals = ",".join("'" + country + "'" for country in countries)
     sql = f"SELECT * FROM iceberg.gold.{table} WHERE country_code IN ({literals}) ORDER BY country_code LIMIT 500"
-    request = urllib.request.Request(
-        "http://trino:8080/v1/statement",
-        data=sql.encode(),
-        headers={"X-Trino-User": "waba-dashboard"},
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        result = json.load(response)
-    columns, rows = [], []
-    while True:
-        if "error" in result:
-            raise RuntimeError(result["error"]["message"])
-        if "columns" in result:
-            columns = [col["name"] for col in result["columns"]]
-        rows.extend(result.get("data", []))
-        if "nextUri" not in result:
-            break
-        with urllib.request.urlopen(result["nextUri"], timeout=30) as response:
-            result = json.load(response)
-    return [dict(zip(columns, row)) for row in rows]
+    from waba.trino_client import query as sql_query
+    columns,rows = sql_query(sql)
+    return [dict(zip([c['name'] for c in columns], row)) for row in rows]
+
 
 
 LABELS = {
     "country_code": "Pays",
+    "alert_id": "Identifiant de l’alerte",
+    "rule": "Règle",
+    "subject_id": "Compte ou client",
+    "window_start": "Début de fenêtre",
+    "window_end": "Fin de fenêtre",
+    "event_count": "Événements",
+    "detected_at": "Détection",
     "entity_type": "Ligne métier",
     "txn_date": "Date",
     "month": "Mois",
@@ -108,6 +104,14 @@ def display_rows(rows):
                 value = round(float(value), 2)
             elif key == "above_challenge_threshold":
                 value = "Oui" if value else "Non"
+            elif key == "rule":
+                value = {
+                    "MULTIPLE_HIGH_VALUE_TRANSFERS": "Transactions répétées > 500 000 XOF",
+                    "UNUSUAL_COUNTRY_FOR_PROFILE": "Pays inhabituel pour le profil",
+                    "CLAIM_OVER_THREE_ANNUAL_PREMIUMS": "Sinistre > 3 primes annuelles",
+                    "CHALLENGE_AML_THRESHOLD": "Seuil AML du sujet",
+                    "DEMO_LIQUIDITY_COVERAGE_BELOW_10_PERCENT": "Couverture de liquidité simulée < 10 %",
+                }.get(value, value)
             elif key == "revenue_scope":
                 value = "Commissions observées + intérêts documentés"
             translated[LABELS.get(key, key)] = value

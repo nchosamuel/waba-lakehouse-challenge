@@ -1,0 +1,105 @@
+{
+  "verified_at_utc": "2026-10-14T00:07:57.046508+00:00",
+  "context": "kind-waba",
+  "server_version": "v1.32.3",
+  "architecture": "arm64",
+  "native_spark_driver_and_executor_verified": true,
+  "checkpoint_mounted_in_driver_and_executor": true,
+  "two_queries_active": true,
+  "pvc_status": {
+    "ingestion": {
+      "kafka-data": "Bound",
+      "minio-data": "Bound",
+      "nifi-data": "Bound"
+    },
+    "processing": {
+      "airflow-logs": "Bound",
+      "airflow-state": "Bound",
+      "catalog-data": "Bound",
+      "stream-checkpoints": "Bound"
+    },
+    "serving": {
+      "superset-state": "Pending"
+    }
+  },
+  "completed_jobs": [
+    {
+      "name": "waba-bronze-to-silver-94824c36",
+      "job": "bronze_to_silver",
+      "start": "2026-10-13T23:48:38Z",
+      "finish": "2026-10-13T23:49:53Z"
+    },
+    {
+      "name": "waba-ingest-raw-1eeb61fb",
+      "job": "ingest_raw",
+      "start": "2026-10-13T23:43:12Z",
+      "finish": "2026-10-13T23:45:04Z"
+    },
+    {
+      "name": "waba-ingest-raw-d0ed3f75",
+      "job": "ingest_raw",
+      "start": "2026-10-13T23:47:22Z",
+      "finish": "2026-10-13T23:47:46Z"
+    },
+    {
+      "name": "waba-raw-to-bronze-5ab52705",
+      "job": "raw_to_bronze",
+      "start": "2026-10-13T23:45:09Z",
+      "finish": "2026-10-13T23:45:50Z"
+    },
+    {
+      "name": "waba-raw-to-bronze-7c253fc9",
+      "job": "raw_to_bronze",
+      "start": "2026-10-13T23:47:47Z",
+      "finish": "2026-10-13T23:48:33Z"
+    },
+    {
+      "name": "waba-regulatory-report-27181a63",
+      "job": "regulatory_report",
+      "start": "2026-10-13T23:50:35Z",
+      "finish": "2026-10-13T23:51:12Z"
+    },
+    {
+      "name": "waba-regulatory-report-5566f7b8",
+      "job": "regulatory_report",
+      "start": "2026-10-13T23:55:11Z",
+      "finish": "2026-10-13T23:55:36Z"
+    },
+    {
+      "name": "waba-regulatory-report-88d2b1d0",
+      "job": "regulatory_report",
+      "start": "2026-10-13T23:55:44Z",
+      "finish": "2026-10-13T23:56:08Z"
+    },
+    {
+      "name": "waba-seed-analytics-context-4af5227d",
+      "job": "seed_analytics_context",
+      "start": "2026-10-13T23:51:46Z",
+      "finish": "2026-10-13T23:52:10Z"
+    },
+    {
+      "name": "waba-seed-stream-context-11aea20e",
+      "job": "seed_stream_context",
+      "start": "2026-10-13T23:51:15Z",
+      "finish": "2026-10-13T23:51:44Z"
+    },
+    {
+      "name": "waba-silver-to-gold-c4b77a7c",
+      "job": "silver_to_gold",
+      "start": "2026-10-13T23:49:54Z",
+      "finish": "2026-10-13T23:50:30Z"
+    }
+  ],
+  "initial_failed_attempts_retained": [
+    "waba-bronze-to-silver-d47f2467",
+    "waba-ingest-raw-13ee4fae",
+    "waba-ingest-raw-27dac22d",
+    "waba-ingest-raw-74fb53ed"
+  ],
+  "remaining_level4": [
+    "Keycloak SSO and access policies",
+    "OpenMetadata catalogue and lineage",
+    "Prometheus Grafana Loki and tested alerts",
+    "Ingress controller/TLS validation"
+  ]
+}

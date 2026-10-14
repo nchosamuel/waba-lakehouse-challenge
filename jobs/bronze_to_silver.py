@@ -143,7 +143,7 @@ for name in (
     if name == "mobile_money_payments":
         sender = customers.select(
             F.col("customer_id").alias("sender_id"),
-            F.col("country_code").alias("sender_country"),
+            F.col("country_code").alias("sender_home_country"),
             F.col("segment").alias("customer_segment"),
         )
         receiver = customers.select(
@@ -151,7 +151,7 @@ for name in (
             F.col("country_code").alias("receiver_country"),
             F.col("segment").alias("receiver_segment"),
         )
-        frame = frame.join(sender, ["sender_id", "sender_country"], "left").join(
+        frame = frame.join(sender, ["sender_id"], "left").join(
             receiver, ["receiver_id", "receiver_country"], "left"
         )
         frame = require(frame, ["customer_segment", "receiver_segment"])

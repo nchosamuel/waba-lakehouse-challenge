@@ -1,0 +1,158 @@
+{
+  "streaming_end_to_end_verified": true,
+  "fixture_batch": "b0352c66c20843c59bb1f5e68a56a0d4",
+  "accepted_events": 11,
+  "rejected_fixture_events": 2,
+  "fraud_rule_counts": {
+    "UNUSUAL_COUNTRY_FOR_PROFILE": 1,
+    "MULTIPLE_HIGH_VALUE_TRANSFERS": 10,
+    "CLAIM_OVER_THREE_ANNUAL_PREMIUMS": 1
+  },
+  "aml_xof_and_ghs_verified": true,
+  "negative_cases_verified": true,
+  "liquidity_alert_verified": true,
+  "lambda_no_overlap_verified": true,
+  "lambda_total_eur": 452020391.3790839,
+  "kafka": {
+    "topic_counts": {
+      "raw-bank-transactions": 49,
+      "raw-insurance-operations": 4,
+      "raw-mobile-money-payments": 4,
+      "raw-loan-repayments": 3,
+      "silver-bank-transactions": 11,
+      "silver-insurance-operations": 2,
+      "silver-mobile-money": 2,
+      "silver-loan-repayments": 1,
+      "gold-fraud-alerts": 12,
+      "gold-aml-events": 2,
+      "gold-liquidity-alerts": 3,
+      "dlq-financial-events": 5
+    },
+    "event_ids": {
+      "gold-fraud-alerts": [
+        "d95ff39e25a4ad9cf984196df2cadfcf6e896bed9458ac9cfa02f4111be94390",
+        "6e4a207f7012630b601893da3bf4575dfbc845fd34fd9856f40a0e3d977b271a",
+        "bb62bb7e97894795f4b5c902b077745d841dca2e19e4752314fe0b39882092c7",
+        "f430267cb5c846bac2ee7bf35f6c64b94c03ac0097ae46a713e2adab465bf1b1",
+        "1e8e81def0f67d5ebf127e04258616842c370b77a6c5972e79a729212c0a3237",
+        "87eb31abb9e8258fec89b51d0836a95d00016c33c28aac4246541de23b9d47e4",
+        "6f1d08adf39565e633d87392ae27bfefdabec881ee12eedb4460395f50933678",
+        "c3fe62a5774704244b8433e10f545c54baefc5937fe5c84bc67198fa9bb33343",
+        "0b6ac6fa0428e4c1f9f5f092ec0e019cfcef2b789770db871eeeeb75085db1cc",
+        "8e17fee49ebb1f3fc622924935a070d9e611654db68e5f29f5914ea816b06013",
+        "5e2472ef717da0bce41536791b41dedcc5f2be240711c650a77be1ab6afea352",
+        "cae14d7af38251bc689b657a6d8f0414e0ad1de6ef35e252eba33a0c51f4aba5"
+      ],
+      "dlq-financial-events": [
+        "8cfc581c347d4c0e499edc322f896fd379a6e879940e4fba0d2b82b851d1b9c6",
+        "445c4ac525ea65609dbeef4504b600dd27fec0e7738798d08486dc2ed19c07fa",
+        "9da63671f093619b9a6ac3e06dcccd3853301727203c82acf229716bdeffd4c4",
+        "c3686e4bca23ebdeaf7b426ef787745ae02b6ab3c8b4b05562b8e14fb1be3fcf",
+        "b97422ed195f595f0ddb15ff1f6a65b96d4b19ebc502de2d022021e1602a2052"
+      ],
+      "gold-aml-events": [
+        "238d21b4b613e65b61b25e6f93b086604dd6a03ff989206c6b75456688862fc5",
+        "f50cfc99837f1b7ae1fd3c504dbe2ce50ea03c4e2686354a9dc2765554e0b690"
+      ],
+      "raw-bank-transactions": [
+        "21db5f36-0fbd-409d-8434-f7833d8728a2",
+        "5937fa22-d8e9-417c-bf05-77370591667e",
+        "399b669b-c7a5-470b-8965-84f011e201eb",
+        null,
+        "b61f6658-6161-4ef0-8b87-f28449d2fd79",
+        "2abd6aec-5362-4118-bc53-84d303d23a23",
+        "c51e818d-3c9e-4d65-a954-4c0c7852feec",
+        "c3bbb1e5-99f9-46fc-96d2-0642d7a1aa43",
+        "2c9bd4ed-59aa-47f4-bd82-67136b6894fd",
+        "384cd950-4b93-4aed-a2df-4608ea0732b9",
+        "0f012c12-7cf1-4c50-98ed-9c6bfb94077d",
+        "8b35e336-20db-402b-ab3f-7f943188f201",
+        "90a95548-2d24-4721-b4cd-9fcb20fd889d",
+        "1fcc6ec0-3df1-41b5-9d77-95c50af4230f",
+        "103da0bd-6eba-4f0a-a172-ddfa9a32f6f8",
+        "3c598693-49c6-4dc0-a318-ddf94750bc32",
+        "e4a6f568-0144-46c3-b943-6a0a2714c8a2",
+        "7cc494fd-61f0-46d7-b3dc-893d9013a167",
+        "f21c7721-3a44-4121-940c-72680d4f09ae",
+        "eedcc08f-4c6f-4bca-86a8-42756040c6ad",
+        "cba4470c-d9e3-42ae-9ee7-d9dea4a9b6d8",
+        "21db5f36-0fbd-409d-8434-f7833d8728a2",
+        "4f556dcb-1de7-4a58-bf45-1013409b06f2",
+        "7cc494fd-61f0-46d7-b3dc-893d9013a167",
+        "5937fa22-d8e9-417c-bf05-77370591667e",
+        "f21c7721-3a44-4121-940c-72680d4f09ae",
+        "ceb8cb18-b81d-4fa4-b50c-2c9fd0d669f3",
+        "399b669b-c7a5-470b-8965-84f011e201eb",
+        "fdbb60fe-cc0a-4a8e-96dd-e76833cdf772",
+        "4f556dcb-1de7-4a58-bf45-1013409b06f2",
+        "ceb8cb18-b81d-4fa4-b50c-2c9fd0d669f3",
+        "fdbb60fe-cc0a-4a8e-96dd-e76833cdf772",
+        "059af122-bc37-4d1c-9dd3-7db6c889ea82",
+        "416c4c79-de16-4282-99b3-9097d9072b86",
+        "c2654b96-6198-4f06-bb56-fc5937f2f47f",
+        "93a24c88-1df3-4be6-82a6-084fd20f38f7",
+        "2c2a2f51-ae4e-4516-9b7f-73ac5caeab5d",
+        "65bcbd4e-cd93-472d-981e-71aff08452de",
+        "7104c9a5-6c16-49d1-9df4-9d90af5b360b",
+        "d16423d2-5433-4897-8ee9-7eae746295d8",
+        "de6701eb-4e45-401d-8f84-586cebd4a322",
+        "7718b6b1-f2ee-477d-a402-0a9b405d1a7e",
+        "6dedf7bd-1f9c-423c-ad34-899cc70157dc",
+        "f61c6406-198f-4fda-8683-eced92f27c78",
+        "8460cb55-d611-436a-8497-80064524a05d",
+        "e7f9a583-78c5-4202-bca8-c6a1ba91a14b",
+        "7df077a9-02c1-4a17-b378-c053758ec625",
+        "b5dbbd22-9760-4508-9ca7-e1983f74b137",
+        "f781faa5-16c5-4dd2-8eb8-dd8d045721a7"
+      ],
+      "silver-mobile-money": [
+        "7ca4b67c-3528-469f-81b4-13e2f9d40543",
+        "cb062900-f81a-4b9b-b15c-957e44ff2f92"
+      ],
+      "raw-loan-repayments": [
+        "295d2f10-e66e-41e5-a670-87adb73c05a9",
+        "cb2b894c-52f4-4a90-9828-67e61184e83c",
+        "53b940c8-451f-422e-a234-3d7ec159e669"
+      ],
+      "raw-insurance-operations": [
+        "7cd03796-250c-47f7-9544-ce9c10d089d1",
+        "8dc0a633-810d-4b51-b0cb-88d8c12941cb",
+        "178d518b-2f6b-464c-82c5-342259205665",
+        "c642546c-f2dd-4f16-b544-846e4bb43ebe"
+      ],
+      "silver-loan-repayments": [
+        "53b940c8-451f-422e-a234-3d7ec159e669"
+      ],
+      "silver-insurance-operations": [
+        "7cd03796-250c-47f7-9544-ce9c10d089d1",
+        "8dc0a633-810d-4b51-b0cb-88d8c12941cb"
+      ],
+      "gold-liquidity-alerts": [
+        "61e94f965aaf81a0fee13bf506fccafdae2dce3adda80c310320cea6291fc339",
+        "9a2d5e72b429067aa964b06171a21408f2935934c3f14c0b3e40be0295d7caf4",
+        "6b7d6fb52b3848583869e11da41743486eac5c2a8134ada11f6034608f02afa3"
+      ],
+      "raw-mobile-money-payments": [
+        "7ca4b67c-3528-469f-81b4-13e2f9d40543",
+        "cb062900-f81a-4b9b-b15c-957e44ff2f92",
+        "ed930cf6-f8f1-4fcb-b1af-ca0c23d44318",
+        "066952ec-b606-4cda-bf1f-53a1163020e6"
+      ],
+      "silver-bank-transactions": [
+        "21db5f36-0fbd-409d-8434-f7833d8728a2",
+        "4f556dcb-1de7-4a58-bf45-1013409b06f2",
+        "ceb8cb18-b81d-4fa4-b50c-2c9fd0d669f3",
+        "b61f6658-6161-4ef0-8b87-f28449d2fd79",
+        "2abd6aec-5362-4118-bc53-84d303d23a23",
+        "059af122-bc37-4d1c-9dd3-7db6c889ea82",
+        "f21c7721-3a44-4121-940c-72680d4f09ae",
+        "f21c7721-3a44-4121-940c-72680d4f09ae",
+        "5937fa22-d8e9-417c-bf05-77370591667e",
+        "fdbb60fe-cc0a-4a8e-96dd-e76833cdf772",
+        "c51e818d-3c9e-4d65-a954-4c0c7852feec"
+      ]
+    },
+    "nifi_to_kafka_latency_max_seconds": 0.5710000991821289,
+    "file_to_kafka_latency_max_seconds": 3.375
+  }
+}

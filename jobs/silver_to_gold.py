@@ -2,6 +2,7 @@
 
 from pyspark.sql import functions as F, Window
 from waba.spark_common import session, selected, replace_countries
+from waba.lambda_snapshot import publish as publish_lambda_snapshot
 
 spark = session("waba-gold")
 
@@ -20,6 +21,13 @@ def ratio(numerator, denominator):
 
 
 bank = source("bank_transactions")
+# One atomic fact snapshot drives both Lambda totals and overlap exclusion.
+publish_lambda_snapshot(bank)
+write(
+    bank.select("country_code", "entity_type", "transaction_id", "txn_date"),
+    "batch_transaction_membership",
+    "txn_date",
+)
 daily = bank.groupBy("country_code", "entity_type", "txn_date", "transaction_type").agg(
     F.count("*").alias("attempted_count"),
     F.sum(F.when(F.col("transaction_status") == "SUCCESS", 1).otherwise(0)).alias(
@@ -92,7 +100,7 @@ arpu = arpu.withColumn("arpc_eur", ratio("revenue_eur", "active_customers")).wit
 write(arpu, "customer_arpu_monthly", "month")
 
 insurance = source("insurance_operations")
-modelled = insurance.filter("accounting_model != 'UNMODELLED_LEGACY'")
+modelled = insurance.filter("accounting_model = 'scenario-v1'")
 loss = modelled.groupBy(
     "country_code", "entity_type", "month", "product_id", "product_line"
 ).agg(
@@ -124,7 +132,11 @@ write(claims, "claims_processing_time", "month")
 coverage = insurance.groupBy("country_code", "entity_type", "month").agg(
     F.count("*").alias("total_events"),
     F.sum(
-        F.when(F.col("accounting_model") == "UNMODELLED_LEGACY", 1).otherwise(0)
+        F.when(
+            (F.col("accounting_model") != "scenario-v1")
+            | F.col("accounting_model").isNull(),
+            1,
+        ).otherwise(0)
     ).alias("unmodelled_events"),
 )
 write(coverage, "insurance_accounting_coverage", "month")

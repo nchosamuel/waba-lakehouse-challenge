@@ -1,0 +1,16 @@
+{
+  "verified_at_utc": "2026-10-14T00:08:59.203771+00:00",
+  "kafka_nifi_restart_verified": true,
+  "spark_operator_driver_restart_verified": true,
+  "original_fixture_unique_events_after_replay": 11,
+  "raw_replayed": 8,
+  "silver_replayed": 1,
+  "lambda_no_overlap_verified": true,
+  "multi_batch_journal_refresh_verified": true,
+  "second_batch_probe": {
+    "event_id": "5e64d63d-86d2-4bb9-b054-9814036c6f8b",
+    "source_file": "CI/bank_transactions/2026-10-14/multi_batch_probe_5e64d63d-86d2-4bb9-b054-9814036c6f8b.csv",
+    "timestamp": "2026-10-14T00:05:09.390205"
+  },
+  "checkpoint_driver_and_executor_shared": true
+}

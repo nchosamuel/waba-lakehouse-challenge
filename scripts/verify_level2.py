@@ -9,25 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def query(sql):
-    data = subprocess.check_output(
-        [
-            "docker",
-            "compose",
-            "exec",
-            "-T",
-            "trino",
-            "trino",
-            "--output-format",
-            "CSV",
-            "--execute",
-            sql,
-        ],
-        cwd=ROOT,
-        text=True,
-        stderr=subprocess.DEVNULL,
-    )
-    return list(csv.reader(io.StringIO(data)))
+from verification_runtime import query, report_path
 
 
 checks = {}
@@ -90,9 +72,9 @@ for country, low, high in loss:
         abs(float(low) - expected_loss[country]) < 0.00001
         and abs(float(high) - expected_loss[country]) < 0.00001
     ), (country, low, high)
-assert query(
+assert [float(value) for value in query(
     "SELECT min(avg_business_processing_days),max(avg_business_processing_days) FROM iceberg.gold.claims_processing_time"
-)[0] == ["10.0", "10.0"]
+)[0]] == [10.0, 10.0]
 assert (
     int(query("SELECT count(*) FROM iceberg.gold.cross_border_transfers")[0][0]) >= 120
 )
@@ -149,7 +131,5 @@ result = {
     "no_future_snapshot_in_reporting": True,
     "bank_success_amount_matches_gold": True,
 }
-(ROOT / "docs" / "level2-verification.json").write_text(
-    json.dumps(result, indent=2) + "\n"
-)
+report_path("level2-verification.json").write_text(json.dumps(result, indent=2) + "\n")
 print(json.dumps(result))

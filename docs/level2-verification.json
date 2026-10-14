@@ -22,24 +22,24 @@
       "silver": 50
     },
     "bank_transactions": {
-      "raw": 800,
-      "bronze": 800,
-      "silver": 800
+      "raw": 81291,
+      "bronze": 81291,
+      "silver": 81291
     },
     "insurance_operations": {
-      "raw": 2400,
-      "bronze": 2400,
-      "silver": 2400
+      "raw": 42438,
+      "bronze": 42438,
+      "silver": 42438
     },
     "mobile_money_payments": {
-      "raw": 920,
-      "bronze": 920,
-      "silver": 920
+      "raw": 160158,
+      "bronze": 160158,
+      "silver": 160158
     },
     "loan_repayments": {
-      "raw": 800,
-      "bronze": 800,
-      "silver": 800
+      "raw": 80837,
+      "bronze": 80837,
+      "silver": 80837
     }
   },
   "npl": [
@@ -120,7 +120,5 @@
   ],
   "business_processing_days": 10,
   "no_future_snapshot_in_reporting": true,
-  "bank_success_amount_matches_gold": true,
-  "environment": "waba-repro-check",
-  "verified_at_utc": "2026-10-13T21:46:06.034489+00:00"
+  "bank_success_amount_matches_gold": true
 }

@@ -1,4 +1,5 @@
 """Mix valid and rejected rows in all four flows, then replay without duplicates."""
+
 import csv
 import io
 import json
@@ -7,26 +8,48 @@ import uuid
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FLOWS = ('bank_transactions','insurance_operations','mobile_money_payments','loan_repayments')
-PK = dict(zip(FLOWS, ('transaction_id','operation_id','payment_id','repayment_id')))
+FLOWS = (
+    "bank_transactions",
+    "insurance_operations",
+    "mobile_money_payments",
+    "loan_repayments",
+)
+PK = dict(zip(FLOWS, ("transaction_id", "operation_id", "payment_id", "repayment_id")))
 
 
 def run(*args):
-    return subprocess.check_output(['docker','compose',*args],cwd=ROOT,text=True)
+    return subprocess.check_output(["docker", "compose", *args], cwd=ROOT, text=True)
 
 
 def query(sql):
-    return next(csv.reader(io.StringIO(run('exec','-T','trino','trino','--output-format','CSV','--execute',sql))))
+    return next(
+        csv.reader(
+            io.StringIO(
+                run(
+                    "exec",
+                    "-T",
+                    "trino",
+                    "trino",
+                    "--output-format",
+                    "CSV",
+                    "--execute",
+                    sql,
+                )
+            )
+        )
+    )
 
 
 def producer(code):
-    return run('run','--rm','--entrypoint','python3','spark','-c',code)
+    return run("run", "--rm", "--entrypoint", "python3", "spark", "-c", code)
 
 
-run('run','--rm','spark')
-before = {name:int(query(f'SELECT count(*) FROM iceberg.raw.{name}')[0]) for name in FLOWS}
-batch = 'quality-' + uuid.uuid4().hex
-code = f'''
+run("run", "--rm", "spark")
+before = {
+    name: int(query(f"SELECT count(*) FROM iceberg.raw.{name}")[0]) for name in FLOWS
+}
+batch = "quality-" + uuid.uuid4().hex
+code = f"""
 import csv, io, json, tempfile, uuid
 from datetime import datetime
 from waba.generator import generate
@@ -58,19 +81,21 @@ for name in {FLOWS!r}:
     s3.put_object(Bucket='raw-landing',Key=key,Body=stream.getvalue().encode())
     keys.append(key)
 print(json.dumps(keys))
-'''
+"""
 keys = json.loads(producer(code))
 reports = []
-for iteration in (1,2):
+for iteration in (1, 2):
     if iteration == 2:
-        producer(f'''
+        producer(
+            f"""
 from waba.publisher import client
 s3=client()
 for key in {keys!r}:
     s3.copy_object(Bucket='raw-landing',Key=key,CopySource={{'Bucket':'archive','Key':key}})
-''')
-    run('run','--rm','spark')
-    check = f'''
+"""
+        )
+    run("run", "--rm", "spark")
+    check = f"""
 import json
 from waba.publisher import client
 s3=client()
@@ -88,11 +113,24 @@ for key in {keys!r}:
         assert exc.response['Error']['Code']=='404', exc
     reports.append(report)
 print(json.dumps(reports))
-'''
+"""
     reports = json.loads(producer(check))
     for name in FLOWS:
-        count,unique=map(int, query(f'SELECT count(*),count(DISTINCT {PK[name]}) FROM iceberg.raw.{name}'))
-        assert count==unique==before[name]+2, (name,count,unique,before[name])
-result = {'mixed_files_verified':True,'all_flow_replay_verified':True,'accepted_rows':8,'rejected_rows':24,'files':reports}
-(ROOT/'docs'/'quarantine-verification.json').write_text(json.dumps(result,indent=2)+'\n')
+        count, unique = map(
+            int,
+            query(
+                f"SELECT count(*),count(DISTINCT {PK[name]}) FROM iceberg.raw.{name}"
+            ),
+        )
+        assert count == unique == before[name] + 2, (name, count, unique, before[name])
+result = {
+    "mixed_files_verified": True,
+    "all_flow_replay_verified": True,
+    "accepted_rows": 8,
+    "rejected_rows": 24,
+    "files": reports,
+}
+(ROOT / "docs" / "quarantine-verification.json").write_text(
+    json.dumps(result, indent=2) + "\n"
+)
 print(json.dumps(result))

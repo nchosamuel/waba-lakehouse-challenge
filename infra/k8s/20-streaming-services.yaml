@@ -1,0 +1,443 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "kafka-data",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "2Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "nifi-data",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "2Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "stream-checkpoints",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "kafka",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "kafka"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "kafka"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "kafka",
+                "image": "apache/kafka:3.9.1",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 9092
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "KAFKA_NODE_ID",
+                    "value": "1"
+                  },
+                  {
+                    "name": "KAFKA_PROCESS_ROLES",
+                    "value": "broker,controller"
+                  },
+                  {
+                    "name": "KAFKA_CONTROLLER_QUORUM_VOTERS",
+                    "value": "1@kafka.ingestion.svc.cluster.local:9093"
+                  },
+                  {
+                    "name": "KAFKA_LISTENERS",
+                    "value": "PLAINTEXT://:9092,CONTROLLER://:9093"
+                  },
+                  {
+                    "name": "KAFKA_ADVERTISED_LISTENERS",
+                    "value": "PLAINTEXT://kafka.ingestion.svc.cluster.local:9092"
+                  },
+                  {
+                    "name": "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP",
+                    "value": "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+                  },
+                  {
+                    "name": "KAFKA_CONTROLLER_LISTENER_NAMES",
+                    "value": "CONTROLLER"
+                  },
+                  {
+                    "name": "KAFKA_INTER_BROKER_LISTENER_NAME",
+                    "value": "PLAINTEXT"
+                  },
+                  {
+                    "name": "KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR",
+                    "value": "1"
+                  },
+                  {
+                    "name": "KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR",
+                    "value": "1"
+                  },
+                  {
+                    "name": "KAFKA_TRANSACTION_STATE_LOG_MIN_ISR",
+                    "value": "1"
+                  },
+                  {
+                    "name": "KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS",
+                    "value": "0"
+                  },
+                  {
+                    "name": "KAFKA_LOG_DIRS",
+                    "value": "/var/lib/kafka/data"
+                  },
+                  {
+                    "name": "KAFKA_HEAP_OPTS",
+                    "value": "-Xms256m -Xmx384m"
+                  },
+                  {
+                    "name": "CLUSTER_ID",
+                    "value": "MkU3OEVBNTcwNTJENDM2Qk"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/var/lib/kafka/data"
+                  }
+                ],
+                "startupProbe": {
+                  "tcpSocket": {
+                    "port": 9092
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 9092
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 9092
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "kafka-data"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false,
+            "securityContext": {
+              "fsGroup": 1000
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "kafka",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "kafka"
+        },
+        "ports": [
+          {
+            "name": "p9092",
+            "port": 9092,
+            "targetPort": 9092
+          },
+          {
+            "name": "p9093",
+            "port": 9093,
+            "targetPort": 9093
+          }
+        ],
+        "publishNotReadyAddresses": true
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "nifi",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "nifi"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "nifi"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "nifi",
+                "image": "apache/nifi:2.4.0",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8443
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "1536Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "NIFI_WEB_HTTPS_PORT",
+                    "value": "8443"
+                  },
+                  {
+                    "name": "NIFI_WEB_HTTPS_HOST",
+                    "value": "0.0.0.0"
+                  },
+                  {
+                    "name": "NIFI_WEB_PROXY_HOST",
+                    "value": "localhost:8443,127.0.0.1:8443,nifi.ingestion.svc.cluster.local:8443"
+                  },
+                  {
+                    "name": "NIFI_JVM_HEAP_INIT",
+                    "value": "512m"
+                  },
+                  {
+                    "name": "NIFI_JVM_HEAP_MAX",
+                    "value": "768m"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/opt/nifi/nifi-current/conf",
+                    "subPath": "conf"
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/opt/nifi/nifi-current/state",
+                    "subPath": "state"
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/opt/nifi/nifi-current/flowfile_repository",
+                    "subPath": "flowfile_repository"
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/opt/nifi/nifi-current/content_repository",
+                    "subPath": "content_repository"
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/opt/nifi/nifi-current/provenance_repository",
+                    "subPath": "provenance_repository"
+                  }
+                ],
+                "startupProbe": {
+                  "tcpSocket": {
+                    "port": 8443
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 8443
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 8443
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "nifi-data"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false,
+            "initContainers": [
+              {
+                "name": "nifi-state-init",
+                "image": "apache/nifi:2.4.0",
+                "command": [
+                  "bash",
+                  "-ec",
+                  "mkdir -p /persist/conf /persist/state /persist/flowfile_repository /persist/content_repository /persist/provenance_repository; cp -an /opt/nifi/nifi-current/conf/. /persist/conf/"
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/persist"
+                  }
+                ]
+              }
+            ],
+            "securityContext": {
+              "fsGroup": 1000
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "nifi",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "nifi"
+        },
+        "ports": [
+          {
+            "name": "p8443",
+            "port": 8443,
+            "targetPort": 8443
+          }
+        ]
+      }
+    }
+  ]
+}

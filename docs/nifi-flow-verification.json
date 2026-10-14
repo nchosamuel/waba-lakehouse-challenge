@@ -1,0 +1,17 @@
+{
+  "group_id": "374722ab-01a1-1000-8696-eca58bada1fd",
+  "processors": [
+    "ListS3",
+    "RouteOnAttribute",
+    "UpdateAttribute",
+    "FetchS3Object",
+    "ConvertRecord",
+    "SplitJson",
+    "JoltTransformJSON",
+    "PublishKafka",
+    "PutS3Object"
+  ],
+  "queue_limit_count": 1000,
+  "queue_limit_bytes": "16 MB",
+  "credentials": "runtime only"
+}

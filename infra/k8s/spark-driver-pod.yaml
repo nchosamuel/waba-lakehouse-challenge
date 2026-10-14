@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels: {app.kubernetes.io/part-of: waba}
+spec:
+  securityContext: {fsGroup: 185}
+  containers:
+    - name: spark-kubernetes-driver
+      startupProbe:
+        tcpSocket: {port: 4040}
+        periodSeconds: 2
+        failureThreshold: 30
+      readinessProbe:
+        tcpSocket: {port: 4040}
+        periodSeconds: 2
+      livenessProbe:
+        tcpSocket: {port: 4040}
+        periodSeconds: 20
+        failureThreshold: 3

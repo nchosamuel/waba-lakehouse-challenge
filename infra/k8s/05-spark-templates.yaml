@@ -1,0 +1,21 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "waba-spark-templates",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "spark-driver-pod.yaml": "apiVersion: v1\nkind: Pod\nmetadata:\n  labels: {app.kubernetes.io/part-of: waba}\nspec:\n  securityContext: {fsGroup: 185}\n  containers:\n    - name: spark-kubernetes-driver\n      startupProbe:\n        tcpSocket: {port: 4040}\n        periodSeconds: 2\n        failureThreshold: 30\n      readinessProbe:\n        tcpSocket: {port: 4040}\n        periodSeconds: 2\n      livenessProbe:\n        tcpSocket: {port: 4040}\n        periodSeconds: 20\n        failureThreshold: 3\n",
+        "stream-driver-pod.yaml": "apiVersion: v1\nkind: Pod\nmetadata:\n  labels: {app.kubernetes.io/part-of: waba}\nspec:\n  securityContext: {fsGroup: 185}\n  containers:\n    - name: spark-kubernetes-driver\n      startupProbe:\n        tcpSocket: {port: 4040}\n        periodSeconds: 2\n        failureThreshold: 30\n      readinessProbe:\n        tcpSocket: {port: 4040}\n        periodSeconds: 2\n      livenessProbe:\n        tcpSocket: {port: 4040}\n        periodSeconds: 20\n        failureThreshold: 3\n"
+      }
+    }
+  ]
+}

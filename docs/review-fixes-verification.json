@@ -1,0 +1,42 @@
+{
+  "verified_at_utc": "2026-10-14T15:40:57.768243+00:00",
+  "batch_table": "iceberg.gold.review_lambda_batch",
+  "stream_table": "iceberg.gold.review_lambda_stream",
+  "old_snapshot_id": 4762764490177726053,
+  "after_interruption_snapshot_id": 9200491546261047226,
+  "expected_unified_total_eur": 37.0,
+  "retry_fact_count": 3,
+  "late_individual_rule_counts": {
+    "UNUSUAL_COUNTRY_FOR_PROFILE": 1,
+    "CLAIM_OVER_THREE_ANNUAL_PREMIUMS": 1,
+    "CHALLENGE_AML_THRESHOLD": 1
+  },
+  "late_high_value_windows": 4,
+  "global_time_span_minutes": 60,
+  "injected_interruption": true,
+  "trino_snapshot_checks": {
+    "before_publication": {
+      "total_eur": 37.0,
+      "country_totals": {
+        "GH": 7.0,
+        "CI": 30.0
+      }
+    },
+    "after_injected_interruption": {
+      "total_eur": 37.0,
+      "country_totals": {
+        "CI": 30.0,
+        "GH": 7.0
+      }
+    },
+    "after_retry": {
+      "total_eur": 37.0,
+      "country_totals": {
+        "CI": 30.0,
+        "GH": 7.0
+      }
+    }
+  },
+  "trino_verified_at_utc": "2026-10-14T15:41:17.789373+00:00",
+  "isolated_fixtures_removed": true
+}

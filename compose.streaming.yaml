@@ -1,0 +1,96 @@
+services:
+  kafka:
+    image: apache/kafka:3.9.1
+    profiles: [streaming]
+    environment:
+      KAFKA_NODE_ID: '1'
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: '1'
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: '1'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: '0'
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx384m
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes: [kafka-data:/var/lib/kafka/data]
+    mem_limit: 768m
+    healthcheck:
+      test: ['CMD', '/opt/kafka/bin/kafka-topics.sh', '--bootstrap-server', 'kafka:9092', '--list']
+      interval: 20s
+      timeout: 15s
+      retries: 10
+  nifi:
+    image: apache/nifi:2.4.0
+    profiles: [streaming]
+    depends_on:
+      kafka: {condition: service_healthy}
+      buckets: {condition: service_completed_successfully}
+    environment:
+      SINGLE_USER_CREDENTIALS_USERNAME: ${NIFI_ADMIN_USER:?}
+      SINGLE_USER_CREDENTIALS_PASSWORD: ${NIFI_ADMIN_PASSWORD:?}
+      NIFI_WEB_HTTPS_PORT: '8443'
+      NIFI_WEB_PROXY_HOST: localhost:8443,127.0.0.1:8443
+      NIFI_JVM_HEAP_INIT: 512m
+      NIFI_JVM_HEAP_MAX: 768m
+    ports: ['127.0.0.1:8443:8443']
+    volumes:
+      - nifi-conf:/opt/nifi/nifi-current/conf
+      - nifi-state:/opt/nifi/nifi-current/state
+      - nifi-flowfile:/opt/nifi/nifi-current/flowfile_repository
+      - nifi-content:/opt/nifi/nifi-current/content_repository
+      - nifi-provenance:/opt/nifi/nifi-current/provenance_repository
+    mem_limit: 1536m
+  trino:
+    volumes:
+      - ./infra/trino/streaming-catalog:/etc/trino/catalog:ro
+      - ./infra/trino/kafka:/etc/trino/kafka:ro
+  stream-init:
+    image: apache/spark:3.5.5
+    user: '0:0'
+    profiles: [streaming]
+    volumes: [stream-checkpoints:/checkpoints]
+    entrypoint: ['python3', '-c', "import os; os.chown('/checkpoints',185,185)"]
+  kafka-init:
+    build: {context: ., dockerfile: infra/spark-streaming/Dockerfile}
+    profiles: [streaming]
+    depends_on:
+      kafka: {condition: service_healthy}
+    volumes: ['./jobs:/app/jobs:ro']
+    entrypoint: ['python3','/app/jobs/init_kafka.py']
+  streaming:
+    build: {context: ., dockerfile: infra/spark-streaming/Dockerfile}
+    profiles: [streaming]
+    depends_on:
+      kafka: {condition: service_healthy}
+      stream-init: {condition: service_completed_successfully}
+      kafka-init: {condition: service_completed_successfully}
+      catalog: {condition: service_healthy}
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: us-east-1
+      PYTHONPATH: /app/src
+    volumes: ['./jobs:/app/jobs:ro','./src:/app/src:ro','stream-checkpoints:/checkpoints']
+    entrypoint: ['/opt/spark/bin/spark-submit']
+    command: ['--master','local[2]','--driver-memory','1g','/app/jobs/streaming_pipeline.py']
+    mem_limit: 2g
+    healthcheck:
+      test: ['CMD', 'python3', '-c', "import json,time; from datetime import datetime; s=json.load(open('/checkpoints/stream-health.json')); assert time.time()-datetime.fromisoformat(s['heartbeat_utc']).timestamp()<90; assert len(s['queries'])==2 and all(q['active'] for q in s['queries'])"]
+      interval: 20s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+volumes:
+  stream-checkpoints:
+  kafka-data:
+  nifi-conf:
+  nifi-state:
+  nifi-flowfile:
+  nifi-content:
+  nifi-provenance:

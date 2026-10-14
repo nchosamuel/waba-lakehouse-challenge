@@ -1,0 +1,158 @@
+{
+  "started_at_utc": "2026-10-14T15:13:55.938021+00:00",
+  "deadline_utc": "2026-10-14T06:00:00+00:00",
+  "schedule_unchanged": "30 0 * * *",
+  "missed_deadline_before_recovery": true,
+  "run_created_by_scheduler": true,
+  "airflow_run": {
+    "dag_id": "dag_regulatory_report",
+    "dag_run_id": "scheduled__2026-10-13T00:30:00+00:00",
+    "run_type": "scheduled",
+    "state": "success",
+    "logical_date": "2026-10-13T00:30:00+00:00",
+    "data_interval_start": "2026-10-13T00:30:00+00:00",
+    "data_interval_end": "2026-10-14T00:30:00+00:00",
+    "start_date": "2026-10-14T15:14:21.358584+00:00",
+    "end_date": "2026-10-14T15:14:59.020129+00:00",
+    "conf": {}
+  },
+  "report_date": "2026-10-13",
+  "artifacts": [
+    {
+      "key": "regulatory/2026-10-13/BF/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/BF/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/BJ/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/BJ/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/CI/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/CI/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/GH/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/GH/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/GN/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/GN/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/ML/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/ML/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/SN/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/SN/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    },
+    {
+      "key": "regulatory/2026-10-13/TG/bceao.jsonl",
+      "rows": 1,
+      "report_dates": [
+        "2026-10-13"
+      ],
+      "snapshot_dates": [
+        "2026-02-28"
+      ]
+    },
+    {
+      "key": "regulatory/2026-10-13/TG/cima.jsonl",
+      "rows": 0,
+      "report_dates": [],
+      "snapshot_dates": []
+    }
+  ],
+  "data_coverage_note": "BCEAO uses the last available loan snapshot; CIMA can be empty when no modelled insurance operations exist in the reporting month. Run success does not certify data freshness or official regulatory compliance.",
+  "completed_at_utc": "2026-10-14T15:17:44.081466+00:00",
+  "deadline_was_met": false,
+  "live_deadline_metric_after_recovery": 0,
+  "live_grafana_alert_after_recovery": "Normal",
+  "airflow_left_running": true,
+  "regulatory_dag_left_unpaused": true,
+  "ingestion_left_paused_for_memory": true
+}

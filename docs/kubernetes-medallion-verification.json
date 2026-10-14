@@ -1,0 +1,124 @@
+{
+  "medallion_verified": true,
+  "row_counts": {
+    "customers": {
+      "raw": 500000,
+      "bronze": 500000,
+      "silver": 500000
+    },
+    "accounts": {
+      "raw": 800000,
+      "bronze": 800000,
+      "silver": 800000
+    },
+    "branches": {
+      "raw": 200,
+      "bronze": 200,
+      "silver": 200
+    },
+    "products": {
+      "raw": 50,
+      "bronze": 50,
+      "silver": 50
+    },
+    "bank_transactions": {
+      "raw": 800,
+      "bronze": 800,
+      "silver": 800
+    },
+    "insurance_operations": {
+      "raw": 2400,
+      "bronze": 2400,
+      "silver": 2400
+    },
+    "mobile_money_payments": {
+      "raw": 920,
+      "bronze": 920,
+      "silver": 920
+    },
+    "loan_repayments": {
+      "raw": 800,
+      "bronze": 800,
+      "silver": 800
+    }
+  },
+  "npl": [
+    [
+      "BF",
+      "0.060000"
+    ],
+    [
+      "BJ",
+      "0.040000"
+    ],
+    [
+      "CI",
+      "0.030000"
+    ],
+    [
+      "GH",
+      "0.050000"
+    ],
+    [
+      "GN",
+      "0.070000"
+    ],
+    [
+      "ML",
+      "0.050000"
+    ],
+    [
+      "SN",
+      "0.040000"
+    ],
+    [
+      "TG",
+      "0.080000"
+    ]
+  ],
+  "loss_ratio_by_country": [
+    [
+      "BF",
+      "0.65000000",
+      "0.65000000"
+    ],
+    [
+      "BJ",
+      "0.80000000",
+      "0.80000000"
+    ],
+    [
+      "CI",
+      "0.50000000",
+      "0.50000000"
+    ],
+    [
+      "GH",
+      "0.85000000",
+      "0.85000000"
+    ],
+    [
+      "GN",
+      "0.70000000",
+      "0.70000000"
+    ],
+    [
+      "ML",
+      "0.60000000",
+      "0.60000000"
+    ],
+    [
+      "SN",
+      "0.55000000",
+      "0.55000000"
+    ],
+    [
+      "TG",
+      "0.75000000",
+      "0.75000000"
+    ]
+  ],
+  "business_processing_days": 10,
+  "no_future_snapshot_in_reporting": true,
+  "bank_success_amount_matches_gold": true
+}

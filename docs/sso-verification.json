@@ -1,0 +1,84 @@
+{
+  "verified_at_utc": "2026-10-14T04:14:27.152657+00:00",
+  "keycloak_version": "26.4.0",
+  "superset_oidc_verified": true,
+  "authorization_code_pkce": true,
+  "profiles": [
+    {
+      "profile": "country_analyst",
+      "country": "CI",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "SN",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "ML",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "BF",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "GN",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "TG",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "BJ",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "GH",
+      "all_chart_queries_country_restricted": true,
+      "contradictory_filter_empty": true,
+      "sql_lab_denied": true
+    },
+    {
+      "profile": "viewer",
+      "aggregate_charts_accessible": true,
+      "regulatory_dataset_denied": true,
+      "sql_lab_denied": true,
+      "ad_hoc_subquery_denied": true
+    },
+    {
+      "profile": "compliance_officer",
+      "only_two_regulatory_gold_datasets": true,
+      "other_dataset_query_denied": true
+    }
+  ],
+  "group_admin_all_dashboard_queries": true,
+  "local_logout_verified": true,
+  "identity_provider_logout_verified": true,
+  "rls_cache_isolation_verified": true,
+  "trino_sso_tested_by_this_script": false,
+  "trino_sso_verification_report": "docs/trino-sso-verification.json",
+  "profile": "local HTTP, H2 persistent PVC; no production TLS/HA claim",
+  "browser_evidence": "docs/screenshots/sso-analyst-ci.png"
+}

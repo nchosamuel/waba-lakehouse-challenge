@@ -1,0 +1,17 @@
+{
+  "verified_at_utc": "2026-10-14T14:43:10.211093+00:00",
+  "spark_application": "waba-regulatory-report-fc99b301",
+  "country_scope": "CI",
+  "report_date": "2026-02-28",
+  "native_spark_metrics_scraped": true,
+  "native_metrics_samples": 4,
+  "job_duration_seconds": 32.0,
+  "json_event_parsed_as_loki_label": true,
+  "json_event": "regulatory_report_completed",
+  "data_writes": "idempotent CI regulatory report replay",
+  "ingestion_replicas_restored": {
+    "kafka": 1,
+    "nifi": 1
+  },
+  "native_executor_metric_names_count": 39
+}

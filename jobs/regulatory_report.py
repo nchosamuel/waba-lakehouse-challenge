@@ -7,6 +7,7 @@ import boto3
 from pyspark.sql import functions as F, Window
 from waba.spark_common import session, selected, merge
 from waba.pipeline_config import scope
+from waba.report_coverage import country_coverage
 
 spark = session("waba-regulatory-report")
 report_date = date.fromisoformat(
@@ -46,13 +47,13 @@ merge(
     "report_date",
 )
 # Reaggregate month-to-date from Silver rather than using the full monthly Gold table.
-insurance = selected(
+period_insurance = selected(
     spark.table("iceberg.silver.insurance_operations"), use_dates=False
 ).filter(
     (F.col("txn_date") >= F.lit(monthly).cast("date"))
     & (F.col("txn_date") <= F.lit(report_date))
-    & (F.col("accounting_model") != "UNMODELLED_LEGACY")
 )
+insurance = period_insurance.filter("accounting_model = 'scenario-v1'")
 insurance = insurance.withColumn(
     "earned_to_date_eur",
     F.when(
@@ -114,6 +115,22 @@ for name, frame in (("bceao", npl), ("cima", loss)):
             Key=f"regulatory/{report_date}/{country}/{name}.jsonl",
             Body=payload.encode(),
         )
+# Publish a data-quality manifest even when a technical run succeeds with empty/stale data.
+snapshots = {r.country_code: r.snapshot_date for r in npl.select("country_code", "snapshot_date").collect()}
+counts = period_insurance.groupBy("country_code").agg(
+    F.sum(F.when(F.col("accounting_model") == "scenario-v1", 1).otherwise(0)).alias("modelled"),
+    F.sum(F.when(F.coalesce(F.col("accounting_model"), F.lit("")) != "scenario-v1", 1).otherwise(0)).alias("unmodelled"),
+)
+counts = {r.country_code: (r.modelled, r.unmodelled) for r in counts.collect()}
+coverage = [country_coverage(c, report_date, snapshots.get(c), *counts.get(c, (0, 0))) for c in scope()[0]]
+manifest = {"report_date": str(report_date), "max_snapshot_age_days": 1,
+            "freshness_policy": "Demo policy: loan snapshot at most one calendar day old",
+            "countries": coverage,
+            "regulatory_coverage_complete": all(r["coverage_complete"] for r in coverage if r["in_regulatory_scope"]),
+            "official_regulatory_submission": False}
+s3.put_object(Bucket="archive", Key=f"regulatory/{report_date}/coverage.json",
+              Body=json.dumps(manifest).encode(), ContentType="application/json")
+print(json.dumps({"event": "regulatory_report_coverage", **manifest}), flush=True)
 print(
     json.dumps(
         {

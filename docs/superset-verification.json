@@ -1,0 +1,170 @@
+{
+  "verified_at_utc": "2026-10-14T05:21:44.692750+00:00",
+  "superset_version": "5.0.0",
+  "dashboards": 3,
+  "charts": [
+    {
+      "chart": "Paiements mobiles par heure et pays",
+      "rows": 192,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Délais des sinistres et SLA simulé",
+      "rows": 16,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Top produits · souscriptions simulées",
+      "rows": 34,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "ARPC mensuel par pays",
+      "rows": 8,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Échecs mobile par opérateur et pays",
+      "rows": 24,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Top 5 corridors par pays",
+      "rows": 30,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Alertes AML · 30 derniers jours",
+      "rows": 2,
+      "countries": [
+        "CI",
+        "GH"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Sinistres / primes · seuil du sujet 70 %",
+      "rows": 40,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "NPL · vert <3 %, orange 3–5 %, rouge >5 %",
+      "rows": 8,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Contribution des pays aux revenus",
+      "rows": 8,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    },
+    {
+      "chart": "Revenus par pays et activité",
+      "rows": 32,
+      "countries": [
+        "BF",
+        "BJ",
+        "CI",
+        "GH",
+        "GN",
+        "ML",
+        "SN",
+        "TG"
+      ],
+      "ci_filter_verified": true
+    }
+  ],
+  "trino_data_verified": true,
+  "country_filter_verified": true,
+  "interactive_sso_tested_by_this_script": false,
+  "sso_verification_report": "docs/sso-verification.json",
+  "subscription_model": "SUBSCRIPTIONS_SIMULATED_V1",
+  "claims_sla_model": "SLA_SIMULATED_V1"
+}

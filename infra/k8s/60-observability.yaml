@@ -1,0 +1,1236 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "observability",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ServiceAccount",
+      "metadata": {
+        "name": "observability",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      }
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "rules": [
+        {
+          "apiGroups": [
+            ""
+          ],
+          "resources": [
+            "pods",
+            "pods/log"
+          ],
+          "verbs": [
+            "get",
+            "list",
+            "watch"
+          ]
+        },
+        {
+          "apiGroups": [
+            "apps"
+          ],
+          "resources": [
+            "deployments"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        },
+        {
+          "apiGroups": [
+            "sparkoperator.k8s.io"
+          ],
+          "resources": [
+            "sparkapplications"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "ingestion",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "Role",
+        "name": "waba-observe"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "monitoring"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "processing"
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "rules": [
+        {
+          "apiGroups": [
+            ""
+          ],
+          "resources": [
+            "pods",
+            "pods/log"
+          ],
+          "verbs": [
+            "get",
+            "list",
+            "watch"
+          ]
+        },
+        {
+          "apiGroups": [
+            "apps"
+          ],
+          "resources": [
+            "deployments"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        },
+        {
+          "apiGroups": [
+            "sparkoperator.k8s.io"
+          ],
+          "resources": [
+            "sparkapplications"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "Role",
+        "name": "waba-observe"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "monitoring"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "processing"
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "rules": [
+        {
+          "apiGroups": [
+            ""
+          ],
+          "resources": [
+            "pods",
+            "pods/log"
+          ],
+          "verbs": [
+            "get",
+            "list",
+            "watch"
+          ]
+        },
+        {
+          "apiGroups": [
+            "apps"
+          ],
+          "resources": [
+            "deployments"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        },
+        {
+          "apiGroups": [
+            "sparkoperator.k8s.io"
+          ],
+          "resources": [
+            "sparkapplications"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "Role",
+        "name": "waba-observe"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "monitoring"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "processing"
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "rules": [
+        {
+          "apiGroups": [
+            ""
+          ],
+          "resources": [
+            "pods",
+            "pods/log"
+          ],
+          "verbs": [
+            "get",
+            "list",
+            "watch"
+          ]
+        },
+        {
+          "apiGroups": [
+            "apps"
+          ],
+          "resources": [
+            "deployments"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        },
+        {
+          "apiGroups": [
+            "sparkoperator.k8s.io"
+          ],
+          "resources": [
+            "sparkapplications"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "governance",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "Role",
+        "name": "waba-observe"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "monitoring"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "processing"
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "Role",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "rules": [
+        {
+          "apiGroups": [
+            ""
+          ],
+          "resources": [
+            "pods",
+            "pods/log"
+          ],
+          "verbs": [
+            "get",
+            "list",
+            "watch"
+          ]
+        },
+        {
+          "apiGroups": [
+            "apps"
+          ],
+          "resources": [
+            "deployments"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        },
+        {
+          "apiGroups": [
+            "sparkoperator.k8s.io"
+          ],
+          "resources": [
+            "sparkapplications"
+          ],
+          "verbs": [
+            "get",
+            "list"
+          ]
+        }
+      ]
+    },
+    {
+      "apiVersion": "rbac.authorization.k8s.io/v1",
+      "kind": "RoleBinding",
+      "metadata": {
+        "name": "waba-observe",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "roleRef": {
+        "apiGroup": "rbac.authorization.k8s.io",
+        "kind": "Role",
+        "name": "waba-observe"
+      },
+      "subjects": [
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "monitoring"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "observability",
+          "namespace": "processing"
+        }
+      ]
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "prometheus-data",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "loki-data",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "grafana-data",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "observability-events",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "1Gi"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "observability-config",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "loki.json": "{\n  \"auth_enabled\": false,\n  \"server\": {\n    \"http_listen_port\": 3100\n  },\n  \"common\": {\n    \"path_prefix\": \"/loki\",\n    \"replication_factor\": 1,\n    \"ring\": {\n      \"kvstore\": {\n        \"store\": \"inmemory\"\n      }\n    },\n    \"storage\": {\n      \"filesystem\": {\n        \"chunks_directory\": \"/loki/chunks\",\n        \"rules_directory\": \"/loki/rules\"\n      }\n    }\n  },\n  \"schema_config\": {\n    \"configs\": [\n      {\n        \"from\": \"2025-01-01\",\n        \"store\": \"tsdb\",\n        \"object_store\": \"filesystem\",\n        \"schema\": \"v13\",\n        \"index\": {\n          \"prefix\": \"index_\",\n          \"period\": \"24h\"\n        }\n      }\n    ]\n  },\n  \"limits_config\": {\n    \"retention_period\": \"72h\",\n    \"reject_old_samples\": false\n  },\n  \"compactor\": {\n    \"working_directory\": \"/loki/compactor\",\n    \"retention_enabled\": true,\n    \"delete_request_store\": \"filesystem\"\n  },\n  \"analytics\": {\n    \"reporting_enabled\": false\n  }\n}\n",
+        "providers.json": "{\n  \"apiVersion\": 1,\n  \"providers\": [\n    {\n      \"name\": \"WABA\",\n      \"folder\": \"WABA\",\n      \"type\": \"file\",\n      \"options\": {\n        \"path\": \"/var/lib/grafana/dashboards\"\n      },\n      \"allowUiUpdates\": false\n    }\n  ]\n}\n",
+        "prometheus.json": "{\n  \"global\": {\n    \"scrape_interval\": \"15s\",\n    \"evaluation_interval\": \"15s\"\n  },\n  \"scrape_configs\": [\n    {\n      \"job_name\": \"prometheus\",\n      \"static_configs\": [\n        {\n          \"targets\": [\n            \"localhost:9090\"\n          ]\n        }\n      ]\n    },\n    {\n      \"job_name\": \"waba\",\n      \"static_configs\": [\n        {\n          \"targets\": [\n            \"observability-exporter.processing:9108\"\n          ]\n        }\n      ]\n    },\n    {\n      \"job_name\": \"loki\",\n      \"static_configs\": [\n        {\n          \"targets\": [\n            \"loki.monitoring:3100\"\n          ]\n        }\n      ]\n    },\n    {\n      \"job_name\": \"alloy\",\n      \"static_configs\": [\n        {\n          \"targets\": [\n            \"alloy.processing:12345\"\n          ]\n        }\n      ]\n    },\n    {\n      \"job_name\": \"spark-native\",\n      \"kubernetes_sd_configs\": [\n        {\n          \"role\": \"pod\",\n          \"namespaces\": {\n            \"names\": [\n              \"processing\"\n            ]\n          }\n        }\n      ],\n      \"metrics_path\": \"/metrics/executors/prometheus\",\n      \"relabel_configs\": [\n        {\n          \"source_labels\": [\n            \"__meta_kubernetes_pod_label_spark_role\"\n          ],\n          \"regex\": \"driver\",\n          \"action\": \"keep\"\n        },\n        {\n          \"source_labels\": [\n            \"__meta_kubernetes_pod_phase\"\n          ],\n          \"regex\": \"Running\",\n          \"action\": \"keep\"\n        },\n        {\n          \"source_labels\": [\n            \"__meta_kubernetes_pod_ip\"\n          ],\n          \"target_label\": \"__address__\",\n          \"replacement\": \"${1}:4040\"\n        },\n        {\n          \"source_labels\": [\n            \"__meta_kubernetes_pod_name\"\n          ],\n          \"target_label\": \"application\"\n        }\n      ]\n    }\n  ]\n}\n",
+        "dashboard.json": "{\n  \"uid\": \"waba-health\",\n  \"title\": \"WABA \\u2014 Sant\\u00e9 des pipelines\",\n  \"schemaVersion\": 41,\n  \"version\": 1,\n  \"refresh\": \"15s\",\n  \"timezone\": \"utc\",\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"tags\": [\n    \"WABA\",\n    \"local\",\n    \"observability\"\n  ],\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"title\": \"Services actifs \\u2014 r\\u00e9plicas pr\\u00eats\",\n      \"description\": \"Comparer avec les r\\u00e9plicas demand\\u00e9s : 0 demand\\u00e9 signifie un arr\\u00eat volontaire.\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_component_ready_replicas\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Services demand\\u00e9s \\u2014 0 = pause volontaire\",\n      \"description\": \"\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 0,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_component_desired_replicas\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Disponibilit\\u00e9 des collecteurs\",\n      \"description\": \"0 signifie mesure indisponible ; aucune valeur r\\u00e9elle remplac\\u00e9e par z\\u00e9ro.\",\n      \"type\": \"stat\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 8,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\",\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"steps\": [\n              {\n                \"color\": \"red\",\n                \"value\": null\n              },\n              {\n                \"color\": \"green\",\n                \"value\": 1\n              }\n            ]\n          }\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_telemetry_available\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": true,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Dur\\u00e9e des jobs Spark par p\\u00e9rim\\u00e8tre pays\",\n      \"description\": \"Dur\\u00e9e du job entier. CI indique un traitement CI ; ALL indique un traitement partag\\u00e9, pas une mesure ind\\u00e9pendante par pays.\",\n      \"type\": \"table\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 8,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"s\"\n        },\n        \"overrides\": [\n          {\n            \"matcher\": {\n              \"id\": \"byName\",\n              \"options\": \"Pays / p\\u00e9rim\\u00e8tre\"\n            },\n            \"properties\": [\n              {\n                \"id\": \"custom.width\",\n                \"value\": 120\n              }\n            ]\n          },\n          {\n            \"matcher\": {\n              \"id\": \"byName\",\n              \"options\": \"Traitement\"\n            },\n            \"properties\": [\n              {\n                \"id\": \"custom.width\",\n                \"value\": 170\n              }\n            ]\n          },\n          {\n            \"matcher\": {\n              \"id\": \"byName\",\n              \"options\": \"\\u00c9tat\"\n            },\n            \"properties\": [\n              {\n                \"id\": \"custom.width\",\n                \"value\": 110\n              }\n            ]\n          },\n          {\n            \"matcher\": {\n              \"id\": \"byName\",\n              \"options\": \"Dur\\u00e9e\"\n            },\n            \"properties\": [\n              {\n                \"id\": \"custom.width\",\n                \"value\": 90\n              }\n            ]\n          },\n          {\n            \"matcher\": {\n              \"id\": \"byName\",\n              \"options\": \"Application\"\n            },\n            \"properties\": [\n              {\n                \"id\": \"custom.width\",\n                \"value\": 180\n              }\n            ]\n          }\n        ]\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_spark_job_duration_seconds\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": true,\n          \"format\": \"table\"\n        }\n      ],\n      \"transformations\": [\n        {\n          \"id\": \"organize\",\n          \"options\": {\n            \"excludeByName\": {\n              \"Time\": true,\n              \"__name__\": true,\n              \"instance\": true,\n              \"job\": true\n            },\n            \"indexByName\": {\n              \"country_scope\": 0,\n              \"exported_job\": 1,\n              \"state\": 2,\n              \"Value\": 3,\n              \"application\": 4\n            },\n            \"renameByName\": {\n              \"country_scope\": \"Pays / p\\u00e9rim\\u00e8tre\",\n              \"exported_job\": \"Traitement\",\n              \"state\": \"\\u00c9tat\",\n              \"Value\": \"Dur\\u00e9e\",\n              \"application\": \"Application\"\n            }\n          }\n        }\n      ]\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Retard Kafka \\u2014 fraude / AML\",\n      \"description\": \"Offsets fin broker moins offsets du dernier micro-lot Spark committ\\u00e9. silver_to_gold ex\\u00e9cute fraude, AML et liquidit\\u00e9 ; pas un consumer group Kafka ind\\u00e9pendant.\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 16,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_kafka_query_lag_messages{scenario=\\\"live\\\"}\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 6,\n      \"title\": \"Dur\\u00e9e du dernier micro-lot conserv\\u00e9\",\n      \"description\": \"\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 16,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"s\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_spark_stream_batch_duration_seconds\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 7,\n      \"title\": \"D\\u00e9bit NiFi \\u2014 FlowFiles sortants / seconde\",\n      \"description\": \"Moyenne calcul\\u00e9e depuis les statistiques NiFi sur cinq minutes ; pas un compteur cumulatif.\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 24,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_nifi_flowfiles_out_5m / 300\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 8,\n      \"title\": \"Taux d\\u2019erreur des DAGs \\u2014 derni\\u00e8res 24 h\",\n      \"description\": \"\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 24,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"percentunit\",\n          \"min\": 0,\n          \"max\": 1\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_airflow_error_ratio_24h\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 9,\n      \"title\": \"Rapport r\\u00e9glementaire \\u2014 \\u00e9ch\\u00e9ance 06 h UTC\",\n      \"description\": \"1 si le run planifi\\u00e9 dont l\\u2019intervalle se termine aujourd\\u2019hui n\\u2019est pas r\\u00e9ussi apr\\u00e8s 06 h UTC. Un run manuel ne valide pas l\\u2019\\u00e9ch\\u00e9ance.\",\n      \"type\": \"stat\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 32,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\",\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"steps\": [\n              {\n                \"color\": \"green\",\n                \"value\": null\n              },\n              {\n                \"color\": \"red\",\n                \"value\": 1\n              }\n            ]\n          }\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_regulatory_deadline_missed{scenario=\\\"live\\\"}\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": true,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 10,\n      \"title\": \"Fra\\u00eecheur du heartbeat streaming\",\n      \"description\": \"\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 32,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"s\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_stream_heartbeat_age_seconds\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 11,\n      \"title\": \"Signaux de d\\u00e9monstration des alertes\",\n      \"description\": \"Injection de test s\\u00e9par\\u00e9e des observations r\\u00e9elles. Retour \\u00e0 z\\u00e9ro apr\\u00e8s v\\u00e9rification.\",\n      \"type\": \"timeseries\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 40,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\"\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"{__name__=~\\\"waba_demo_.*\\\"}\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": false,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 12,\n      \"title\": \"Journaux centralis\\u00e9s \\u2014 \\u00e9v\\u00e9nements JSON Spark\",\n      \"type\": \"logs\",\n      \"datasource\": {\n        \"type\": \"loki\",\n        \"uid\": \"waba-loki\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 40,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"{namespace=\\\"processing\\\", event=~\\\".*batch_committed|spark_table_lineage|regulatory_report_completed\\\"} | json\"\n        }\n      ],\n      \"options\": {\n        \"showTime\": true,\n        \"showLabels\": false,\n        \"wrapLogMessage\": true,\n        \"sortOrder\": \"Descending\"\n      }\n    },\n    {\n      \"id\": 13,\n      \"title\": \"Fra\\u00eecheur globale des mesures\",\n      \"description\": \"\\u00c2ge du dernier cycle de collecte ; une valeur ancienne rend les mesures suspectes.\",\n      \"type\": \"stat\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 48,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"s\",\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"steps\": [\n              {\n                \"color\": \"green\",\n                \"value\": null\n              },\n              {\n                \"color\": \"red\",\n                \"value\": 120\n              }\n            ]\n          }\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"time() - waba_exporter_collection_timestamp_seconds\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": true,\n          \"format\": \"time_series\"\n        }\n      ]\n    },\n    {\n      \"id\": 14,\n      \"title\": \"Streaming attendu \\u2014 0 = arr\\u00eat\\u00e9\",\n      \"description\": \"Le fichier de sant\\u00e9 et les checkpoints persistent m\\u00eame lorsque le traitement est arr\\u00eat\\u00e9.\",\n      \"type\": \"stat\",\n      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"waba-prometheus\"\n      },\n      \"gridPos\": {\n        \"x\": 12,\n        \"y\": 48,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"short\",\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"steps\": [\n              {\n                \"color\": \"gray\",\n                \"value\": null\n              },\n              {\n                \"color\": \"green\",\n                \"value\": 1\n              }\n            ]\n          }\n        },\n        \"overrides\": []\n      },\n      \"options\": {\n        \"legend\": {\n          \"displayMode\": \"table\",\n          \"placement\": \"bottom\"\n        }\n      },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"waba_stream_expected\",\n          \"legendFormat\": \"{{component}}{{source}}{{exported_job}} {{country_scope}}{{query}}{{dag}}{{scenario}}\",\n          \"instant\": true,\n          \"format\": \"time_series\"\n        }\n      ]\n    }\n  ]\n}\n",
+        "alerting.json": "{\n  \"apiVersion\": 1,\n  \"groups\": [\n    {\n      \"orgId\": 1,\n      \"name\": \"WABA operational\",\n      \"folder\": \"WABA\",\n      \"interval\": \"30s\",\n      \"rules\": [\n        {\n          \"uid\": \"waba-spark-fraud\",\n          \"title\": \"Fraude Spark en erreur > 5 minutes\",\n          \"condition\": \"B\",\n          \"for\": \"5m\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"\\u00c9chec du job streaming de fraude pendant cinq minutes.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"live\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"waba_spark_fraud_failed\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        0\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-spark-fraud-demo\",\n          \"title\": \"Fraude Spark en erreur > 5 minutes \\u00b7 d\\u00e9mo\",\n          \"condition\": \"B\",\n          \"for\": \"5m\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"\\u00c9chec du job streaming de fraude pendant cinq minutes. Signal de test isol\\u00e9.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"demo\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"waba_demo_spark_fraud_failed\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        0\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-kafka-aml\",\n          \"title\": \"Retard Kafka AML > 5 000 messages\",\n          \"condition\": \"B\",\n          \"for\": \"0s\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"Lag du checkpoint partag\\u00e9 fraude/AML ; pas de groupe AML s\\u00e9par\\u00e9.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"live\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"waba_kafka_query_lag_messages{query=\\\"silver_to_gold\\\"} or (waba_telemetry_expected{source=\\\"kafka\\\"} == 0)\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        5000\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-kafka-aml-demo\",\n          \"title\": \"Retard Kafka AML > 5 000 messages \\u00b7 d\\u00e9mo\",\n          \"condition\": \"B\",\n          \"for\": \"0s\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"Lag du checkpoint partag\\u00e9 fraude/AML ; pas de groupe AML s\\u00e9par\\u00e9. Signal de test isol\\u00e9.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"demo\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"waba_demo_kafka_aml_lag_messages\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        5000\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-regulatory\",\n          \"title\": \"Rapport r\\u00e9glementaire manquant \\u00e0 06 h UTC\",\n          \"condition\": \"B\",\n          \"for\": \"0s\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"Run planifi\\u00e9 J+1 non r\\u00e9ussi apr\\u00e8s 06 h UTC.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"live\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"waba_regulatory_deadline_missed\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        0\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-regulatory-demo\",\n          \"title\": \"Rapport r\\u00e9glementaire manquant \\u00e0 06 h UTC \\u00b7 d\\u00e9mo\",\n          \"condition\": \"B\",\n          \"for\": \"0s\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"Run planifi\\u00e9 J+1 non r\\u00e9ussi apr\\u00e8s 06 h UTC. Signal de test isol\\u00e9.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"demo\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"waba_demo_regulatory_deadline_missed\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        0\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-telemetry-unavailable\",\n          \"title\": \"Collecteur attendu indisponible\",\n          \"condition\": \"B\",\n          \"for\": \"1m\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"Une source attendue ne produit plus de mesures. Les pauses volontaires ne d\\u00e9clenchent pas cette r\\u00e8gle.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"live\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"((waba_telemetry_expected == 1) unless on(source) (waba_telemetry_available == 1)) or (1 - waba_telemetry_available{source=~\\\"spark|kubernetes\\\"})\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        0\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-telemetry-stale\",\n          \"title\": \"Mesures globales p\\u00e9rim\\u00e9es\",\n          \"condition\": \"B\",\n          \"for\": \"0s\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"Le dernier cycle de collecte date de plus de deux minutes.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"live\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"time() - waba_exporter_collection_timestamp_seconds\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        120\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        },\n        {\n          \"uid\": \"waba-exporter-absent\",\n          \"title\": \"Exporteur absent\",\n          \"condition\": \"B\",\n          \"for\": \"1m\",\n          \"noDataState\": \"NoData\",\n          \"execErrState\": \"Error\",\n          \"isPaused\": false,\n          \"annotations\": {\n            \"summary\": \"La s\\u00e9rie de fra\\u00eecheur de l\\u2019exporteur a disparu.\"\n          },\n          \"labels\": {\n            \"team\": \"waba\",\n            \"severity\": \"warning\",\n            \"scenario\": \"live\"\n          },\n          \"data\": [\n            {\n              \"refId\": \"A\",\n              \"relativeTimeRange\": {\n                \"from\": 600,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"waba-prometheus\",\n              \"model\": {\n                \"refId\": \"A\",\n                \"expr\": \"absent(waba_exporter_collection_timestamp_seconds) or vector(0)\",\n                \"instant\": true,\n                \"intervalMs\": 15000,\n                \"maxDataPoints\": 43200\n              }\n            },\n            {\n              \"refId\": \"B\",\n              \"relativeTimeRange\": {\n                \"from\": 0,\n                \"to\": 0\n              },\n              \"datasourceUid\": \"__expr__\",\n              \"model\": {\n                \"refId\": \"B\",\n                \"type\": \"threshold\",\n                \"expression\": \"A\",\n                \"conditions\": [\n                  {\n                    \"type\": \"query\",\n                    \"evaluator\": {\n                      \"type\": \"gt\",\n                      \"params\": [\n                        0\n                      ]\n                    },\n                    \"operator\": {\n                      \"type\": \"and\"\n                    },\n                    \"reducer\": {\n                      \"type\": \"last\",\n                      \"params\": []\n                    }\n                  }\n                ]\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"contactPoints\": [\n    {\n      \"orgId\": 1,\n      \"name\": \"waba-local\",\n      \"receivers\": [\n        {\n          \"uid\": \"waba-local-webhook\",\n          \"type\": \"webhook\",\n          \"settings\": {\n            \"url\": \"http://observability-exporter.processing:9108/alerts\",\n            \"httpMethod\": \"POST\"\n          },\n          \"disableResolveMessage\": false\n        }\n      ]\n    }\n  ],\n  \"policies\": [\n    {\n      \"orgId\": 1,\n      \"receiver\": \"waba-local\",\n      \"group_by\": [\n        \"alertname\",\n        \"scenario\"\n      ],\n      \"group_wait\": \"5s\",\n      \"group_interval\": \"10s\",\n      \"repeat_interval\": \"1h\"\n    }\n  ]\n}\n",
+        "datasources.json": "{\n  \"apiVersion\": 1,\n  \"datasources\": [\n    {\n      \"name\": \"Prometheus\",\n      \"uid\": \"waba-prometheus\",\n      \"type\": \"prometheus\",\n      \"url\": \"http://prometheus.monitoring:9090\",\n      \"access\": \"proxy\",\n      \"isDefault\": true,\n      \"editable\": false\n    },\n    {\n      \"name\": \"Loki\",\n      \"uid\": \"waba-loki\",\n      \"type\": \"loki\",\n      \"url\": \"http://loki.monitoring:3100\",\n      \"access\": \"proxy\",\n      \"editable\": false\n    }\n  ]\n}\n",
+        "config.alloy": "discovery.kubernetes \"pods\" {\n  role = \"pod\"\n  namespaces { names = [\"ingestion\", \"processing\", \"serving\", \"governance\", \"monitoring\"] }\n}\ndiscovery.relabel \"logs\" {\n  targets = discovery.kubernetes.pods.targets\n  rule { source_labels = [\"__meta_kubernetes_namespace\"]\n    target_label = \"namespace\" }\n  rule { source_labels = [\"__meta_kubernetes_pod_name\"]\n    target_label = \"pod\" }\n  rule { source_labels = [\"__meta_kubernetes_pod_container_name\"]\n    target_label = \"container\" }\n}\nloki.source.kubernetes \"pods\" {\n  targets = discovery.relabel.logs.output\n  forward_to = [loki.process.json.receiver]\n}\nlocal.file_match \"airflow\" {\n  path_targets = [{\"__path__\" = \"/airflow-logs/dag_id=*/run_id=*/task_id=*/*.log\", \"namespace\" = \"processing\", \"component\" = \"airflow-task\"}]\n}\nloki.source.file \"airflow\" {\n  targets = local.file_match.airflow.targets\n  forward_to = [loki.process.json.receiver]\n}\nloki.process \"json\" {\n  stage.json { expressions = {\"event\" = \"event\", \"job\" = \"job\", \"country_code\" = \"country_code\", \"level\" = \"level\"} }\n  stage.labels { values = {\"event\" = \"\", \"job\" = \"\", \"country_code\" = \"\", \"level\" = \"\"} }\n  forward_to = [loki.write.local.receiver]\n}\nloki.write \"local\" {\n  endpoint { url = \"http://loki.monitoring:3100/loki/api/v1/push\" }\n}\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "alloy-config",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "config.alloy": "discovery.kubernetes \"pods\" {\n  role = \"pod\"\n  namespaces { names = [\"ingestion\", \"processing\", \"serving\", \"governance\", \"monitoring\"] }\n}\ndiscovery.relabel \"logs\" {\n  targets = discovery.kubernetes.pods.targets\n  rule { source_labels = [\"__meta_kubernetes_namespace\"]\n    target_label = \"namespace\" }\n  rule { source_labels = [\"__meta_kubernetes_pod_name\"]\n    target_label = \"pod\" }\n  rule { source_labels = [\"__meta_kubernetes_pod_container_name\"]\n    target_label = \"container\" }\n}\nloki.source.kubernetes \"pods\" {\n  targets = discovery.relabel.logs.output\n  forward_to = [loki.process.json.receiver]\n}\nlocal.file_match \"airflow\" {\n  path_targets = [{\"__path__\" = \"/airflow-logs/dag_id=*/run_id=*/task_id=*/*.log\", \"namespace\" = \"processing\", \"component\" = \"airflow-task\"}]\n}\nloki.source.file \"airflow\" {\n  targets = local.file_match.airflow.targets\n  forward_to = [loki.process.json.receiver]\n}\nloki.process \"json\" {\n  stage.json { expressions = {\"event\" = \"event\", \"job\" = \"job\", \"country_code\" = \"country_code\", \"level\" = \"level\"} }\n  stage.labels { values = {\"event\" = \"\", \"job\" = \"\", \"country_code\" = \"\", \"level\" = \"\"} }\n  forward_to = [loki.write.local.receiver]\n}\nloki.write \"local\" {\n  endpoint { url = \"http://loki.monitoring:3100/loki/api/v1/push\" }\n}\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "observability-demo",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "signals.json": "{\"spark_failed\": 0, \"aml_lag\": 0, \"regulatory_missed\": 0}"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "prometheus"
+        },
+        "ports": [
+          {
+            "port": 9090,
+            "targetPort": 9090
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "prometheus",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "selector": {
+          "matchLabels": {
+            "app": "prometheus"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "prometheus",
+              "app.kubernetes.io/part-of": "waba"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "observability",
+            "securityContext": {
+              "runAsUser": 65534,
+              "fsGroup": 65534
+            },
+            "containers": [
+              {
+                "name": "prometheus",
+                "image": "prom/prometheus:v3.5.0",
+                "ports": [
+                  {
+                    "containerPort": 9090
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "memory": "64Mi",
+                    "cpu": "50m"
+                  },
+                  "limits": {
+                    "memory": "384Mi"
+                  }
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 9090
+                  },
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 9090
+                  },
+                  "initialDelaySeconds": 60,
+                  "periodSeconds": 20
+                },
+                "args": [
+                  "--config.file=/etc/prometheus/prometheus.json",
+                  "--storage.tsdb.path=/prometheus",
+                  "--storage.tsdb.retention.time=3d",
+                  "--storage.tsdb.retention.size=700MB"
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/prometheus/prometheus.json",
+                    "subPath": "prometheus.json",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/prometheus"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "observability-config"
+                }
+              },
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "prometheus-data"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "loki",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "loki"
+        },
+        "ports": [
+          {
+            "port": 3100,
+            "targetPort": 3100
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "loki",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "selector": {
+          "matchLabels": {
+            "app": "loki"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "loki",
+              "app.kubernetes.io/part-of": "waba"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "observability",
+            "securityContext": {
+              "runAsUser": 10001,
+              "fsGroup": 10001
+            },
+            "containers": [
+              {
+                "name": "loki",
+                "image": "grafana/loki:3.5.5",
+                "ports": [
+                  {
+                    "containerPort": 3100
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "memory": "64Mi",
+                    "cpu": "50m"
+                  },
+                  "limits": {
+                    "memory": "384Mi"
+                  }
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 3100
+                  },
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 3100
+                  },
+                  "initialDelaySeconds": 60,
+                  "periodSeconds": 20
+                },
+                "args": [
+                  "-config.file=/etc/loki/loki.json"
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/loki/loki.json",
+                    "subPath": "loki.json",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/loki"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "observability-config"
+                }
+              },
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "loki-data"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "grafana",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "grafana"
+        },
+        "ports": [
+          {
+            "port": 3000,
+            "targetPort": 3000
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "grafana",
+        "namespace": "monitoring",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "selector": {
+          "matchLabels": {
+            "app": "grafana"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "grafana",
+              "app.kubernetes.io/part-of": "waba"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "observability",
+            "securityContext": {
+              "runAsUser": 472,
+              "fsGroup": 472
+            },
+            "containers": [
+              {
+                "name": "grafana",
+                "image": "grafana/grafana:12.2.0",
+                "ports": [
+                  {
+                    "containerPort": 3000
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "memory": "64Mi",
+                    "cpu": "50m"
+                  },
+                  "limits": {
+                    "memory": "384Mi"
+                  }
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 3000
+                  },
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 3000
+                  },
+                  "initialDelaySeconds": 60,
+                  "periodSeconds": 20
+                },
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/grafana/provisioning/datasources/waba.yaml",
+                    "subPath": "datasources.json",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/grafana/provisioning/dashboards/waba.yaml",
+                    "subPath": "providers.json",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/grafana/provisioning/alerting/waba.yaml",
+                    "subPath": "alerting.json",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "config",
+                    "mountPath": "/var/lib/grafana/dashboards/waba.json",
+                    "subPath": "dashboard.json",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/var/lib/grafana"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "GF_PLUGINS_PREINSTALL_DISABLED",
+                    "value": "true"
+                  },
+                  {
+                    "name": "GF_USERS_ALLOW_SIGN_UP",
+                    "value": "false"
+                  },
+                  {
+                    "name": "GF_ANALYTICS_REPORTING_ENABLED",
+                    "value": "false"
+                  },
+                  {
+                    "name": "GF_ANALYTICS_CHECK_FOR_UPDATES",
+                    "value": "false"
+                  },
+                  {
+                    "name": "GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES",
+                    "value": "false"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-grafana"
+                    }
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "observability-config"
+                }
+              },
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "grafana-data"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "alloy",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "alloy"
+        },
+        "ports": [
+          {
+            "port": 12345,
+            "targetPort": 12345
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "alloy",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "selector": {
+          "matchLabels": {
+            "app": "alloy"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "alloy",
+              "app.kubernetes.io/part-of": "waba"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "observability",
+            "securityContext": {
+              "runAsUser": 1000,
+              "fsGroup": 1000,
+              "supplementalGroups": [
+                0,
+                185
+              ]
+            },
+            "containers": [
+              {
+                "name": "alloy",
+                "image": "grafana/alloy:v1.10.2",
+                "ports": [
+                  {
+                    "containerPort": 12345
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "memory": "64Mi",
+                    "cpu": "50m"
+                  },
+                  "limits": {
+                    "memory": "256Mi"
+                  }
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 12345
+                  },
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 12345
+                  },
+                  "initialDelaySeconds": 60,
+                  "periodSeconds": 20
+                },
+                "args": [
+                  "run",
+                  "--server.http.listen-addr=0.0.0.0:12345",
+                  "--storage.path=/alloy",
+                  "/etc/alloy/config.alloy"
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/alloy",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "logs",
+                    "mountPath": "/airflow-logs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "state",
+                    "mountPath": "/alloy"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "alloy-config"
+                }
+              },
+              {
+                "name": "logs",
+                "persistentVolumeClaim": {
+                  "claimName": "airflow-logs"
+                }
+              },
+              {
+                "name": "state",
+                "emptyDir": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "observability-exporter",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "observability-exporter"
+        },
+        "ports": [
+          {
+            "port": 9108,
+            "targetPort": 9108
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "observability-exporter",
+        "namespace": "processing",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 0,
+        "selector": {
+          "matchLabels": {
+            "app": "observability-exporter"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "observability-exporter",
+              "app.kubernetes.io/part-of": "waba"
+            }
+          },
+          "spec": {
+            "serviceAccountName": "observability",
+            "securityContext": {
+              "runAsUser": 1000,
+              "fsGroup": 1000,
+              "supplementalGroups": [
+                0,
+                185
+              ]
+            },
+            "containers": [
+              {
+                "name": "observability-exporter",
+                "image": "waba/observability:20261014",
+                "ports": [
+                  {
+                    "containerPort": 9108
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "memory": "64Mi",
+                    "cpu": "50m"
+                  },
+                  "limits": {
+                    "memory": "192Mi"
+                  }
+                },
+                "readinessProbe": {
+                  "tcpSocket": {
+                    "port": 9108
+                  },
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "tcpSocket": {
+                    "port": 9108
+                  },
+                  "initialDelaySeconds": 60,
+                  "periodSeconds": 20
+                },
+                "volumeMounts": [
+                  {
+                    "name": "airflow",
+                    "mountPath": "/airflow-state",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "checkpoint",
+                    "mountPath": "/checkpoints",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "demo",
+                    "mountPath": "/demo",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "events",
+                    "mountPath": "/events"
+                  }
+                ],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-observability"
+                    }
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "airflow",
+                "persistentVolumeClaim": {
+                  "claimName": "airflow-state"
+                }
+              },
+              {
+                "name": "checkpoint",
+                "persistentVolumeClaim": {
+                  "claimName": "stream-checkpoints"
+                }
+              },
+              {
+                "name": "demo",
+                "configMap": {
+                  "name": "observability-demo"
+                }
+              },
+              {
+                "name": "events",
+                "persistentVolumeClaim": {
+                  "claimName": "observability-events"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

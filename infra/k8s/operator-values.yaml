@@ -1,0 +1,23 @@
+controller:
+  workers: 2
+  volumes:
+    - name: tmp
+      emptyDir: {sizeLimit: 1Gi}
+    - name: spark-templates
+      configMap: {name: waba-spark-templates}
+  volumeMounts:
+    - name: tmp
+      mountPath: /tmp
+    - name: spark-templates
+      mountPath: /app/infra/k8s
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 384Mi}
+webhook:
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 250m, memory: 256Mi}
+spark:
+  jobNamespaces: [processing]
+  serviceAccount:
+    name: waba-spark

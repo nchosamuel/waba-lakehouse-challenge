@@ -15,4 +15,4 @@ jobs:
         env:
           PYTHONPATH: src
         run: python scripts/test_unit.py
-      - run: python -m compileall -q src app jobs dags
+      - run: python -m compileall -q src app jobs dags scripts

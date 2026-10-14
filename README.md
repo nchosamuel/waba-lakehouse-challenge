@@ -1,8 +1,8 @@
 # WABA Lakehouse
 
-Version batch locale du challenge Data Engineer BancAssur Afrique de l'Ouest : niveaux 1 et 2.
+Version locale du challenge Data Engineer BancAssur Afrique de l'Ouest : batch des niveaux 1–2 et streaming du niveau 3.
 
-Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Les niveaux 3 et 4 sont les étapes suivantes.
+Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Le niveau 3 est vérifié en Docker et sur Kubernetes local. Les trois dashboards Superset, le SSO Superset/Trino, le catalogue OpenMetadata avec lineage et la supervision sont implémentés et vérifiés par profils Kubernetes locaux. Le lancement intégral simultané et l’exposition par Ingress restent à valider.
 La génération des données est séparée de leur ingestion : Streamlit publie des CSV dans MinIO ; Spark traite les fichiers en attente et alimente Iceberg ; Trino interroge les tables.
 
 ```mermaid
@@ -14,6 +14,10 @@ flowchart LR
   Spark --> Archive[MinIO : archive]
 ```
 
+## Démonstration vidéo
+
+[Vidéo sous-titrée · 9 min 14 s](docs/demo/WABA_Demo_FR.mp4) · [Sous-titres SRT](docs/demo/WABA_Demo_FR.srt). Captures réelles montées par profils locaux ; les limites du déploiement sont annoncées.
+
 ## Prérequis
 Docker Desktop démarré, Docker Compose v2, Python 3 pour initialiser les secrets locaux.
 Mac Apple Silicon compatible ; moteur Docker doté d'environ 8 Go de RAM.
@@ -22,7 +26,7 @@ Ports locaux : MinIO 9000/9001, Trino 8080, Airflow 8081, Streamlit 8501.
 ## Démarrage
 
 ```sh
-git clone https://github.com/nchosamuel/waba-lakehouse-challenge.git
+git clone --branch feature/level-3-streaming https://github.com/nchosamuel/waba-lakehouse-challenge.git
 cd waba-lakehouse-challenge
 python3 bootstrap.py
 docker compose up -d --build
@@ -212,6 +216,145 @@ GitHub Actions exécute les tests déterministes et les tests avec stockage simu
 - [Explication des encours et des primes acquises](docs/business-explanation.md).
 - [Write-up technique : architecture, règles et limites](docs/level2-design.md).
 - [État de conformité et preuves](docs/submission-status.md).
-- [Déroulé de démonstration de 5 à 10 minutes](docs/demo-script.md) ; vidéo à enregistrer.
+- [Déroulé de démonstration de 5 à 10 minutes](docs/demo-script.md) ; [vidéo sous-titrée disponible](docs/demo/WABA_Demo_FR.mp4).
 
-Les secrets se créent avec `python3 bootstrap.py` ; ne pas versionner `.env`. Pour un dépôt privé, partager explicitement l'accès avec les évaluateurs avant de transmettre le lien.
+Les secrets se créent avec `python3 bootstrap.py` ; ne pas versionner `.env`. Le dépôt est public. La [branche de soumission](https://github.com/nchosamuel/waba-lakehouse-challenge/tree/feature/level-3-streaming) contient la version revue ; utiliser ce lien pour accéder au code et à la vidéo livrés.
+
+## Niveau 3 : NiFi/Kafka, streaming et Lambda
+
+Le [modèle streaming](docs/level3-design.md) décrit les garanties, règles et limites. Le profil local utilise une seule JVM pour les deux requêtes Spark ; Airflow et le runner batch sont arrêtés pendant le streaming.
+
+Pré-requis : terminer le chargement batch des niveaux 1–2 et calculer Gold au moins une fois. Ensuite :
+
+```sh
+python3 bootstrap.py
+python3 scripts/streaming_mode.py start
+```
+
+NiFi : https://localhost:8443/nifi/ ; identifiants dans `.env`, certificat auto-signé local. Dans Streamlit, cocher **Flux temps réel · horodatage actuel**, choisir 20–100 lignes par pays pour la démonstration, puis lancer une génération ponctuelle ou continue. Les grandes générations de référence et les tests de volume restent adaptés au mode batch.
+
+Pour une cohorte déterministe de contrôles positifs/négatifs :
+
+```sh
+docker compose -f compose.yaml -f compose.streaming.yaml --profile streaming exec -T streaming python3 /app/jobs/publish_stream_fixtures.py
+python3 scripts/verify_streaming.py
+```
+
+Le fixture crée treize événements : onze valides et deux rejets. Il couvre virements répétés, AML XOF/GHS, cas sous seuil, pays inhabituel, sinistre élevé et choc de liquidité. Attendre la fin des microbatches avant le contrôle. Le rapport est stocké dans MinIO et dans `docs/streaming-verification.json`. Les alertes et l'activité bancaire Lambda sont également accessibles dans la page Indicateurs.
+
+La DLQ `dlq-financial-events` conserve JSON brut, topic, partition, offset et motifs. Les erreurs CSV irrécupérables de NiFi restent dans `archive/nifi-failures/`. Kafka conserve les messages sept jours ; les checkpoints et l'outbox sont persistants. Une reprise Kafka peut répéter un message, mais les consommateurs et la vue Lambda dédupliquent les identifiants.
+
+```sql
+SELECT * FROM iceberg.gold.fraud_alerts ORDER BY detected_at DESC;
+SELECT * FROM kafka.default.aml_events;
+SELECT * FROM iceberg.gold.lambda_daily_transaction_volume ORDER BY txn_date DESC, country_code;
+```
+
+Pour revenir au batch, avec Kafka conservé pour les lectures Lambda :
+
+```sh
+python3 scripts/streaming_mode.py batch
+```
+
+Changer de mode après drainage des files NiFi et de l'outbox. Pour arrêter uniquement le streaming : `python3 scripts/streaming_mode.py stop`. Ces commandes ne suppriment aucun volume. Le profil Kubernetes du socle est décrit ci-dessous. La haute disponibilité et les contrôles de gouvernance du niveau 4 restent à construire.
+
+## Kubernetes local et Superset
+
+Le [modèle Kubernetes](docs/kubernetes-design.md) décrit l'exécution distribuée, les PVC et les limites du profil. Les volumes Kubernetes sont indépendants de Compose. Le helper arrête les services Compose de ce projet avant de lancer kind et conserve leurs données.
+
+Prérequis : Docker Desktop (environ 8 Go), kind 0.33.0, Helm 4.3.0 ; kubectl 1.32.3 et cluster kind Kubernetes 1.32.3. Sur macOS :
+
+```sh
+brew install kind helm
+python3 scripts/k8s/install_kubectl.py
+python3 scripts/kubernetes.py start
+python3 scripts/kubernetes.py seed
+```
+
+Le bootstrap publie les référentiels complets et le scénario comptable, puis exécute successivement les jobs Spark via Spark Operator. Les fichiers `infra/k8s/*.yaml` sont des documents YAML au format JSON, lisibles sans bibliothèque Python supplémentaire. Les ConfigMaps sont régénérables avec `python3 scripts/k8s/render.py` ; les Secrets privés ne sont pas générés dans ces fichiers.
+
+Vérifier les mêmes assertions métier sur Kubernetes :
+
+```sh
+WABA_RUNTIME=kubernetes WABA_REPORT_PATH=docs/kubernetes-medallion-verification.json python3 scripts/verify_level2.py
+python3 scripts/kubernetes.py streaming
+.tools/kubectl --context kind-waba -n processing get sparkapplications
+```
+
+Après démarrage des deux requêtes, publier la cohorte de fraude depuis le driver :
+
+```sh
+.tools/kubectl --context kind-waba -n processing exec waba-streaming-driver -- python3 /app/jobs/publish_stream_fixtures.py
+WABA_RUNTIME=kubernetes python3 scripts/create_lambda_view.py
+WABA_RUNTIME=kubernetes WABA_REPORT_PATH=docs/kubernetes-streaming-verification.json python3 scripts/verify_streaming.py
+```
+
+Attendre les microbatches avant la vérification. Pour l'orchestration batch, `python3 scripts/kubernetes.py batch` arrête le streaming, conserve ses checkpoints et démarre Airflow avec un runner qui soumet des SparkApplications. Les DAGs restent initialement en pause ; suivre la procédure d'activation de la section Airflow après le premier calcul Gold. Drainer les files avant le changement de mode.
+
+Pour les tableaux de bord métier :
+
+```sh
+python3 scripts/kubernetes.py bi
+.tools/kubectl --context kind-waba -n serving port-forward svc/superset 8088:8088
+```
+
+Ouvrir **http://localhost:8088** ; identifiants `SUPERSET_ADMIN_USER/PASSWORD` dans `.env`. Les trois dashboards sont Performance Commerciale Groupe, Risque et Conformité Réglementaire, Mobile Money et Transferts. Ils utilisent des données Trino et un filtre pays. `python3 scripts/verify_superset.py` contrôle les requêtes de chaque graphique et leur filtrage CI.
+
+Les associations compte–produit et les SLA contractuels n'existent pas dans les fichiers source : les souscriptions et SLA affichés sont des **entrées de simulation déclarées**, marquées `SUBSCRIPTIONS_SIMULATED_V1` et `SLA_SIMULATED_V1`. Le top présente jusqu'à dix produits disponibles par pays ; le petit catalogue peut en contenir moins. Les revenus consolidés combinent commissions/intérêts documentés, primes acquises modélisées et frais mobile effectivement simulés. Ils ne représentent pas les montants totaux des virements. Le scénario initial fournit février 2026 ; ajouter un autre mois pour démontrer une évolution mensuelle sur plusieurs points.
+
+Pour Streamlit ou Airflow, utiliser respectivement des port-forwards des Services `app` (namespace serving, 8501) et `airflow` (namespace processing, 8081). Les Ingress fournis sont des exemples pour un contrôleur nginx ; les vérifications locales utilisent les port-forwards. Le SSO Superset et les quatre profils sont décrits dans [sso-design.md](docs/sso-design.md). Le catalogue et le lineage sont décrits dans [openmetadata-design.md](docs/openmetadata-design.md). La supervision et ses alertes sont décrites dans [observability-design.md](docs/observability-design.md).
+
+```sh
+python3 scripts/kubernetes.py status
+python3 scripts/kubernetes.py stop
+```
+
+`stop` conserve cluster et PVC. Aucune commande du helper ne supprime les données persistantes.
+
+
+### SSO Superset et profils métier
+
+`python3 scripts/kubernetes.py sso` déploie Keycloak et active la connexion Superset par OpenID Connect. Ajouter un port-forward local `svc/keycloak` dans `governance`, de `18080` vers `8080`, en conservant celui de Superset. Les identités sont `waba-group-admin`, `waba-analyst-ci` (et les sept autres pays), `waba-compliance` et `waba-viewer` ; mots de passe générés dans `.env`. Après activation, l'interface Superset affiche « Sign In with keycloak ».
+
+Les analystes ont des restrictions de lignes côté serveur, le responsable conformité uniquement les deux tables Gold réglementaires et le lecteur uniquement les datasets d'agrégats déclarés. `python3 scripts/verify_sso.py` teste les connexions réelles, les droits et les tentatives de contournement. Voir [le fonctionnement et les limites](docs/sso-design.md) et [les preuves](docs/sso-verification.json). Le [profil Trino sécurisé](docs/trino-sso-design.md) complète maintenant cette intégration avec HTTPS, OIDC et restrictions SQL côté serveur.
+
+
+### Trino HTTPS et SSO
+
+Après Superset/Keycloak, garder le port-forward Keycloak et exécuter `python3 scripts/trino_sso.py`. Exposer Trino par un port-forward de `svc/trino` dans `serving`, de `8843` vers `8443`. La connexion https://localhost:8843/ui/ passe par Keycloak avec les mêmes comptes métier. `python3 scripts/verify_trino_sso.py` teste les accès directs, les restrictions pays, les vues lecteur, les tables conformité et les tentatives interdites. Les identités techniques Superset/Streamlit sont distinctes et utilisent des jetons renouvelables ; les certificats et secrets restent privés.
+
+Voir [la conception et les limites du profil local](docs/trino-sso-design.md) et [le rapport de vérification](docs/trino-sso-verification.json). Le profil Compose d'origine conserve son fonctionnement de démonstration ; les contrôles SSO concernent Kubernetes. La supervision et les trois alertes sont décrites dans [observability-design.md](docs/observability-design.md) ; la [vidéo sous-titrée](docs/demo/WABA_Demo_FR.mp4) est livrée.
+
+
+### Catalogue OpenMetadata et lineage
+
+`python3 scripts/metadata_mode.py` active le mode catalogue en ménageant la mémoire du Mac. `python3 scripts/metadata_ingestion.py` découvre les tables Trino via un Job Kubernetes ; la découverte quotidienne est planifiée à 02h15 UTC. `python3 scripts/capture_lineage.py` exécute les trois étapes batch pour CI avec capture du plan Spark, puis réactiver le mode catalogue et la découverte pour importer leurs dépendances.
+
+Ouvrir http://localhost:8585 après un port-forward du Service `openmetadata` dans `governance`, `8585:8585`. Compte `waba-catalog-admin@example.invalid`, mot de passe généré dans `.env`. Voir [les instructions et limites](docs/openmetadata-design.md) et [les preuves](docs/openmetadata-verification.json) : 59 tables/vues, neuf Gold documentées, 38 colonnes PII et 42 liens de lineage. `account_number` et `iban` sont absents des tables d'origine ; leurs règles de tagging ont été vérifiées sur une fixture vide retirée ensuite. Aucun échantillon de données n'est collecté.
+
+
+### Supervision et alertes Grafana
+
+`python3 scripts/observability_mode.py --ingestion` active Prometheus/Grafana/Loki/Alloy et la collecte réelle Kafka/NiFi. Ouvrir http://localhost:3000/d/waba-health après un port-forward de `svc/grafana` dans `monitoring`, `3000:3000`. Les identifiants `GRAFANA_ADMIN_USER/PASSWORD` restent dans `.env`. Le dashboard montre disponibilité des services, durée Spark par périmètre pays, retard des checkpoints Kafka, débit NiFi, erreurs Airflow et journaux JSON.
+
+`python3 scripts/verify_observability.py` déclenche les trois alertes via des signaux **demo** distincts des observations réelles, conserve le délai fraude de cinq minutes, vérifie les notifications locales et remet les signaux à zéro. `python3 scripts/verify_observability_spark.py` vérifie un vrai job CI, ses métriques natives et ses logs. Ces scripts nécessitent aussi les port-forwards Prometheus `9090:9090` et Loki `3100:3100` dans `monitoring`. Voir [les preuves et limites](docs/observability-design.md). Le collector Alloy remplace explicitement Promtail en fin de maintenance ; un démarrage simultané de toute la plateforme et une sécurité de production ne sont pas revendiqués.
+
+
+### Rattrapage du reporting et revue finale
+
+`python3 scripts/catch_up_regulatory_report.py` réactive Airflow et le runner, laisse le scheduler créer le run quotidien attendu et vérifie les seize fichiers ainsi que le retour de l’alerte réelle à Normal. Il conserve le retard observé, ne change ni la planification ni l’échéance et ne crée pas un run manuel présenté comme planifié. Prometheus/Grafana doivent être accessibles via les port-forwards de supervision. Kafka/NiFi restent arrêtés pour la mémoire ; Airflow et le DAG réglementaire restent actifs.
+
+La preuve datée est dans [regulatory-catch-up-verification.json](docs/regulatory-catch-up-verification.json). Les données simulées restent celles de février : le reporting courant peut utiliser des encours anciens et n’avoir aucune opération d’assurance du mois courant. Voir [le dossier pour la revue indépendante](docs/review-handoff.md) avant soumission.
+
+## Vérifications des corrections de revue
+
+Le traitement Gold publie `gold.lambda_batch_transactions` dans un seul commit Iceberg ; la vue Lambda utilise ces faits et les messages Kafka dédupliqués. Après une mise à jour d’une installation existante, recalculer Gold puis recréer la vue (`WABA_RUNTIME=kubernetes python3 scripts/create_lambda_view.py` pour kind). Les nouvelles installations alimentent cette photographie lors du premier calcul Gold.
+
+En profil batch kind préparé, les fixtures isolées se vérifient avec `WABA_RUNTIME=kubernetes python3 scripts/verify_review_fixes.py --run-spark`. Le second contrôle utilise Trino et retire uniquement ses deux tables de test synthétiques. Les rapports sont dans `docs/review-fixes-verification.json` et `docs/regulatory-coverage-verification.json`.
+
+En profil supervision avec NiFi actif : `python3 scripts/verify_telemetry_failure.py` introduit temporairement un mauvais mot de passe dans le collecteur seul, vérifie l’alerte réelle et restaure la configuration privée dans un bloc `finally`. NiFi et ses données restent inchangés. `python3 scripts/verify_observability.py` vérifie les trois règles de démonstration séparées et remet leurs signaux à zéro.
+
+
+Le contrôle natif complet après revue nécessite Airflow avec une limite mémoire de 2 GiB. Sur le moteur Docker local de 7,65 GiB, Trino est mis en pause pendant les grands traitements batch, puis réactivé pour les contrôles SQL. Les premiers essais concomitants ont provoqué des arrêts mémoire ; leur historique est conservé. La validation de la chaîne corrigée est dans `docs/review-airflow-verification.json` (ou `review-airflow-verification.json` depuis ce dossier).
+
+Pour les grandes ingestions sur ce Mac : `python3 scripts/kubernetes.py batch --lean` met Trino en pause pendant le traitement. Après réussite des DAGs, réactiver la consultation avec `.tools/kubectl --context kind-waba -n serving scale deployment/trino --replicas=1`, puis attendre son démarrage. Les validations SQL utilisent alors ce service réactivé. Les pipelines restent sérialisés ; cela ne valide pas le lancement complet simultané demandé au niveau 4.

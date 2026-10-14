@@ -1,0 +1,91 @@
+{
+  "global": {
+    "scrape_interval": "15s",
+    "evaluation_interval": "15s"
+  },
+  "scrape_configs": [
+    {
+      "job_name": "prometheus",
+      "static_configs": [
+        {
+          "targets": [
+            "localhost:9090"
+          ]
+        }
+      ]
+    },
+    {
+      "job_name": "waba",
+      "static_configs": [
+        {
+          "targets": [
+            "observability-exporter.processing:9108"
+          ]
+        }
+      ]
+    },
+    {
+      "job_name": "loki",
+      "static_configs": [
+        {
+          "targets": [
+            "loki.monitoring:3100"
+          ]
+        }
+      ]
+    },
+    {
+      "job_name": "alloy",
+      "static_configs": [
+        {
+          "targets": [
+            "alloy.processing:12345"
+          ]
+        }
+      ]
+    },
+    {
+      "job_name": "spark-native",
+      "kubernetes_sd_configs": [
+        {
+          "role": "pod",
+          "namespaces": {
+            "names": [
+              "processing"
+            ]
+          }
+        }
+      ],
+      "metrics_path": "/metrics/executors/prometheus",
+      "relabel_configs": [
+        {
+          "source_labels": [
+            "__meta_kubernetes_pod_label_spark_role"
+          ],
+          "regex": "driver",
+          "action": "keep"
+        },
+        {
+          "source_labels": [
+            "__meta_kubernetes_pod_phase"
+          ],
+          "regex": "Running",
+          "action": "keep"
+        },
+        {
+          "source_labels": [
+            "__meta_kubernetes_pod_ip"
+          ],
+          "target_label": "__address__",
+          "replacement": "${1}:4040"
+        },
+        {
+          "source_labels": [
+            "__meta_kubernetes_pod_name"
+          ],
+          "target_label": "application"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "verified_at_utc": "2026-10-14T04:16:52.190982+00:00",
+  "trino_version": "475",
+  "https_certificate_verified": true,
+  "web_ui_keycloak_login_verified": true,
+  "web_ui_and_idp_logout_verified": true,
+  "authorization_code_tokens_verified": true,
+  "keycloak_role_claims_used": true,
+  "unsigned_invalid_wrong_audience_rejected": true,
+  "http_sql_denied": true,
+  "group_admin_eight_countries": true,
+  "profiles": [
+    {
+      "profile": "country_analyst",
+      "country": "CI",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "SN",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "ML",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "BF",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "GN",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "TG",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "BJ",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "country_analyst",
+      "country": "GH",
+      "raw_bronze_silver_gold_bi_country_restriction": true,
+      "contradictory_predicate_empty": true,
+      "write_denied": true,
+      "impersonation_denied": true
+    },
+    {
+      "profile": "viewer",
+      "ten_aggregate_views": true,
+      "accounts_claims_regulatory_subquery_join_denied": true
+    },
+    {
+      "profile": "compliance_officer",
+      "two_regulatory_tables_only": true
+    }
+  ],
+  "production_ha_verified": false,
+  "browser_login_verified": true,
+  "browser_evidence": "docs/screenshots/trino-sso.png",
+  "streamlit_lambda_query_verified": true,
+  "superset_eleven_charts_regression_verified": true,
+  "sso_reapply_preserves_sql_identity_verified": true
+}

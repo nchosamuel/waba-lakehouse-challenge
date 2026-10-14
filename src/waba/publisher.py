@@ -8,7 +8,7 @@ import secrets
 import tempfile
 import uuid
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import boto3
 from botocore.exceptions import ClientError
 from waba.generator import generate
@@ -38,6 +38,7 @@ def publish(
     seed=None,
     dataset="bank_transactions",
     entity_type=None,
+    realtime=False,
 ):
     if dataset not in (*FLOW_PREFIX, "references"):
         raise ValueError("Unknown dataset")
@@ -83,6 +84,19 @@ def publish(
                 reference_profile="full" if full_profile else "demo",
                 bank_entity=entity_type if dataset == "bank_transactions" else "BANK",
             )
+            if realtime and dataset != "references":
+                current = datetime.now(timezone.utc).replace(tzinfo=None)
+                for event in data[dataset]:
+                    event["timestamp"] = current.isoformat()
+                    if dataset == "loan_repayments":
+                        event["due_date"] = (
+                            current.date() - timedelta(days=event["days_overdue"])
+                        ).isoformat()
+                        event["payment_date"] = (
+                            ""
+                            if event["repayment_status"] == "DEFAULT"
+                            else current.date().isoformat()
+                        )
             for name in REFERENCES:
                 key = f"{country}/references/{name}.csv"
                 try:

@@ -29,6 +29,11 @@ labels = {
 }
 choice = st.selectbox("Type de données", list(labels), disabled=running)
 dataset = labels[choice]
+realtime = (
+    st.checkbox("Flux temps réel · horodatage actuel", disabled=running)
+    if dataset != "references"
+    else False
+)
 entity_options = {
     "bank_transactions": ["BANK", "MICROFINANCE"],
     "insurance_operations": ["INSURANCE"],
@@ -77,8 +82,10 @@ quarter_start = date(today.year, ((today.month - 1) // 3) * 3 + 1, 1)
 previous_end = quarter_start - timedelta(days=1)
 previous_start = date(previous_end.year, ((previous_end.month - 1) // 3) * 3 + 1, 1)
 left, right = st.columns(2)
-start = left.date_input("Début de période", previous_start, disabled=running)
-end = right.date_input("Fin de période", previous_end, disabled=running)
+start = left.date_input(
+    "Début de période", previous_start, disabled=running or realtime
+)
+end = right.date_input("Fin de période", previous_end, disabled=running or realtime)
 if dataset == "references":
     st.caption(
         "Le nombre de lignes saisi s’applique aux flux. Les référentiels complets sont conservés lorsqu’ils existent déjà. Le profil complet génère 500 000 clients, 800 000 comptes, 200 agences et 50 produits au total sur les 8 pays."
@@ -95,7 +102,7 @@ interval = st.slider(
 st.caption(
     "Les fichiers sont déposés dans MinIO. Airflow peut traiter les fichiers toutes les 15 minutes lorsqu’il est activé. Le mode continu fonctionne pendant que cette session reste ouverte."
 )
-valid = full_refs or (bool(countries) and end >= start)
+valid = full_refs or (bool(countries) and (realtime or end >= start))
 if not valid:
     st.warning("Choisis au moins un pays et une période valide.")
 
@@ -117,6 +124,7 @@ def produce():
                 datetime.combine(end, datetime.min.time()),
                 dataset=dataset,
                 entity_type=entity,
+                realtime=realtime,
             )
         st.session_state.history.insert(
             0,

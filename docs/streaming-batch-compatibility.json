@@ -1,0 +1,7 @@
+{
+  "batch_catchup_verified": true,
+  "lambda_before_eur": 452011842.55195105,
+  "lambda_after_eur": 452011842.551951,
+  "no_overlap_after_batch_recompute": true,
+  "streaming_provenance_preserved": true
+}

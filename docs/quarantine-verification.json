@@ -5,32 +5,32 @@
   "rejected_rows": 24,
   "files": [
     {
-      "source_file": "CI/bank_transactions/2026-01-06/bank_txn_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "source_file": "CI/bank_transactions/2026-01-06/bank_txn_CI_20260106_quality-c3203d8d4d1e499e8cd73f9462a2273d.csv",
       "dataset": "bank_transactions",
       "accepted_rows": 2,
       "rejected_rows": 6,
-      "source_etag": "\"2bf4b0a1dce382660ec545385f47bd7f\""
+      "source_etag": "\"8038c910ab07cf474ac5ad7d8cb7a9b0\""
     },
     {
-      "source_file": "CI/insurance_operations/2026-01-06/insurance_ops_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "source_file": "CI/insurance_operations/2026-01-06/insurance_ops_CI_20260106_quality-c3203d8d4d1e499e8cd73f9462a2273d.csv",
       "dataset": "insurance_operations",
       "accepted_rows": 2,
       "rejected_rows": 6,
-      "source_etag": "\"73ea797abcf4a1c72602441636b99d4a\""
+      "source_etag": "\"686a48fef29a9a3c891a9babfda5fbea\""
     },
     {
-      "source_file": "CI/mobile_money_payments/2026-01-06/mobile_money_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "source_file": "CI/mobile_money_payments/2026-01-06/mobile_money_CI_20260106_quality-c3203d8d4d1e499e8cd73f9462a2273d.csv",
       "dataset": "mobile_money_payments",
       "accepted_rows": 2,
       "rejected_rows": 6,
-      "source_etag": "\"a0882f4d1a33bde5ba52ca338dea6fe4\""
+      "source_etag": "\"fce80196f77c77d8c47147db7c85f988\""
     },
     {
-      "source_file": "CI/loan_repayments/2026-01-06/loan_repayments_CI_20260106_quality-2be79032fff5402fb1c5bd6131909d31.csv",
+      "source_file": "CI/loan_repayments/2026-01-06/loan_repayments_CI_20260106_quality-c3203d8d4d1e499e8cd73f9462a2273d.csv",
       "dataset": "loan_repayments",
       "accepted_rows": 2,
       "rejected_rows": 6,
-      "source_etag": "\"a23fd41e1782d6f88583c75ff4b0643e\""
+      "source_etag": "\"f3170b3533bec11384181a7cf41f67d6\""
     }
   ]
 }

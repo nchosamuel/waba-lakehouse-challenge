@@ -1,0 +1,103 @@
+{
+  "report_date": "2026-02-28",
+  "max_snapshot_age_days": 1,
+  "freshness_policy": "Demo policy: loan snapshot at most one calendar day old",
+  "countries": [
+    {
+      "country_code": "CI",
+      "in_regulatory_scope": true,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "SN",
+      "in_regulatory_scope": true,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "ML",
+      "in_regulatory_scope": true,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "BF",
+      "in_regulatory_scope": true,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "GN",
+      "in_regulatory_scope": false,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "TG",
+      "in_regulatory_scope": true,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "BJ",
+      "in_regulatory_scope": true,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    },
+    {
+      "country_code": "GH",
+      "in_regulatory_scope": false,
+      "snapshot_date": "2026-02-28",
+      "snapshot_age_days": 0,
+      "bceao_coverage": "COVERED",
+      "cima_coverage": "COVERED",
+      "modelled_insurance_events": 300,
+      "unmodelled_insurance_events": 0,
+      "coverage_complete": true
+    }
+  ],
+  "regulatory_coverage_complete": true,
+  "official_regulatory_submission": false,
+  "verified_at_utc": "2026-10-14T15:44:57.422383+00:00",
+  "cima_rows": 40,
+  "cima_countries": 8,
+  "month_end_matches_gold": true,
+  "runtime": "native Kubernetes Spark Operator and Trino",
+  "scheduled_deadline_proof": false
+}

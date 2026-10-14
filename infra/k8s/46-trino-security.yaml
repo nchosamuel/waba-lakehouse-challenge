@@ -1,0 +1,219 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "trino-secure-config",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "config.properties": "coordinator=true\nnode-scheduler.include-coordinator=true\nhttp-server.http.port=8080\nhttp-server.authentication.type=OAUTH2\nhttp-server.authentication.allow-insecure-over-http=false\nhttp-server.https.enabled=true\nhttp-server.https.port=8443\nhttp-server.https.keystore.path=/etc/trino/tls/server.p12\nhttp-server.https.keystore.key=${ENV:TRINO_TLS_PASSWORD}\ninternal-communication.shared-secret=${ENV:TRINO_INTERNAL_SECRET}\ndiscovery.uri=http://localhost:8080\nquery.max-memory=512MB\nquery.max-memory-per-node=512MB\nmemory.heap-headroom-per-node=256MB\nweb-ui.authentication.type=OAUTH2\nhttp-server.authentication.oauth2.issuer=http://localhost:18080/realms/waba\nhttp-server.authentication.oauth2.client-id=waba-trino\nhttp-server.authentication.oauth2.client-secret=${ENV:KEYCLOAK_TRINO_SECRET}\nhttp-server.authentication.oauth2.oidc.discovery=false\nhttp-server.authentication.oauth2.auth-url=http://localhost:18080/realms/waba/protocol/openid-connect/auth\nhttp-server.authentication.oauth2.token-url=http://keycloak.governance:8080/realms/waba/protocol/openid-connect/token\nhttp-server.authentication.oauth2.jwks-url=http://keycloak.governance:8080/realms/waba/protocol/openid-connect/certs\nhttp-server.authentication.oauth2.end-session-url=http://localhost:18080/realms/waba/protocol/openid-connect/logout\nhttp-server.authentication.oauth2.principal-field=preferred_username\ndeprecated.http-server.authentication.oauth2.groups-field=waba_trino_roles\n",
+        "jvm.config": "-server\n-Xmx1G\n-XX:+UseG1GC\n-XX:G1HeapRegionSize=32M\n-XX:+ExitOnOutOfMemoryError\n-Djdk.attach.allowAttachSelf=true\n"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "metadata": {
+        "name": "trino-security",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "data": {
+        "access-control.properties": "access-control.name=file\nsecurity.config-file=/etc/trino/security/rules.json\n",
+        "rules.json": "{\n  \"catalogs\": [\n    {\n      \"group\": \"group_admin|service_validation\",\n      \"allow\": \"all\"\n    },\n    {\n      \"user\": \"service-account-waba-validation\",\n      \"catalog\": \"iceberg|kafka\",\n      \"allow\": \"all\"\n    },\n    {\n      \"group\": \"service_metadata|service_bi|service_dashboard|compliance_officer|viewer|country_(CI|SN|ML|BF|GN|TG|BJ|GH)\",\n      \"catalog\": \"iceberg\",\n      \"allow\": \"read-only\"\n    },\n    {\n      \"allow\": \"none\"\n    }\n  ],\n  \"schemas\": [\n    {\n      \"group\": \"group_admin|service_validation\",\n      \"owner\": true\n    },\n    {\n      \"owner\": false\n    }\n  ],\n  \"tables\": [\n    {\n      \"group\": \"group_admin|service_validation\",\n      \"privileges\": [\n        \"SELECT\",\n        \"INSERT\",\n        \"DELETE\",\n        \"UPDATE\",\n        \"OWNERSHIP\",\n        \"GRANT_SELECT\"\n      ]\n    },\n    {\n      \"user\": \"service-account-waba-validation\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\",\n        \"GRANT_SELECT\"\n      ]\n    },\n    {\n      \"user\": \"service-account-waba-validation\",\n      \"catalog\": \"kafka\",\n      \"schema\": \"default\",\n      \"table\": \"silver_bank_transactions\",\n      \"privileges\": [\n        \"SELECT\",\n        \"GRANT_SELECT\"\n      ]\n    },\n    {\n      \"group\": \"service_metadata\",\n      \"catalog\": \"iceberg\",\n      \"privileges\": [\n        \"SELECT\"\n      ]\n    },\n    {\n      \"group\": \"service_bi\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ]\n    },\n    {\n      \"group\": \"service_dashboard\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"gold\",\n      \"privileges\": [\n        \"SELECT\"\n      ]\n    },\n    {\n      \"group\": \"compliance_officer\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"gold\",\n      \"table\": \"regulatory_bceao_daily|regulatory_cima_daily\",\n      \"privileges\": [\n        \"SELECT\"\n      ]\n    },\n    {\n      \"group\": \"viewer\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"bi\",\n      \"table\": \"revenue|arpc|subscriptions|npl|loss_ratio|aml_counts|claims_sla|mobile_hourly|corridors|mobile_failures\",\n      \"privileges\": [\n        \"SELECT\"\n      ]\n    },\n    {\n      \"group\": \"country_CI\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'CI'\"\n    },\n    {\n      \"group\": \"country_SN\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'SN'\"\n    },\n    {\n      \"group\": \"country_ML\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'ML'\"\n    },\n    {\n      \"group\": \"country_BF\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'BF'\"\n    },\n    {\n      \"group\": \"country_GN\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'GN'\"\n    },\n    {\n      \"group\": \"country_TG\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'TG'\"\n    },\n    {\n      \"group\": \"country_BJ\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'BJ'\"\n    },\n    {\n      \"group\": \"country_GH\",\n      \"catalog\": \"iceberg\",\n      \"schema\": \"raw|bronze|silver|gold|bi\",\n      \"privileges\": [\n        \"SELECT\"\n      ],\n      \"filter\": \"country_code = 'GH'\"\n    },\n    {\n      \"privileges\": []\n    }\n  ],\n  \"impersonation\": [],\n  \"queries\": [\n    {\n      \"group\": \"group_admin|service_validation\",\n      \"allow\": [\n        \"execute\",\n        \"view\",\n        \"kill\"\n      ]\n    },\n    {\n      \"allow\": [\n        \"execute\"\n      ]\n    }\n  ],\n  \"system_information\": [\n    {\n      \"user\": \"waba-group-admin|service-account-waba-validation\",\n      \"allow\": [\n        \"read\"\n      ]\n    },\n    {\n      \"allow\": []\n    }\n  ],\n  \"system_session_properties\": [\n    {\n      \"group\": \"group_admin|service_validation\",\n      \"allow\": true\n    },\n    {\n      \"allow\": false\n    }\n  ]\n}\n"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "trino",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "trino"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app.kubernetes.io/part-of": "waba",
+              "app": "trino"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "name": "trino",
+                "image": "trinodb/trino:475",
+                "imagePullPolicy": "IfNotPresent",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  },
+                  {
+                    "containerPort": 8443
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi"
+                  },
+                  "limits": {
+                    "memory": "2Gi"
+                  }
+                },
+                "env": [],
+                "envFrom": [
+                  {
+                    "secretRef": {
+                      "name": "waba-trino-runtime"
+                    }
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "trino-catalog",
+                    "mountPath": "/etc/trino/catalog"
+                  },
+                  {
+                    "name": "trino-config",
+                    "mountPath": "/etc/trino/config.properties",
+                    "subPath": "config.properties"
+                  },
+                  {
+                    "name": "trino-config",
+                    "mountPath": "/etc/trino/jvm.config",
+                    "subPath": "jvm.config"
+                  },
+                  {
+                    "name": "trino-kafka",
+                    "mountPath": "/etc/trino/kafka"
+                  },
+                  {
+                    "name": "trino-security",
+                    "mountPath": "/etc/trino/security"
+                  },
+                  {
+                    "name": "trino-security",
+                    "mountPath": "/etc/trino/access-control.properties",
+                    "subPath": "access-control.properties"
+                  },
+                  {
+                    "name": "tls",
+                    "mountPath": "/etc/trino/tls"
+                  }
+                ],
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/v1/info",
+                    "port": 8080
+                  },
+                  "periodSeconds": 10,
+                  "failureThreshold": 30
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/v1/info",
+                    "port": 8080
+                  },
+                  "periodSeconds": 15,
+                  "failureThreshold": 3
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/v1/info",
+                    "port": 8080
+                  },
+                  "periodSeconds": 30,
+                  "failureThreshold": 5
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "trino-catalog",
+                "configMap": {
+                  "name": "trino-catalog"
+                }
+              },
+              {
+                "name": "trino-config",
+                "configMap": {
+                  "name": "trino-secure-config"
+                }
+              },
+              {
+                "name": "trino-kafka",
+                "configMap": {
+                  "name": "trino-kafka"
+                }
+              },
+              {
+                "name": "trino-security",
+                "configMap": {
+                  "name": "trino-security"
+                }
+              },
+              {
+                "name": "tls",
+                "secret": {
+                  "secretName": "waba-trino-tls"
+                }
+              }
+            ],
+            "terminationGracePeriodSeconds": 45,
+            "automountServiceAccountToken": false
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "trino",
+        "namespace": "serving",
+        "labels": {
+          "app.kubernetes.io/part-of": "waba"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "trino"
+        },
+        "ports": [
+          {
+            "name": "p8080",
+            "port": 8080,
+            "targetPort": 8080
+          },
+          {
+            "name": "p8443",
+            "port": 8443,
+            "targetPort": 8443
+          }
+        ]
+      }
+    }
+  ]
+}

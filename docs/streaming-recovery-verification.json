@@ -1,0 +1,13 @@
+{
+  "verified_at_utc": "2026-10-13T23:05:18.027623+00:00",
+  "raw_original_records_replayed": 8,
+  "silver_topic_record_replayed": 1,
+  "original_fixture_unique_accepted_events_after_replay_and_restart": 11,
+  "kafka_nifi_spark_restart_verified": true,
+  "malformed_json_rejected": true,
+  "future_timestamp_rejected_without_poisoning_watermark": true,
+  "nan_fee_rejected": true,
+  "valid_event_after_future_record_accepted": true,
+  "outbox_drained": true,
+  "two_streaming_queries_active": true
+}
