@@ -2,7 +2,7 @@
 
 Superset 5.0.0 est déployé dans serving, avec un PVC pour sa base de métadonnées locale. Son image inclut le connecteur Trino 0.336.0. Le démarrage crée idempotemment la connexion, dix datasets virtuels et onze graphiques répartis dans les trois dashboards du sujet. Chaque dashboard expose un filtre pays commun aux datasets concernés.
 
-La connexion Trino reste celle du prototype local, sans SSO : aucun rôle viewer ou country_analyst sécurisé n'est revendiqué. La session locale est administrateur ; Keycloak, politiques SQL et tests d'accès négatifs restent nécessaires pour achever le volet sécurité du niveau 4. SQLite, cache mémoire et HTTP localhost sont des choix de démonstration, à remplacer dans une cible de production.
+Superset dispose désormais d'une connexion Keycloak et de restrictions serveur pour quatre profils, vérifiées dans `sso-verification.json` et décrites dans `sso-design.md`. La connexion au service Trino reste interne et sans SSO : sa protection doit être ajoutée avant de déclarer le volet sécurité du niveau 4 complet. SQLite, cache mémoire et HTTP localhost sont des choix de démonstration, à remplacer dans une cible de production.
 
 ## Sources et interprétation
 

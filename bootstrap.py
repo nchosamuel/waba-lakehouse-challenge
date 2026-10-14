@@ -19,6 +19,14 @@ existing = {
     line.split("=", 1)[0] for line in path.read_text().splitlines() if "=" in line
 }
 extra = {
+    "WABA_SSO_ENABLED": "false",
+    "KEYCLOAK_ADMIN_USER": "waba-identity-admin",
+    "KEYCLOAK_ADMIN_PASSWORD": secrets.token_urlsafe(24),
+    "KEYCLOAK_SUPERSET_SECRET": secrets.token_urlsafe(32),
+    "SSO_GROUP_ADMIN_PASSWORD": secrets.token_urlsafe(24),
+    "SSO_VIEWER_PASSWORD": secrets.token_urlsafe(24),
+    "SSO_COMPLIANCE_PASSWORD": secrets.token_urlsafe(24),
+    **{f"SSO_ANALYST_{country}_PASSWORD": secrets.token_urlsafe(24) for country in ("CI", "SN", "ML", "BF", "GN", "TG", "BJ", "GH")},
     "SUPERSET_ADMIN_USER": "samuel",
     "SUPERSET_ADMIN_PASSWORD": secrets.token_urlsafe(24),
     "SUPERSET_SECRET_KEY": secrets.token_urlsafe(32),

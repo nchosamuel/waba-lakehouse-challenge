@@ -529,3 +529,16 @@ write(
         )
     ],
 )
+
+identity = deployment(
+    "keycloak", "governance", "quay.io/keycloak/keycloak:26.4.0", 8080, "1Gi",
+    replicas=0, args=["start-dev", "--import-realm"],
+    env={"KC_HOSTNAME":"http://localhost:18080", "KC_HOSTNAME_BACKCHANNEL_DYNAMIC":"true",
+         "KC_HEALTH_ENABLED":"true", "JAVA_OPTS_KC_HEAP":"-Xms128m -Xmx512m"},
+    volumes=[volume("state","keycloak-state"), {"name":"realm", "secret":{"secretName":"waba-keycloak-import"}}],
+    mounts=[mount("state","/opt/keycloak/data"),mount("realm","/opt/keycloak/data/import")],
+    fs_group=1000,
+    probe={"httpGet":{"path":"/health/ready","port":9000}},
+)
+identity["spec"]["template"]["spec"]["containers"][0]["envFrom"] = [{"secretRef":{"name":"waba-identity-runtime"}}]
+write("45-identity.yaml", [pvc("keycloak-state","governance","1Gi"),identity,service("keycloak","governance",[8080])])

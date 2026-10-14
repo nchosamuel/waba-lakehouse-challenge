@@ -298,7 +298,7 @@ Ouvrir **http://localhost:8088** ; identifiants `SUPERSET_ADMIN_USER/PASSWORD` d
 
 Les associations compte–produit et les SLA contractuels n'existent pas dans les fichiers source : les souscriptions et SLA affichés sont des **entrées de simulation déclarées**, marquées `SUBSCRIPTIONS_SIMULATED_V1` et `SLA_SIMULATED_V1`. Le top présente jusqu'à dix produits disponibles par pays ; le petit catalogue peut en contenir moins. Les revenus consolidés combinent commissions/intérêts documentés, primes acquises modélisées et frais mobile effectivement simulés. Ils ne représentent pas les montants totaux des virements. Le scénario initial fournit février 2026 ; ajouter un autre mois pour démontrer une évolution mensuelle sur plusieurs points.
 
-Pour Streamlit ou Airflow, utiliser respectivement des port-forwards des Services `app` (namespace serving, 8501) et `airflow` (namespace processing, 8081). Les Ingress fournis sont des exemples pour un contrôleur nginx ; les vérifications locales utilisent les port-forwards. Le SSO, OpenMetadata, l'observabilité et les alertes du niveau 4 restent à implémenter.
+Pour Streamlit ou Airflow, utiliser respectivement des port-forwards des Services `app` (namespace serving, 8501) et `airflow` (namespace processing, 8081). Les Ingress fournis sont des exemples pour un contrôleur nginx ; les vérifications locales utilisent les port-forwards. Le SSO Superset et les quatre profils sont décrits dans [sso-design.md](docs/sso-design.md). L’intégration SSO de Trino, OpenMetadata, l’observabilité et les alertes restent à réaliser.
 
 ```sh
 python3 scripts/kubernetes.py status
@@ -306,3 +306,10 @@ python3 scripts/kubernetes.py stop
 ```
 
 `stop` conserve cluster et PVC. Aucune commande du helper ne supprime les données persistantes.
+
+
+### SSO Superset et profils métier
+
+`python3 scripts/kubernetes.py sso` déploie Keycloak et active la connexion Superset par OpenID Connect. Ajouter un port-forward local `svc/keycloak` dans `governance`, de `18080` vers `8080`, en conservant celui de Superset. Les identités sont `waba-group-admin`, `waba-analyst-ci` (et les sept autres pays), `waba-compliance` et `waba-viewer` ; mots de passe générés dans `.env`. Après activation, l'interface Superset affiche « Sign In with keycloak ».
+
+Les analystes ont des restrictions de lignes côté serveur, le responsable conformité uniquement les deux tables Gold réglementaires et le lecteur uniquement les datasets d'agrégats déclarés. `python3 scripts/verify_sso.py` teste les connexions réelles, les droits et les tentatives de contournement. Voir [le fonctionnement et les limites](docs/sso-design.md) et [les preuves](docs/sso-verification.json). **Trino reste un service interne sans SSO à cette étape** ; cette intégration est nécessaire avant de déclarer le contrôle d'accès du challenge complet.

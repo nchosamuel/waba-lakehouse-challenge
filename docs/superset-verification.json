@@ -1,5 +1,5 @@
 {
-  "verified_at_utc": "2026-10-14T00:30:55.649860+00:00",
+  "verified_at_utc": "2026-10-14T03:46:18.101602+00:00",
   "superset_version": "5.0.0",
   "dashboards": 3,
   "charts": [
@@ -163,10 +163,8 @@
   ],
   "trino_data_verified": true,
   "country_filter_verified": true,
-  "sso_verified": false,
+  "interactive_sso_tested_by_this_script": false,
+  "sso_verification_report": "docs/sso-verification.json",
   "subscription_model": "SUBSCRIPTIONS_SIMULATED_V1",
-  "claims_sla_model": "SLA_SIMULATED_V1",
-  "visual_inspection_verified": true,
-  "native_country_filter_ui_verified": true,
-  "visual_verified_at_utc": "2026-10-14T00:34:26.320419+00:00"
+  "claims_sla_model": "SLA_SIMULATED_V1"
 }

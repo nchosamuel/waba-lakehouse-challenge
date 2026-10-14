@@ -2,7 +2,7 @@
 
 ## 1. Périmètre livré
 
-La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO, les politiques d'accès par rôle/pays, OpenMetadata et l'observabilité du niveau 4 restent à réaliser : cette version est un prototype local vérifié, pas une plateforme de production complète.
+La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO Superset et ses politiques d'accès par rôle/pays sont vérifiés. Le SSO Trino, OpenMetadata et l'observabilité du niveau 4 restent à réaliser : cette version est un prototype local vérifié, pas une plateforme de production complète.
 
 Le dépôt contient l'application de génération, les traitements PySpark, quatre DAGs, la configuration automatisée de NiFi, les ressources Kubernetes et des scripts de validation indépendants. Les rapports JSON documentent des exécutions réelles ; leurs comptages peuvent évoluer à chaque nouvelle génération. La vidéo est volontairement différée jusqu'à la fin des fonctionnalités.
 
@@ -44,8 +44,13 @@ Superset interroge Trino pour performance commerciale, risque et mobile money, a
 
 Les vérifications couvrent les 1,3 million de lignes de référence, l'unicité et les trois matérialisations, les résultats comptables attendus, la génération ponctuelle/continue, quatre flux streaming, cas positifs/négatifs de risque, DLQ, plusieurs lots, rejeux et redémarrages Kafka/NiFi/Spark, ainsi que les totaux Lambda. Superset est contrôlé par API et inspection visuelle ; une requête correcte ne suffit pas à garantir un graphique correctement enregistré.
 
-Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et session BI administrateur restent des compromis de démonstration. Haute disponibilité, TLS d'entrée, SSO et autorisations négatives, catalogue/lineage et métriques/logs/alertes testées sont les étapes suivantes, distinctes des capacités déjà vérifiées.
+Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et base Keycloak H2 restent des compromis de démonstration. Haute disponibilité, TLS d'entrée, SSO Trino et politiques SQL, catalogue/lineage et métriques/logs/alertes testées sont les étapes suivantes, distinctes des capacités déjà vérifiées.
 
 ## Preuves détaillées
 
 Consulter `submission-status.md`, `kubernetes-*-verification.json`, `streaming-*-verification.json`, `superset-verification.json` et les documents de conception associés. Le README fournit la reproduction et les modes d'exécution.
+
+
+### Complément : SSO Superset
+
+Keycloak 26.4.0 est déployé sur Kubernetes avec PVC. Superset 5.0.0 utilise un client OIDC confidentiel, authorization code avec PKCE S256 et des URI de retour exactes. Les rôles group_admin, country_analyst, compliance_officer et viewer sont distincts. Huit règles de lignes serveur limitent chaque analyste à un seul pays ; les lecteurs accèdent à une liste explicite de datasets agrégés, sans SQL Lab ; la conformité uniquement à regulatory_bceao_daily et regulatory_cima_daily. Les profils ambigus ou sans pays unique sont refusés. Les secrets restent privés. Le script verify_sso.py vérifie les connexions, les requêtes autorisées et interdites, les résultats en cache et la déconnexion locale et IdP ; une inspection du navigateur complète la preuve. Ce contrôle protège Superset : l'intégration OIDC et les restrictions de Trino restent à réaliser. Le profil HTTP local et H2 persistante ne démontre ni TLS ni haute disponibilité. Voir sso-design.md pour le détail et les références.

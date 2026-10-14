@@ -1,6 +1,6 @@
 # Périmètre et preuves de la version locale
 
-Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Superset constitue la première partie du niveau 4 ; SSO, gouvernance et observabilité restent à construire.
+Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est testé en Docker et sur Kubernetes local, avec Spark Operator. Superset et son SSO Keycloak constituent les premières parties du niveau 4 ; SSO Trino, gouvernance et observabilité restent à construire.
 
 | Exigence | État | Preuve / réserve |
 |---|---|---|
@@ -23,6 +23,7 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | NiFi/Kafka/streaming/fraude/AML | Vérifié en Docker et Kubernetes local | NiFi/Kafka, deux traitements Spark, DLQ, trois règles de fraude, AML et liquidité ; vue Lambda sans chevauchement ; reprise et rejeux vérifiés. |
 | Kubernetes du socle | Vérifié en kind ARM64 | Sept composants, Spark Operator, driver/executor distincts, PVC, probes ; namespaces séparés ; un DAG exécuté par le scheduler sur K8s et quatre chargés. Ingress fourni comme exemple, contrôleur/TLS non testé. |
 | Superset | Vérifié | Trois dashboards, onze graphiques depuis Trino ; filtre CI testé par API et affichage inspecté. Souscriptions et SLA explicitement simulés. |
-| SSO/gouvernance/observabilité | Non implémenté dans cette version | Keycloak, autorisations fines, OpenMetadata, Prometheus/Grafana/Loki et alertes restent à construire. |
+| Keycloak / SSO Superset | Vérifié localement | Quatre profils ; restrictions serveur des huit analystes, lecteur limité aux agrégats, conformité aux deux tables réglementaires, déconnexion IdP ; `sso-verification.json`. |
+| SSO Trino / gouvernance / observabilité | Reste à réaliser | Trino interne sans authentification à cette étape ; OpenMetadata, Prometheus/Grafana/Loki et alertes restent à construire. |
 
 Les rapports JSON existants témoignent des exécutions dont ils sont issus ; ils ne remplacent pas l'exécution des scripts de validation. Les données étant appendues par les générations et les tests, les comptages peuvent augmenter sans perte d'idempotence.

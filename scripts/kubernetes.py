@@ -149,10 +149,18 @@ def secrets():
                 "SUPERSET_ADMIN_USER",
                 "SUPERSET_ADMIN_PASSWORD",
                 "SUPERSET_SECRET_KEY",
+                "KEYCLOAK_SUPERSET_SECRET",
+                "WABA_SSO_ENABLED",
             )
         },
     }
     kube("apply", "--server-side", "-f", "-", data=json.dumps(bi_secret))
+
+
+def scale_identity(replicas):
+    exists = subprocess.run([KUBECTL,"--context",CONTEXT,"get","deployment/keycloak","-n","governance"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
+    if exists:
+        kube("scale","deployment/keycloak","-n","governance","--replicas="+str(replicas))
 
 
 def wait_deployment(name, namespace):
@@ -453,6 +461,7 @@ def streaming():
             "Wait for the active batch application before switching to streaming"
         )
     kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
+    scale_identity(0)
     kube(
         "scale",
         "deployment/airflow",
@@ -518,6 +527,8 @@ def streaming():
 
 
 def batch():
+    kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
+    scale_identity(0)
     kube("scale", "deployment/nifi", "-n", "ingestion", "--replicas=0")
     # Deleting this workload stops execution; its checkpoint PVC is preserved.
     kube(
@@ -551,6 +562,8 @@ def batch():
 
 
 def bi():
+    kube("scale", "deployment/superset", "-n", "serving", "--replicas=0")
+    scale_identity(0)
     kube("scale", "deployment/nifi", "-n", "ingestion", "--replicas=0")
     kube(
         "scale",
@@ -580,6 +593,9 @@ def bi():
     )
     execute("seed_analytics_context")
     secrets()
+    if private_env().get("WABA_SSO_ENABLED") == "true":
+        scale_identity(1)
+        wait_deployment("keycloak", "governance")
     run(
         [
             "docker",
@@ -615,6 +631,58 @@ def bi():
     )
 
 
+def sso():
+    """Deploy identity and enable Superset OIDC without erasing metadata/PVCs."""
+    applications = json.loads(kube("get","sparkapplications","-n","processing","-o","json",capture=True))["items"]
+    if any(a.get("status",{}).get("applicationState",{}).get("state") not in ("COMPLETED","FAILED") for a in applications):
+        raise RuntimeError("Switch to the bi profile before enabling identity; active Spark workloads exist")
+    run([sys.executable, "bootstrap.py"])
+    values = private_env()
+    sys.path.insert(0, str(ROOT / "infra/keycloak"))
+    from realm import realm
+    for name,namespace,data in (
+        ("waba-identity-runtime","governance",{
+            "KC_BOOTSTRAP_ADMIN_USERNAME":values["KEYCLOAK_ADMIN_USER"],
+            "KC_BOOTSTRAP_ADMIN_PASSWORD":values["KEYCLOAK_ADMIN_PASSWORD"]}),
+        ("waba-keycloak-import","governance",{"waba-realm.json":json.dumps(realm(values))}),
+    ):
+        kube("apply","--server-side","-f","-",data=json.dumps({
+            "apiVersion":"v1","kind":"Secret","metadata":{"name":name,"namespace":namespace},
+            "type":"Opaque","stringData":data}))
+    image = "quay.io/keycloak/keycloak:26.4.0"
+    run(["docker","pull",image])
+    with tempfile.TemporaryDirectory(prefix="waba-identity-image-") as directory:
+        archive = str(Path(directory)/"image.tar")
+        architecture = "arm64" if platform.machine() == "arm64" else "amd64"
+        run(["docker","image","save","--platform","linux/"+architecture,"-o",archive,image])
+        run(["kind","load","image-archive","--name","waba",archive])
+    identity = json.loads((ROOT / "infra/k8s/45-identity.yaml").read_text())
+    for item in identity["items"]:
+        if item["kind"] == "Deployment":
+            item["spec"]["replicas"] = 1
+    apply(identity)
+    wait_deployment("keycloak","governance")
+    run(["docker","build","-f","infra/superset/Dockerfile","-t","waba/superset:"+IMAGE_TAG,"."])
+    with tempfile.TemporaryDirectory(prefix="waba-sso-image-") as directory:
+        archive = str(Path(directory)/"image.tar")
+        architecture = "arm64" if platform.machine() == "arm64" else "amd64"
+        run(["docker","image","save","--platform","linux/"+architecture,"-o",archive,"waba/superset:"+IMAGE_TAG])
+        run(["kind","load","image-archive","--name","waba",archive])
+    kube("apply","--server-side","-f","-",data=json.dumps({
+        "apiVersion":"v1","kind":"Secret","metadata":{"name":"waba-bi-runtime","namespace":"serving"},
+        "type":"Opaque","stringData":{k:values[k] for k in ("SUPERSET_ADMIN_USER","SUPERSET_ADMIN_PASSWORD","SUPERSET_SECRET_KEY","KEYCLOAK_SUPERSET_SECRET")}}))
+    kube("set","env","deployment/superset","-n","serving","WABA_SSO_ENABLED=true")
+    kube("rollout","restart","deployment/superset","-n","serving")
+    wait_deployment("superset","serving")
+    environment = ROOT / ".env"
+    lines = environment.read_text().splitlines()
+    lines = ["WABA_SSO_ENABLED=true" if line.startswith("WABA_SSO_ENABLED=") else line for line in lines]
+    if not any(line.startswith("WABA_SSO_ENABLED=") for line in lines):
+        lines.append("WABA_SSO_ENABLED=true")
+    environment.write_text("\n".join(lines)+"\n")
+    print("OIDC ready. Forward Keycloak 18080:8080 and Superset 8088:8088 on localhost.")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -626,6 +694,7 @@ def main():
             "streaming",
             "batch",
             "bi",
+            "sso",
             "status",
             "stop",
         ),
@@ -689,7 +758,7 @@ def main():
             "processing",
             "--timeout=120s",
         )
-        for ns in ("ingestion", "processing", "serving"):
+        for ns in ("ingestion", "processing", "serving", "governance"):
             kube("scale", "deployment", "--all", "-n", ns, "--replicas=0")
         print("Workloads stopped; cluster and all PVCs preserved.")
     else:

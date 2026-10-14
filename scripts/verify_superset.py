@@ -113,7 +113,8 @@ report = {
     "charts": checks,
     "trino_data_verified": True,
     "country_filter_verified": True,
-    "sso_verified": False,
+    "interactive_sso_tested_by_this_script": False,
+    "sso_verification_report": "docs/sso-verification.json",
     "subscription_model": "SUBSCRIPTIONS_SIMULATED_V1",
     "claims_sla_model": "SLA_SIMULATED_V1",
 }

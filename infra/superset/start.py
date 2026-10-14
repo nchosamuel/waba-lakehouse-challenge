@@ -23,6 +23,8 @@ with app.app_context():
         )
 subprocess.run(["superset", "init"], check=True)
 subprocess.run([sys.executable, "/app/waba-superset/provision.py"], check=True)
+if os.environ.get("WABA_SSO_ENABLED") == "true":
+    subprocess.run([sys.executable, "/app/waba-superset/provision_security.py"], check=True)
 os.execvp(
     "gunicorn",
     [
