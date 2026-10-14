@@ -2,9 +2,9 @@
 
 ## 1. Périmètre livré
 
-La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO Superset et ses politiques d'accès par rôle/pays sont vérifiés. OpenMetadata et le lineage sont vérifiés ; l'observabilité du niveau 4 reste à réaliser : cette version est un prototype local vérifié, pas une plateforme de production complète.
+La plateforme réalise les niveaux batch 1–2 et le parcours streaming du niveau 3. Le socle est vérifié en Docker Compose et sur Kubernetes kind ARM64. Superset apporte les trois dashboards métier du niveau 4. Le SSO Superset/Trino et les politiques d'accès par rôle/pays, OpenMetadata avec lineage, ainsi que la supervision et ses alertes sont implémentés et vérifiés par profils Kubernetes locaux. Le lancement intégral simultané et l'exposition par Ingress restent à valider ; la haute disponibilité et la sécurité de production restent hors du périmètre validé.
 
-Le dépôt contient l'application de génération, les traitements PySpark, quatre DAGs, la configuration automatisée de NiFi, les ressources Kubernetes et des scripts de validation indépendants. Les rapports JSON documentent des exécutions réelles ; leurs comptages peuvent évoluer à chaque nouvelle génération. La vidéo est volontairement différée jusqu'à la fin des fonctionnalités.
+Le dépôt contient l'application de génération, les traitements PySpark, quatre DAGs, la configuration automatisée de NiFi, les ressources Kubernetes et des scripts de validation indépendants. Les rapports JSON documentent des exécutions réelles ; leurs comptages peuvent évoluer à chaque nouvelle génération. La [vidéo de démonstration](demo/WABA_Demo_FR.mp4) de 9 min 14 s est livrée avec sous-titres français intégrés. Elle présente des captures réelles montées par profils locaux ; les résultats Trino et les alertes de la cohorte sont présentés dans un rapport en lecture seule.
 
 ## 2. Socle et données
 
@@ -44,7 +44,7 @@ Superset interroge Trino pour performance commerciale, risque et mobile money, a
 
 Les vérifications couvrent les 1,3 million de lignes de référence, l'unicité et les trois matérialisations, les résultats comptables attendus, la génération ponctuelle/continue, quatre flux streaming, cas positifs/négatifs de risque, DLQ, plusieurs lots, rejeux et redémarrages Kafka/NiFi/Spark, ainsi que les totaux Lambda. Superset est contrôlé par API et inspection visuelle ; une requête correcte ne suffit pas à garantir un graphique correctement enregistré.
 
-Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et base Keycloak H2 restent des compromis de démonstration. Haute disponibilité, TLS d'entrée, métriques/logs/alertes testées sont les étapes suivantes, distinctes des capacités déjà vérifiées.
+Le Mac M3 Pro dispose de 18 Go et Docker d'environ 8 Go. Les essais batch, streaming et BI se succèdent pour respecter ce budget. Réplication Kafka de un, SQLite, stockage local, port-forwards et base Keycloak H2 restent des compromis de démonstration. Les métriques, journaux et alertes sont vérifiés dans le profil de supervision décrit ci-dessous. Le lancement intégral simultané, l'Ingress et son TLS, ainsi que la haute disponibilité restent à valider.
 
 ## Preuves détaillées
 

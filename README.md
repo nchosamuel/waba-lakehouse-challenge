@@ -218,7 +218,7 @@ GitHub Actions exécute les tests déterministes et les tests avec stockage simu
 - [État de conformité et preuves](docs/submission-status.md).
 - [Déroulé de démonstration de 5 à 10 minutes](docs/demo-script.md) ; [vidéo sous-titrée disponible](docs/demo/WABA_Demo_FR.mp4).
 
-Les secrets se créent avec `python3 bootstrap.py` ; ne pas versionner `.env`. Pour un dépôt privé, partager explicitement l'accès avec les évaluateurs avant de transmettre le lien.
+Les secrets se créent avec `python3 bootstrap.py` ; ne pas versionner `.env`. Le dépôt est public. La [branche de soumission](https://github.com/nchosamuel/waba-lakehouse-challenge/tree/feature/level-3-streaming) contient la version revue ; utiliser ce lien pour accéder au code et à la vidéo livrés.
 
 ## Niveau 3 : NiFi/Kafka, streaming et Lambda
 

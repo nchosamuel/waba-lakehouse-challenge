@@ -17,7 +17,7 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | Quatre DAGs Airflow | Vérifié | Exécutions réelles du scheduler, dépendances, retries, paramètres pays/période. |
 | Reporting J+1 | Vérifié pour des agrégats de démonstration | 00h30 UTC ; données futures exclues ; primes acquises au prorata. Aucun formulaire officiel revendiqué. |
 | Déploiement vierge | Vérifié, avec correction du démarrage documentée | Volumes séparés initialement vides, quatre DAGs réussis et KPIs contrôlés ; `fresh-install-verification.json`. |
-| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 33 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
+| Git et CI | Publié, CI verte | Dépôt public GitHub ; source sans `.env` ; 33 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
 | Document technique | Disponible | `technical-writeup.md` : synthèse des niveaux livrés ; documents de conception détaillés associés. |
 | Vidéo de 5–10 minutes | Livrée · 9 min 14 s | `demo/WABA_Demo_FR.mp4`, sous-titres français intégrés et fichier SRT ; montage par profils locaux explicitement annoncé. |
 | NiFi/Kafka/streaming/fraude/AML | Vérifié en Docker et Kubernetes local | NiFi/Kafka, deux traitements Spark, DLQ, trois règles de fraude, AML et liquidité ; vue Lambda sans chevauchement ; reprise et rejeux vérifiés. |
