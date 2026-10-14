@@ -1,6 +1,6 @@
 # Prochain bloc : niveau 3 — streaming
 
-Statut : séquence réalisée et vérifiée dans le profil streaming Docker local. Voir `level3-design.md` et les rapports `streaming-*-verification.json`. Le socle est aussi vérifié sur Kubernetes kind avec Spark Operator ; Superset démarre le niveau 4. Le SSO Superset est vérifié ; SSO Trino, catalogue et observabilité restent à réaliser.
+Statut : séquence réalisée et vérifiée dans le profil streaming Docker local. Voir `level3-design.md` et les rapports `streaming-*-verification.json`. Le socle est aussi vérifié sur Kubernetes kind avec Spark Operator ; Superset démarre le niveau 4. Le SSO Superset est vérifié ; Le SSO Trino est également vérifié ; catalogue et observabilité restent à réaliser.
 
 ## Séquence de construction et de validation
 

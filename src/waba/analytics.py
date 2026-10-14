@@ -29,25 +29,10 @@ def query(table, countries):
         raise ValueError("Unsupported analytics query")
     literals = ",".join("'" + country + "'" for country in countries)
     sql = f"SELECT * FROM iceberg.gold.{table} WHERE country_code IN ({literals}) ORDER BY country_code LIMIT 500"
-    request = urllib.request.Request(
-        "http://trino:8080/v1/statement",
-        data=sql.encode(),
-        headers={"X-Trino-User": "waba-dashboard"},
-    )
-    with urllib.request.urlopen(request, timeout=30) as response:
-        result = json.load(response)
-    columns, rows = [], []
-    while True:
-        if "error" in result:
-            raise RuntimeError(result["error"]["message"])
-        if "columns" in result:
-            columns = [col["name"] for col in result["columns"]]
-        rows.extend(result.get("data", []))
-        if "nextUri" not in result:
-            break
-        with urllib.request.urlopen(result["nextUri"], timeout=30) as response:
-            result = json.load(response)
-    return [dict(zip(columns, row)) for row in rows]
+    from waba.trino_client import query as sql_query
+    columns,rows = sql_query(sql)
+    return [dict(zip([c['name'] for c in columns], row)) for row in rows]
+
 
 
 LABELS = {

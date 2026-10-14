@@ -69,16 +69,12 @@ def output(service, arguments):
 
 def query(sql):
     # Avoid launching a second Java VM inside the Trino coordinator's memory cap.
-    script = """import json,sys,urllib.request
-request=urllib.request.Request('http://trino:8080/v1/statement',data=sys.argv[1].encode(),headers={'X-Trino-User':'waba-validation'})
-with urllib.request.urlopen(request,timeout=120) as response: result=json.load(response)
-rows=[]
-while True:
-    if 'error' in result: raise RuntimeError(result['error']['message'])
-    rows.extend(result.get('data',[]))
-    if 'nextUri' not in result: break
-    with urllib.request.urlopen(result['nextUri'],timeout=120) as response: result=json.load(response)
-print(json.dumps(rows))
+    script = """import json,sys,os
+from waba.trino_client import query
+if os.environ.get('WABA_TRINO_SSO_ENABLED') == 'true':
+    os.environ['TRINO_SERVICE_CLIENT']='waba-validation'
+    os.environ['TRINO_SERVICE_SECRET']=os.environ['KEYCLOAK_VALIDATION_SERVICE_SECRET']
+print(json.dumps(query(sys.argv[1])[1]))
 """
     return json.loads(output("app", ["python", "-c", script, sql]))
 

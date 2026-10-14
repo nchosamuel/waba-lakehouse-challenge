@@ -149,7 +149,7 @@ def main():
     assert viewer.denied('/api/v1/me/'), 'Local logout failed'
     with viewer.open('/login/keycloak') as response:
         assert LoginForm(response.read().decode()).action, 'IdP session still active after logout'
-    report={'verified_at_utc':datetime.now(timezone.utc).isoformat(),'keycloak_version':'26.4.0','superset_oidc_verified':True,'authorization_code_pkce':True,'profiles':role_checks,'group_admin_all_dashboard_queries':True,'local_logout_verified':True,'identity_provider_logout_verified':True,'rls_cache_isolation_verified':True,'trino_sso_verified':False,'profile':'local HTTP, H2 persistent PVC; no production TLS/HA claim'}
+    report={'verified_at_utc':datetime.now(timezone.utc).isoformat(),'keycloak_version':'26.4.0','superset_oidc_verified':True,'authorization_code_pkce':True,'profiles':role_checks,'group_admin_all_dashboard_queries':True,'local_logout_verified':True,'identity_provider_logout_verified':True,'rls_cache_isolation_verified':True,'trino_sso_tested_by_this_script':False,'trino_sso_verification_report':'docs/trino-sso-verification.json','profile':'local HTTP, H2 persistent PVC; no production TLS/HA claim'}
     (ROOT/'docs/sso-verification.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
     print(json.dumps(report,ensure_ascii=False))
 

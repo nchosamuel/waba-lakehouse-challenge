@@ -82,6 +82,10 @@
                   {
                     "name": "state",
                     "mountPath": "/app/superset_home"
+                  },
+                  {
+                    "name": "trust",
+                    "mountPath": "/etc/waba"
                   }
                 ],
                 "startupProbe": {
@@ -115,6 +119,19 @@
                 "name": "state",
                 "persistentVolumeClaim": {
                   "claimName": "superset-state"
+                }
+              },
+              {
+                "name": "trust",
+                "secret": {
+                  "secretName": "waba-trino-tls",
+                  "optional": true,
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ]
                 }
               }
             ],

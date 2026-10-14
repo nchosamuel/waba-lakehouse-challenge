@@ -41,3 +41,10 @@ if os.environ.get("WABA_SSO_ENABLED") == "true":
             "api_base_url": "http://keycloak.governance:8080/realms/waba/protocol/openid-connect/",
         },
     }]
+
+if os.environ.get("WABA_TRINO_SSO_ENABLED") == "true":
+    from trino_auth import KeycloakServiceAuth
+    def DB_CONNECTION_MUTATOR(uri, params, username, security_manager, source):
+        if uri.drivername == "trino":
+            params.setdefault("connect_args", {}).update(auth=KeycloakServiceAuth(), verify="/etc/waba/ca.crt", http_scheme="https")
+        return uri, params

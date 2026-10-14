@@ -1,6 +1,7 @@
 """Idempotent creation of three country-filtered dashboards from Trino datasets."""
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -202,6 +203,8 @@ with app.app_context():
         )
         db.session.add(database)
         db.session.flush()
+    if os.environ.get("WABA_TRINO_SSO_ENABLED") == "true":
+        database.sqlalchemy_uri = "trino://service-account-waba-bi@trino:8443/iceberg/gold"
     tables = {}
     for name, sql in DATASETS.items():
         table = (

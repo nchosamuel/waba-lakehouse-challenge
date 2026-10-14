@@ -1,0 +1,207 @@
+{
+  "catalogs": [
+    {
+      "group": "group_admin|service_validation",
+      "allow": "all"
+    },
+    {
+      "user": "service-account-waba-validation",
+      "catalog": "iceberg|kafka",
+      "allow": "all"
+    },
+    {
+      "group": "service_bi|service_dashboard|compliance_officer|viewer|country_(CI|SN|ML|BF|GN|TG|BJ|GH)",
+      "catalog": "iceberg",
+      "allow": "read-only"
+    },
+    {
+      "allow": "none"
+    }
+  ],
+  "schemas": [
+    {
+      "group": "group_admin|service_validation",
+      "owner": true
+    },
+    {
+      "owner": false
+    }
+  ],
+  "tables": [
+    {
+      "group": "group_admin|service_validation",
+      "privileges": [
+        "SELECT",
+        "INSERT",
+        "DELETE",
+        "UPDATE",
+        "OWNERSHIP",
+        "GRANT_SELECT"
+      ]
+    },
+    {
+      "user": "service-account-waba-validation",
+      "catalog": "iceberg",
+      "schema": "silver|gold|bi",
+      "privileges": [
+        "SELECT",
+        "GRANT_SELECT"
+      ]
+    },
+    {
+      "user": "service-account-waba-validation",
+      "catalog": "kafka",
+      "schema": "default",
+      "table": "silver_bank_transactions",
+      "privileges": [
+        "SELECT",
+        "GRANT_SELECT"
+      ]
+    },
+    {
+      "group": "service_bi",
+      "catalog": "iceberg",
+      "schema": "silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ]
+    },
+    {
+      "group": "service_dashboard",
+      "catalog": "iceberg",
+      "schema": "gold",
+      "privileges": [
+        "SELECT"
+      ]
+    },
+    {
+      "group": "compliance_officer",
+      "catalog": "iceberg",
+      "schema": "gold",
+      "table": "regulatory_bceao_daily|regulatory_cima_daily",
+      "privileges": [
+        "SELECT"
+      ]
+    },
+    {
+      "group": "viewer",
+      "catalog": "iceberg",
+      "schema": "bi",
+      "table": "revenue|arpc|subscriptions|npl|loss_ratio|aml_counts|claims_sla|mobile_hourly|corridors|mobile_failures",
+      "privileges": [
+        "SELECT"
+      ]
+    },
+    {
+      "group": "country_CI",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'CI'"
+    },
+    {
+      "group": "country_SN",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'SN'"
+    },
+    {
+      "group": "country_ML",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'ML'"
+    },
+    {
+      "group": "country_BF",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'BF'"
+    },
+    {
+      "group": "country_GN",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'GN'"
+    },
+    {
+      "group": "country_TG",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'TG'"
+    },
+    {
+      "group": "country_BJ",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'BJ'"
+    },
+    {
+      "group": "country_GH",
+      "catalog": "iceberg",
+      "schema": "raw|bronze|silver|gold|bi",
+      "privileges": [
+        "SELECT"
+      ],
+      "filter": "country_code = 'GH'"
+    },
+    {
+      "privileges": []
+    }
+  ],
+  "impersonation": [],
+  "queries": [
+    {
+      "group": "group_admin|service_validation",
+      "allow": [
+        "execute",
+        "view",
+        "kill"
+      ]
+    },
+    {
+      "allow": [
+        "execute"
+      ]
+    }
+  ],
+  "system_information": [
+    {
+      "user": "waba-group-admin|service-account-waba-validation",
+      "allow": [
+        "read"
+      ]
+    },
+    {
+      "allow": []
+    }
+  ],
+  "system_session_properties": [
+    {
+      "group": "group_admin|service_validation",
+      "allow": true
+    },
+    {
+      "allow": false
+    }
+  ]
+}

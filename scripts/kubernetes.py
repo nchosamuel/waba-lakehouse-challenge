@@ -86,6 +86,8 @@ def secrets():
             MINIO_ROOT_PASSWORD=values["MINIO_ROOT_PASSWORD"],
         ),
     }
+    if values.get("WABA_TRINO_SSO_ENABLED") == "true":
+        scopes["serving"].update(WABA_TRINO_SSO_ENABLED="true",TRINO_SERVICE_CLIENT="waba-dashboard",TRINO_SERVICE_SECRET=values["KEYCLOAK_DASHBOARD_SERVICE_SECRET"],KEYCLOAK_VALIDATION_SERVICE_SECRET=values["KEYCLOAK_VALIDATION_SERVICE_SECRET"])
     for namespace, data in scopes.items():
         # create/update avoids kubectl's last-applied annotation containing secret data.
         item = {
@@ -154,10 +156,14 @@ def secrets():
             )
         },
     }
+    if values.get("WABA_TRINO_SSO_ENABLED") == "true":
+        bi_secret["stringData"].update(WABA_TRINO_SSO_ENABLED="true",KEYCLOAK_BI_SERVICE_SECRET=values["KEYCLOAK_BI_SERVICE_SECRET"])
     kube("apply", "--server-side", "-f", "-", data=json.dumps(bi_secret))
 
 
 def scale_identity(replicas):
+    if replicas == 0 and private_env().get("WABA_TRINO_SSO_ENABLED") == "true":
+        return  # Secured Trino clients still need the issuer for renewable tokens.
     exists = subprocess.run([KUBECTL,"--context",CONTEXT,"get","deployment/keycloak","-n","governance"],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode == 0
     if exists:
         kube("scale","deployment/keycloak","-n","governance","--replicas="+str(replicas))
@@ -373,6 +379,8 @@ def start():
         "40-business-intelligence.yaml",
     ):
         kube("apply", "-f", "infra/k8s/" + name)
+    if private_env().get("WABA_TRINO_SSO_ENABLED") == "true":
+        kube("apply", "-f", "infra/k8s/46-trino-security.yaml")
     # NiFi/Kafka are not needed while seeding the complete reference population.
     kube(
         "scale",
@@ -668,9 +676,8 @@ def sso():
         architecture = "arm64" if platform.machine() == "arm64" else "amd64"
         run(["docker","image","save","--platform","linux/"+architecture,"-o",archive,"waba/superset:"+IMAGE_TAG])
         run(["kind","load","image-archive","--name","waba",archive])
-    kube("apply","--server-side","-f","-",data=json.dumps({
-        "apiVersion":"v1","kind":"Secret","metadata":{"name":"waba-bi-runtime","namespace":"serving"},
-        "type":"Opaque","stringData":{k:values[k] for k in ("SUPERSET_ADMIN_USER","SUPERSET_ADMIN_PASSWORD","SUPERSET_SECRET_KEY","KEYCLOAK_SUPERSET_SECRET")}}))
+    # Preserve the SQL service identity when reapplying interactive SSO.
+    secrets()
     kube("set","env","deployment/superset","-n","serving","WABA_SSO_ENABLED=true")
     kube("rollout","restart","deployment/superset","-n","serving")
     wait_deployment("superset","serving")

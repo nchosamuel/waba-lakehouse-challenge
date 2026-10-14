@@ -278,6 +278,11 @@ foundation += [
     ),
     service("app", "serving", [8501]),
 ]
+for item in foundation:
+    if item["kind"] == "Deployment" and item["metadata"]["name"] == "app":
+        pod=item["spec"]["template"]["spec"]
+        pod["volumes"].append({"name":"trust","secret":{"secretName":"waba-trino-tls","optional":True,"items":[{"key":"ca.crt","path":"ca.crt"}]}})
+        pod["containers"][0]["volumeMounts"].append(mount("trust","/etc/waba"))
 write("10-foundation.yaml", foundation)
 
 stream = [
@@ -503,6 +508,8 @@ bi = deployment(
     fs_group=1000,
     probe={"httpGet": {"path": "/health", "port": 8088}},
 )
+bi["spec"]["template"]["spec"]["volumes"].append({"name":"trust","secret":{"secretName":"waba-trino-tls","optional":True,"items":[{"key":"ca.crt","path":"ca.crt"}]}})
+bi["spec"]["template"]["spec"]["containers"][0]["volumeMounts"].append(mount("trust","/etc/waba"))
 bi["spec"]["template"]["spec"]["containers"][0]["envFrom"] = [
     {"secretRef": {"name": "waba-bi-runtime"}}
 ]
@@ -542,3 +549,20 @@ identity = deployment(
 )
 identity["spec"]["template"]["spec"]["containers"][0]["envFrom"] = [{"secretRef":{"name":"waba-identity-runtime"}}]
 write("45-identity.yaml", [pvc("keycloak-state","governance","1Gi"),identity,service("keycloak","governance",[8080])])
+
+# Explicit secure profile overlay; keep the original Compose/local profile separate.
+import copy
+secure = copy.deepcopy(next(r for r in foundation if r["kind"] == "Deployment" and r["metadata"]["name"] == "trino"))
+pod = secure["spec"]["template"]["spec"]
+container = pod["containers"][0]
+container["envFrom"] = [{"secretRef":{"name":"waba-trino-runtime"}}]
+container["ports"].append({"containerPort":8443})
+for v in pod["volumes"]:
+    if v["name"] == "trino-config":
+        v["configMap"]["name"] = "trino-secure-config"
+pod["volumes"] += [config("trino-security"), {"name":"tls","secret":{"secretName":"waba-trino-tls"}}]
+container["volumeMounts"] += [mount("trino-security","/etc/trino/security"),mount("trino-security","/etc/trino/access-control.properties","access-control.properties"),mount("tls","/etc/trino/tls")]
+write("46-trino-security.yaml", [
+    resource("ConfigMap","trino-secure-config","serving",data={"config.properties":(ROOT/"infra/trino/security/config.properties").read_text(),"jvm.config":(ROOT/"infra/trino/jvm.config").read_text()}),
+    resource("ConfigMap","trino-security","serving",data={n:(ROOT/"infra/trino/security"/n).read_text() for n in ("access-control.properties","rules.json")}),
+    secure, service("trino","serving",[8080,8443])])

@@ -1,5 +1,5 @@
 {
-  "verified_at_utc": "2026-10-14T03:40:14.629532+00:00",
+  "verified_at_utc": "2026-10-14T04:14:27.152657+00:00",
   "keycloak_version": "26.4.0",
   "superset_oidc_verified": true,
   "authorization_code_pkce": true,
@@ -77,9 +77,8 @@
   "local_logout_verified": true,
   "identity_provider_logout_verified": true,
   "rls_cache_isolation_verified": true,
-  "trino_sso_verified": false,
+  "trino_sso_tested_by_this_script": false,
+  "trino_sso_verification_report": "docs/trino-sso-verification.json",
   "profile": "local HTTP, H2 persistent PVC; no production TLS/HA claim",
-  "browser_analyst_ci_verified": true,
-  "restart_persistent_identity_verified": true,
   "browser_evidence": "docs/screenshots/sso-analyst-ci.png"
 }

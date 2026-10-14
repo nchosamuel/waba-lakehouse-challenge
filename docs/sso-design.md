@@ -27,7 +27,7 @@ Keycloak conserve les utilisateurs et le realm lors des redémarrages. L'import 
 
 Les comptes sans profil reconnu, avec plusieurs profils fonctionnels ou avec un analyste sans pays unique sont refusés. Les rôles sont synchronisés à la connexion ; les huit règles de lignes sont provisionnées de manière idempotente. Les filtres de tableau de bord peuvent être retirés ou modifiés sans enlever les restrictions serveur. Les sous-requêtes SQL ad hoc sont désactivées pour empêcher une expression de graphique de consulter une autre table. Les datasets sont autorisés par une liste explicite : ajouter un dataset ultérieurement ne lui attribue pas automatiquement l'accès lecteur.
 
-Pour respecter la mémoire du Mac, le passage au profil streaming met Keycloak et Superset en pause ; le profil BI les réactive. Les PVC et identités sont conservés.
+Pour respecter la mémoire du Mac, le passage au profil streaming met Superset en pause et conserve Keycloak si Trino est sécurisé ; le profil BI les réactive. Les PVC et identités sont conservés.
 
 La déconnexion efface la session locale et termine la session Keycloak. Une session déjà ouverte doit être renouvelée pour recevoir un changement d'attribution de rôle du fournisseur d'identité. Le compte local Superset généré précédemment est conservé pour l'API privée de provisionnement et de vérification ; l'interface interactive utilise Keycloak.
 
@@ -35,6 +35,7 @@ La déconnexion efface la session locale et termine la session Keycloak. Une ses
 
 `python3 scripts/verify_sso.py` effectue de vraies connexions OIDC, teste les onze requêtes sans filtre visuel pour les huit analystes, un filtre contradictoire, les droits lecteur/conformité et le refus de SQL Lab et d'une sous-requête. Le rapport `sso-verification.json` déclare séparément les résultats et la couverture Trino. L'inspection navigateur complète ce contrôle.
 
-Cette étape protège les accès via Superset. **L'authentification et les restrictions du service Trino ne sont pas encore activées** : le service interne ne doit pas être présenté comme un accès utilisateur sécurisé. L'intégration Trino/Keycloak constitue l'étape suivante avant de déclarer l'exigence SSO du challenge complète. Le profil local utilise HTTP via port-forward, un nœud et H2 ; TLS, PostgreSQL et haute disponibilité restent requis pour une cible de production.
+Superset et Trino disposent désormais chacun d'un contrôle d'accès vérifié : voir [trino-sso-design.md](trino-sso-design.md) et son rapport distinct. Ce profil utilise des port-forwards locaux et une base H2 persistante ; TLS de bout en bout, PostgreSQL et haute disponibilité restent nécessaires pour une cible de production. Quand Trino sécurisé est activé, Keycloak reste en marche pour renouveler les jetons techniques, y compris en streaming.
+
 
 Références de configuration : [Superset OAuth et mapping des rôles](https://superset.apache.org/admin-docs/configuration/configuring-superset/), [sécurité Superset](https://superset.apache.org/admin-docs/security/), [conteneurs Keycloak](https://www.keycloak.org/server/containers), [hostname et backchannel Keycloak](https://www.keycloak.org/server/hostname), [import du realm](https://www.keycloak.org/server/importExport).

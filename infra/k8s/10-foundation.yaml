@@ -708,7 +708,12 @@
                     }
                   }
                 ],
-                "volumeMounts": [],
+                "volumeMounts": [
+                  {
+                    "name": "trust",
+                    "mountPath": "/etc/waba"
+                  }
+                ],
                 "startupProbe": {
                   "httpGet": {
                     "path": "/_stcore/health",
@@ -735,7 +740,21 @@
                 }
               }
             ],
-            "volumes": [],
+            "volumes": [
+              {
+                "name": "trust",
+                "secret": {
+                  "secretName": "waba-trino-tls",
+                  "optional": true,
+                  "items": [
+                    {
+                      "key": "ca.crt",
+                      "path": "ca.crt"
+                    }
+                  ]
+                }
+              }
+            ],
             "terminationGracePeriodSeconds": 45,
             "automountServiceAccountToken": false
           }
