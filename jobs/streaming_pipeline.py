@@ -6,13 +6,13 @@ import os
 import time
 from pathlib import Path
 from datetime import datetime, timezone
-from datetime import timedelta
 from pyspark import StorageLevel
 from pyspark.sql import functions as F
 from waba.spark_common import session, merge
 from waba.contracts import FLOW_PREFIX, KEYS
 from waba.streaming_enrichment import parse_and_validate, enrich, align_and_merge
 from waba.streaming_io import queue, flush
+from waba.streaming_rules import high_value_windows, individual_alerts
 
 write_lock = threading.RLock()
 spark = session("waba-lambda-streaming")
@@ -186,70 +186,21 @@ def silver_to_gold_impl(batch, batch_id):
     spark.catalog.refreshTable("iceberg.gold.streaming_event_ledger")
     history = spark.table("iceberg.gold.streaming_event_ledger")
     maximum = history.agg(F.max("event_time")).first()[0]
-    recent = history.filter(
-        (F.col("txn_date") >= F.lit((maximum - timedelta(minutes=10)).date()))
-        & (F.col("event_time") >= F.lit(maximum - timedelta(minutes=10)))
-    )
-    bank = recent.filter("source_topic='silver-bank-transactions' AND status='SUCCESS'")
-    large = bank.filter("currency='XOF' AND amount>500000")
-    windows = large.groupBy(
-        "country_code",
-        "entity_type",
-        "subject_id",
-        F.window("event_time", "5 minutes", "1 minute"),
-    ).agg(F.count("*").alias("event_count"), F.sum("amount_eur").alias("amount_eur"))
-    windows = windows.filter("event_count>=2").select(
-        "country_code",
-        "entity_type",
-        "subject_id",
-        F.col("window.start").alias("window_start"),
-        F.col("window.end").alias("window_end"),
-        "event_count",
-        "amount_eur",
-    )
-    windows = windows.withColumn("txn_date", F.to_date("window_start")).withColumn(
-        "rule", F.lit("MULTIPLE_HIGH_VALUE_TRANSFERS")
-    )
-    gold_alert(windows, "fraud_alerts", "gold-fraud-alerts")
-    for rule, condition in (
-        (
-            "UNUSUAL_COUNTRY_FOR_PROFILE",
-            "source_topic='silver-mobile-money' AND status='SUCCESS' AND sender_country<>sender_home_country",
-        ),
-        (
-            "CLAIM_OVER_THREE_ANNUAL_PREMIUMS",
-            "source_topic='silver-insurance-operations' AND operation_type='CLAIM_PAYMENT' AND status='PAID' AND annual_premium>0 AND amount>3*annual_premium",
-        ),
-    ):
-        selected = recent.filter(condition).select(
-            "country_code",
-            "entity_type",
-            "subject_id",
-            F.col("event_time").alias("window_start"),
-            F.col("event_time").alias("window_end"),
-            F.lit(1).alias("event_count"),
-            "amount_eur",
-            "txn_date",
+    windows = high_value_windows(history, ledger)
+    if windows is not None:
+        windows = windows.select(
+            "country_code", "entity_type", "subject_id",
+            F.col("window.start").alias("window_start"),
+            F.col("window.end").alias("window_end"), "event_count", "amount_eur",
+        ).withColumn("txn_date", F.to_date("window_start")).withColumn(
+            "rule", F.lit("MULTIPLE_HIGH_VALUE_TRANSFERS")
         )
-        selected = selected.withColumn(
-            "subject_id",
-            F.concat_ws("/", F.col("subject_id"), F.col("window_start").cast("string")),
-        ).withColumn("rule", F.lit(rule))
-        gold_alert(selected, "fraud_alerts", "gold-fraud-alerts")
-    aml = bank.filter(
-        "transaction_type IN ('TRANSFER','INTERNATIONAL_WIRE') AND ((currency='XOF' AND amount>1000000) OR (currency='GHS' AND amount>5000))"
-    )
-    aml = aml.select(
-        "country_code",
-        "entity_type",
-        F.col("event_id").alias("subject_id"),
-        F.col("event_time").alias("window_start"),
-        F.col("event_time").alias("window_end"),
-        F.lit(1).alias("event_count"),
-        "amount_eur",
-        "txn_date",
-    ).withColumn("rule", F.lit("CHALLENGE_AML_THRESHOLD"))
-    gold_alert(aml, "aml_events", "gold-aml-events")
+        gold_alert(windows, "fraud_alerts", "gold-fraud-alerts")
+    for rule, alerts in individual_alerts(ledger).items():
+        if rule == "CHALLENGE_AML_THRESHOLD":
+            gold_alert(alerts, "aml_events", "gold-aml-events")
+        else:
+            gold_alert(alerts, "fraud_alerts", "gold-fraud-alerts")
     opening = (
         spark.table("iceberg.silver.accounts")
         .filter(

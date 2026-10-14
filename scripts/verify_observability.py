@@ -13,7 +13,7 @@ def signals(spark=0,aml=0,regulatory=0):
 
 def states():
     rules=grafana('/api/prometheus/grafana/api/v1/rules')['data']['groups']
-    return {r['name']:next((a['state'] for a in r.get('alerts',[]) if a.get('labels',{}).get('scenario')=='demo'),'Absent') for g in rules for r in g['rules']}
+    return {r['name'].removesuffix(' · démo'):next((a['state'] for a in r.get('alerts',[]) if a.get('labels',{}).get('scenario')=='demo'),'Absent') for g in rules for r in g['rules'] if r['name'].endswith(' · démo')}
 
 
 def main():
@@ -51,7 +51,10 @@ def main():
             for row in rows:
                 for _,line in row['values']:
                     event=json.loads(line)
-                    if event.get('labels',{}).get('scenario')=='demo' and event.get('status')=='firing':delivered[event['labels']['alertname']]=True
+                    if (event.get('labels',{}).get('scenario')=='demo' and event.get('status')=='firing'
+                            and event.get('timestamp','') >= report['started_at_utc']
+                            and event.get('labels',{}).get('alertname','').endswith(' · démo')):
+                        delivered[event['labels']['alertname']]=True
             if len(delivered)==3:report['local_firing_notifications']=sorted(delivered);break
             time.sleep(5)
         else:raise TimeoutError('Three demo notification deliveries not observed in Loki')

@@ -19,6 +19,26 @@ class ObservabilityTest(unittest.TestCase):
                 observer.kafka_metrics(observer.Metrics())
         kafka.KafkaConsumer.assert_not_called()
 
+    def test_stalled_source_does_not_freeze_other_metrics(self):
+        import threading
+        import time
+        blocked = threading.Event()
+        def stalled(m):
+            blocked.wait(5)
+        def healthy(m):
+            m.add('healthy_metric',42)
+        try:
+            started = time.monotonic()
+            body = observer.collect({'test_stall':stalled,'test_healthy':healthy}, timeout_seconds=0.05, demo={})
+            self.assertLess(time.monotonic()-started,1)
+            self.assertIn('healthy_metric 42.0',body)
+            self.assertIn('waba_telemetry_available{source="test_stall"} 0.0',body)
+            future = observer.SOURCE_FUTURES['test_stall']
+            observer.collect({'test_stall':stalled}, timeout_seconds=0.01, demo={})
+            self.assertIs(observer.SOURCE_FUTURES['test_stall'],future)
+        finally:
+            blocked.set()
+
     def test_ignore_uncommitted_offsets(self):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp);(path/'commits').mkdir();(path/'offsets').mkdir()

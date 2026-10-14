@@ -86,11 +86,22 @@ for item in panels:
     item['fieldConfig']['defaults'].update({'color':{'mode':'thresholds'},'thresholds':{'mode':'absolute','steps':steps}})
 save(OUT/'dashboard.json',{'uid':'waba-health','title':'WABA — Santé des pipelines','schemaVersion':41,'version':1,'refresh':'15s','timezone':'utc','time':{'from':'now-1h','to':'now'},'tags':['WABA','local','observability'],'panels':panels})
 rules=[]
-for uid,title,expr,threshold,pending,desc in [
- ('waba-spark-fraud','Fraude Spark en erreur > 5 minutes','waba_spark_fraud_failed or waba_demo_spark_fraud_failed',0,'5m','Échec continu du job streaming de fraude pendant cinq minutes. scenario=demo identifie les tests.'),
- ('waba-kafka-aml','Retard Kafka AML > 5 000 messages','waba_kafka_query_lag_messages{query="silver_to_gold"} or waba_demo_kafka_aml_lag_messages',5000,'0s','Retard réel du checkpoint partagé fraude/AML ; pas de groupe AML séparé. scenario=demo identifie les tests.'),
- ('waba-regulatory','Rapport réglementaire manquant à 06 h UTC','waba_regulatory_deadline_missed or waba_demo_regulatory_deadline_missed',0,'0s','Run planifié J+1 non réussi à l’échéance UTC. scenario=demo identifie les tests.')]:
- rules.append({'uid':uid,'title':title,'condition':'B','for':pending,'noDataState':'NoData','execErrState':'Error','isPaused':False,'annotations':{'summary':desc},'labels':{'team':'waba','severity':'warning'},'data':[{'refId':'A','relativeTimeRange':{'from':600,'to':0},'datasourceUid':'waba-prometheus','model':{'refId':'A','expr':expr,'instant':True,'intervalMs':15000,'maxDataPoints':43200}},{'refId':'B','relativeTimeRange':{'from':0,'to':0},'datasourceUid':'__expr__','model':{'refId':'B','type':'threshold','expression':'A','conditions':[{'type':'query','evaluator':{'type':'gt','params':[threshold]},'operator':{'type':'and'},'reducer':{'type':'last','params':[]}}]}}]})
+operational = [
+ ('waba-spark-fraud','Fraude Spark en erreur > 5 minutes','waba_spark_fraud_failed', 'waba_demo_spark_fraud_failed',0,'5m','Échec du job streaming de fraude pendant cinq minutes.'),
+ ('waba-kafka-aml','Retard Kafka AML > 5 000 messages','waba_kafka_query_lag_messages{query="silver_to_gold"} or (waba_telemetry_expected{source="kafka"} == 0)', 'waba_demo_kafka_aml_lag_messages',5000,'0s','Lag du checkpoint partagé fraude/AML ; pas de groupe AML séparé.'),
+ ('waba-regulatory','Rapport réglementaire manquant à 06 h UTC','waba_regulatory_deadline_missed', 'waba_demo_regulatory_deadline_missed',0,'0s','Run planifié J+1 non réussi après 06 h UTC.'),
+]
+entries=[]
+for uid,title,live,demo,threshold,pending,desc in operational:
+    entries.append((uid,title,live,threshold,pending,desc,'live'))
+    entries.append((uid+'-demo',title+' · démo',demo,threshold,pending,desc+' Signal de test isolé.','demo'))
+entries += [
+ ('waba-telemetry-unavailable','Collecteur attendu indisponible', '((waba_telemetry_expected == 1) unless on(source) (waba_telemetry_available == 1)) or (1 - waba_telemetry_available{source=~"spark|kubernetes"})',0,'1m','Une source attendue ne produit plus de mesures. Les pauses volontaires ne déclenchent pas cette règle.','live'),
+ ('waba-telemetry-stale','Mesures globales périmées','time() - waba_exporter_collection_timestamp_seconds',120,'0s','Le dernier cycle de collecte date de plus de deux minutes.','live'),
+ ('waba-exporter-absent','Exporteur absent','absent(waba_exporter_collection_timestamp_seconds) or vector(0)',0,'1m','La série de fraîcheur de l’exporteur a disparu.','live'),
+]
+for uid,title,expr,threshold,pending,desc,scenario in entries:
+ rules.append({'uid':uid,'title':title,'condition':'B','for':pending,'noDataState':'NoData','execErrState':'Error','isPaused':False,'annotations':{'summary':desc},'labels':{'team':'waba','severity':'warning','scenario':scenario},'data':[{'refId':'A','relativeTimeRange':{'from':600,'to':0},'datasourceUid':'waba-prometheus','model':{'refId':'A','expr':expr,'instant':True,'intervalMs':15000,'maxDataPoints':43200}},{'refId':'B','relativeTimeRange':{'from':0,'to':0},'datasourceUid':'__expr__','model':{'refId':'B','type':'threshold','expression':'A','conditions':[{'type':'query','evaluator':{'type':'gt','params':[threshold]},'operator':{'type':'and'},'reducer':{'type':'last','params':[]}}]}}]})
 save(OUT/'alerting.json',{'apiVersion':1,'groups':[{'orgId':1,'name':'WABA operational','folder':'WABA','interval':'30s','rules':rules}],'contactPoints':[{'orgId':1,'name':'waba-local','receivers':[{'uid':'waba-local-webhook','type':'webhook','settings':{'url':'http://observability-exporter.processing:9108/alerts','httpMethod':'POST'},'disableResolveMessage':False}]}],'policies':[{'orgId':1,'receiver':'waba-local','group_by':['alertname','scenario'],'group_wait':'5s','group_interval':'10s','repeat_interval':'1h'}]})
 items=[]
 def res(kind,name,ns='monitoring',api=None,**kw):

@@ -1,0 +1,10 @@
+{
+  "started_at_utc": "2026-10-14T15:48:23.774012+00:00",
+  "fault": "invalid collector-only NiFi password; actual NiFi service unchanged",
+  "external_notifications_sent": false,
+  "actual_failure_alert_fired": true,
+  "other_sources_fresh": true,
+  "restored_secret_backed_credentials": true,
+  "alert_resolved": true,
+  "completed_at_utc": "2026-10-14T15:50:50.847406+00:00"
+}

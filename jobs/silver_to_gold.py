@@ -2,6 +2,7 @@
 
 from pyspark.sql import functions as F, Window
 from waba.spark_common import session, selected, replace_countries
+from waba.lambda_snapshot import publish as publish_lambda_snapshot
 
 spark = session("waba-gold")
 
@@ -20,6 +21,8 @@ def ratio(numerator, denominator):
 
 
 bank = source("bank_transactions")
+# One atomic fact snapshot drives both Lambda totals and overlap exclusion.
+publish_lambda_snapshot(bank)
 write(
     bank.select("country_code", "entity_type", "transaction_id", "txn_date"),
     "batch_transaction_membership",

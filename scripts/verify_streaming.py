@@ -75,7 +75,7 @@ assert (
 )
 assert (
     count(
-        f"SELECT count(*) FROM iceberg.gold.fraud_alerts a JOIN iceberg.silver.insurance_operations s ON a.country_code=s.country_code AND a.window_start=s.timestamp AND starts_with(a.subject_id,s.account_id||'/') WHERE a.rule='CLAIM_OVER_THREE_ANNUAL_PREMIUMS' AND s.operation_id='{ids['claim_small']}'"
+        f"SELECT count(*) FROM iceberg.gold.fraud_alerts a JOIN iceberg.silver.insurance_operations s ON a.country_code=s.country_code AND a.window_start=s.timestamp AND (a.subject_id=s.operation_id OR starts_with(a.subject_id,s.account_id||'/')) WHERE a.rule='CLAIM_OVER_THREE_ANNUAL_PREMIUMS' AND s.operation_id='{ids['claim_small']}'"
     )
     == 0
 )
@@ -86,13 +86,13 @@ assert (
 )
 # Lambda sum equals the batch snapshot plus fresh successful events exactly once.
 batch = float(
-    query("SELECT sum(total_amount_eur) FROM iceberg.gold.daily_transaction_volume")[0][
+    query("SELECT sum(amount_eur) FROM iceberg.gold.lambda_batch_transactions WHERE transaction_status='SUCCESS'")[0][
         0
     ]
 )
 fresh = float(
     query(
-        """SELECT sum(s.amount_eur) FROM iceberg.silver.bank_transactions s LEFT JOIN iceberg.gold.batch_transaction_membership m ON s.country_code=m.country_code AND s.transaction_id=m.transaction_id WHERE s.transaction_status='SUCCESS' AND m.transaction_id IS NULL"""
+        """SELECT sum(s.amount_eur) FROM iceberg.silver.bank_transactions s LEFT JOIN iceberg.gold.lambda_batch_transactions m ON s.country_code=m.country_code AND s.transaction_id=m.transaction_id WHERE s.transaction_status='SUCCESS' AND m.transaction_id IS NULL"""
     )[0][0]
 )
 lambda_total = float(

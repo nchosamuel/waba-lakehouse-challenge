@@ -1,5 +1,5 @@
 {
-  "started_at_utc": "2026-10-14T14:41:10.424985+00:00",
+  "started_at_utc": "2026-10-14T15:51:08.014147+00:00",
   "signals_are_demo_only": true,
   "external_notifications_sent": false,
   "spark_pending_period_seconds": 300,
@@ -10,12 +10,12 @@
     "Retard Kafka AML > 5 000 messages": "Alerting",
     "Rapport réglementaire manquant à 06 h UTC": "Alerting"
   },
-  "elapsed_since_signal_change_seconds": 360.8,
+  "elapsed_since_signal_change_seconds": 376.0,
   "spark_pending_then_firing_verified": true,
   "local_firing_notifications": [
-    "Fraude Spark en erreur > 5 minutes",
-    "Rapport réglementaire manquant à 06 h UTC",
-    "Retard Kafka AML > 5 000 messages"
+    "Fraude Spark en erreur > 5 minutes · démo",
+    "Rapport réglementaire manquant à 06 h UTC · démo",
+    "Retard Kafka AML > 5 000 messages · démo"
   ],
   "demo_resolved_states": {
     "Fraude Spark en erreur > 5 minutes": "Normal",
@@ -23,5 +23,5 @@
     "Rapport réglementaire manquant à 06 h UTC": "Normal"
   },
   "demo_signals_reset": true,
-  "completed_at_utc": "2026-10-14T14:50:19.690907+00:00"
+  "completed_at_utc": "2026-10-14T16:00:50.466122+00:00"
 }

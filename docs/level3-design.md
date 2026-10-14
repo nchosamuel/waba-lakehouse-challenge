@@ -37,7 +37,7 @@ Les lignes sans contexte comptable restent exclues des ratios assurance batch. L
 
 ## Lambda sans chevauchement
 
-Trino lit les tables Iceberg et les topics Kafka JSON. `gold.batch_transaction_membership` décrit les identifiants couverts par le dernier calcul Gold batch. La vue `gold.lambda_daily_transaction_volume` additionne Gold batch aux événements Kafka réussis non couverts par ce lot, après déduplication Kafka. Elle ne fait pas une addition aveugle de deux agrégats qui pourraient contenir les mêmes transactions.
+Trino lit Iceberg et Kafka JSON. `gold.lambda_batch_transactions` contient les transactions batch et leurs montants/statuts dans un seul snapshot atomique Iceberg. La vue `gold.lambda_daily_transaction_volume` joint ces faits aux messages Kafka dédupliqués, donne priorité au fait batch puis agrège les succès. Une interruption du job avant l’écriture de `daily_transaction_volume` ne modifie pas la cohérence de cette vue. L’ancienne table `batch_transaction_membership` reste un artefact de compatibilité, sans rôle dans le calcul Lambda.
 
 Une recomposition Gold met aussi à jour les identifiants couverts. Les modes batch et streaming sont exclusifs pour les écritures dans la démo locale ; cette discipline évite les lectures au milieu d'une mise à jour multi-table. En production, la publication d'une version atomique d'agrégats et de sa frontière de couverture serait nécessaire.
 
@@ -55,3 +55,7 @@ NiFi utilise HTTPS avec certificat auto-signé et mot de passe généré. Le hel
 - [Kafka : image officielle Docker](https://kafka.apache.org/39/getting-started/docker/).
 - [Spark : Kafka, checkpoints et publication au moins une fois](https://spark.apache.org/docs/3.5.7/structured-streaming-kafka-integration.html).
 - [NiFi : ListS3](https://nifi.apache.org/components/org.apache.nifi.processors.aws.s3.ListS3/).
+
+## Corrections issues de la revue
+
+Les règles individuelles examinent chaque événement accepté du micro-lot. La règle multi-transactions recalcule les fenêtres affectées à partir du registre durable, sans tronquer toutes les règles au maximum temporel global. `review-fixes-verification.json` vérifie les événements séparés d’une heure et les totaux Trino avant publication, après interruption injectée et après rejeu.

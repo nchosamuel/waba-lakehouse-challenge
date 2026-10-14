@@ -15,6 +15,8 @@ import urllib.request
 NAMESPACES = ('ingestion', 'processing', 'serving', 'governance', 'monitoring')
 STATE = {'body': '# Initializing\n'}
 LOCK = threading.Lock()
+SOURCE_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+SOURCE_FUTURES = {}
 
 
 def fetch(url, headers=None, data=None, context=None):
@@ -59,6 +61,9 @@ def deployments(m):
             labels={'namespace':ns,'component':d['metadata']['name']}
             m.add('waba_component_desired_replicas',d['spec'].get('replicas',1),**labels)
             m.add('waba_component_ready_replicas',d.get('status',{}).get('readyReplicas',0),**labels)
+            source={'kafka':'kafka','nifi':'nifi','airflow':'airflow'}.get(d['metadata']['name'])
+            if source:
+                m.add('waba_telemetry_expected',int(d['spec'].get('replicas',1)>0),source=source)
     # Coordinator native health endpoint. Disabled services are shown by desired replicas above.
     result=fetch('http://trino.serving:8080/v1/info')
     m.add('waba_trino_starting',int(result.get('starting',False)))
@@ -142,9 +147,9 @@ def airflow_metrics(m):
     finally:conn.close()
 
 
-def collect():
+def collect(source_functions=None, timeout_seconds=12, demo=None):
     m=Metrics()
-    sources={'kubernetes':deployments,'spark':spark_metrics,'kafka':kafka_metrics,'nifi':nifi_metrics,'airflow':airflow_metrics}
+    sources=source_functions if source_functions is not None else {'kubernetes':deployments,'spark':spark_metrics,'kafka':kafka_metrics,'nifi':nifi_metrics,'airflow':airflow_metrics}
     def one(item):
         name,fn=item;local=Metrics()
         try:fn(local);local.add('waba_telemetry_available',1,source=name)
@@ -153,11 +158,26 @@ def collect():
             local=Metrics();local.add('waba_telemetry_available',0,source=name)
             print(json.dumps({'event':'telemetry_unavailable','source':name,'error_type':type(e).__name__}),flush=True)
         return local.lines
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:
-        for lines in pool.map(one,sources.items()):m.lines.extend(lines)
+    # A stalled SDK must not stop other sources or freeze the published snapshot.
+    # Keep at most one in-flight task per source; never accumulate timed-out work.
+    for name, fn in sources.items():
+        previous = SOURCE_FUTURES.get(name)
+        if previous is None or previous.done():
+            SOURCE_FUTURES[name] = SOURCE_POOL.submit(one, (name, fn))
+    concurrent.futures.wait(
+        [SOURCE_FUTURES[name] for name in sources], timeout=timeout_seconds
+    )
+    for name in sources:
+        future = SOURCE_FUTURES[name]
+        if future.done():
+            m.lines.extend(future.result())
+        else:
+            m.add('waba_telemetry_available',0,source=name)
+
     m.add('waba_exporter_collection_timestamp_seconds',time.time())
     # Separate demo namespace and labels: never overwrite observed live metrics.
-    demo=json.loads(Path('/demo/signals.json').read_text())
+    if demo is None:
+        demo=json.loads(Path('/demo/signals.json').read_text())
     for name,value in demo.items():
         if name not in ('spark_failed','aml_lag','regulatory_missed'):continue
         metric={'spark_failed':'waba_demo_spark_fraud_failed','aml_lag':'waba_demo_kafka_aml_lag_messages','regulatory_missed':'waba_demo_regulatory_deadline_missed'}[name]

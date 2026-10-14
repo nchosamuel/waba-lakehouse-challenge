@@ -50,7 +50,7 @@ if args.mode == "start":
             "trino",
             "trino",
             "--execute",
-            "SELECT 1 FROM iceberg.gold.batch_transaction_membership LIMIT 1",
+            "SELECT 1 FROM iceberg.gold.lambda_batch_transactions LIMIT 1",
         ],
         cwd=ROOT,
         stdout=subprocess.DEVNULL,

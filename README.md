@@ -2,7 +2,7 @@
 
 Version locale du challenge Data Engineer BancAssur Afrique de l'Ouest : batch des niveaux 1–2 et streaming du niveau 3.
 
-Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Le niveau 3 est vérifié en Docker et sur Kubernetes local. Les trois dashboards Superset sont disponibles ; le SSO, le catalogue de gouvernance et l’observabilité du niveau 4 restent à construire.
+Le [périmètre de soumission](docs/submission-status.md) distingue les fonctions vérifiées, adaptations et livrables restants. Le niveau 3 est vérifié en Docker et sur Kubernetes local. Les trois dashboards Superset, le SSO Superset/Trino, le catalogue OpenMetadata avec lineage et la supervision sont implémentés et vérifiés par profils Kubernetes locaux. Le lancement intégral simultané et l’exposition par Ingress restent à valider.
 La génération des données est séparée de leur ingestion : Streamlit publie des CSV dans MinIO ; Spark traite les fichiers en attente et alimente Iceberg ; Trino interroge les tables.
 
 ```mermaid
@@ -341,3 +341,11 @@ Ouvrir http://localhost:8585 après un port-forward du Service `openmetadata` da
 `python3 scripts/catch_up_regulatory_report.py` réactive Airflow et le runner, laisse le scheduler créer le run quotidien attendu et vérifie les seize fichiers ainsi que le retour de l’alerte réelle à Normal. Il conserve le retard observé, ne change ni la planification ni l’échéance et ne crée pas un run manuel présenté comme planifié. Prometheus/Grafana doivent être accessibles via les port-forwards de supervision. Kafka/NiFi restent arrêtés pour la mémoire ; Airflow et le DAG réglementaire restent actifs.
 
 La preuve datée est dans [regulatory-catch-up-verification.json](docs/regulatory-catch-up-verification.json). Les données simulées restent celles de février : le reporting courant peut utiliser des encours anciens et n’avoir aucune opération d’assurance du mois courant. Voir [le dossier pour la revue indépendante](docs/review-handoff.md) avant soumission.
+
+## Vérifications des corrections de revue
+
+Le traitement Gold publie `gold.lambda_batch_transactions` dans un seul commit Iceberg ; la vue Lambda utilise ces faits et les messages Kafka dédupliqués. Après une mise à jour d’une installation existante, recalculer Gold puis recréer la vue (`WABA_RUNTIME=kubernetes python3 scripts/create_lambda_view.py` pour kind). Les nouvelles installations alimentent cette photographie lors du premier calcul Gold.
+
+En profil batch kind préparé, les fixtures isolées se vérifient avec `WABA_RUNTIME=kubernetes python3 scripts/verify_review_fixes.py --run-spark`. Le second contrôle utilise Trino et retire uniquement ses deux tables de test synthétiques. Les rapports sont dans `docs/review-fixes-verification.json` et `docs/regulatory-coverage-verification.json`.
+
+En profil supervision avec NiFi actif : `python3 scripts/verify_telemetry_failure.py` introduit temporairement un mauvais mot de passe dans le collecteur seul, vérifie l’alerte réelle et restaure la configuration privée dans un bloc `finally`. NiFi et ses données restent inchangés. `python3 scripts/verify_observability.py` vérifie les trois règles de démonstration séparées et remet leurs signaux à zéro.

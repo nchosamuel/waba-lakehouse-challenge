@@ -26,3 +26,5 @@ Pour chaque écart, donner l’exigence, le fichier et la ligne concernés, le c
 - Le rattrapage du rapport planifié conserve la trace du dépassement de 06:00 UTC : voir `regulatory-catch-up-verification.json`. Une réussite technique du DAG ne prouve ni fraîcheur ni exhaustivité des données du mois courant ; les fichiers peuvent être vides en l’absence d’opérations modélisées. Les agrégats ne sont pas des formulaires officiels BCEAO/CIMA.
 
 Les fichiers `.env`, `.tools/` et les journaux de navigation privés contiennent des identifiants : ne pas les citer dans le compte rendu ni les publier. Ne pas envoyer d’email, modifier la visibilité du dépôt ou fusionner la PR dans le cadre d’une revue.
+
+Les corrections postérieures à `36ffbc1` sont documentées dans `review-fixes-verification.json`, `telemetry-failure-verification.json` et `regulatory-coverage-verification.json`. Examiner les fonctions partagées `lambda_snapshot.py`, `streaming_rules.py` et `report_coverage.py`, et vérifier les rapports datés contre les scénarios réellement testés.

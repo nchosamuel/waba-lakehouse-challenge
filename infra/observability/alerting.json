@@ -16,11 +16,12 @@
           "execErrState": "Error",
           "isPaused": false,
           "annotations": {
-            "summary": "\u00c9chec continu du job streaming de fraude pendant cinq minutes. scenario=demo identifie les tests."
+            "summary": "\u00c9chec du job streaming de fraude pendant cinq minutes."
           },
           "labels": {
             "team": "waba",
-            "severity": "warning"
+            "severity": "warning",
+            "scenario": "live"
           },
           "data": [
             {
@@ -32,7 +33,72 @@
               "datasourceUid": "waba-prometheus",
               "model": {
                 "refId": "A",
-                "expr": "waba_spark_fraud_failed or waba_demo_spark_fraud_failed",
+                "expr": "waba_spark_fraud_failed",
+                "instant": true,
+                "intervalMs": 15000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "type": "query",
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "waba-spark-fraud-demo",
+          "title": "Fraude Spark en erreur > 5 minutes \u00b7 d\u00e9mo",
+          "condition": "B",
+          "for": "5m",
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "isPaused": false,
+          "annotations": {
+            "summary": "\u00c9chec du job streaming de fraude pendant cinq minutes. Signal de test isol\u00e9."
+          },
+          "labels": {
+            "team": "waba",
+            "severity": "warning",
+            "scenario": "demo"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "waba-prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "waba_demo_spark_fraud_failed",
                 "instant": true,
                 "intervalMs": 15000,
                 "maxDataPoints": 43200
@@ -80,11 +146,12 @@
           "execErrState": "Error",
           "isPaused": false,
           "annotations": {
-            "summary": "Retard r\u00e9el du checkpoint partag\u00e9 fraude/AML ; pas de groupe AML s\u00e9par\u00e9. scenario=demo identifie les tests."
+            "summary": "Lag du checkpoint partag\u00e9 fraude/AML ; pas de groupe AML s\u00e9par\u00e9."
           },
           "labels": {
             "team": "waba",
-            "severity": "warning"
+            "severity": "warning",
+            "scenario": "live"
           },
           "data": [
             {
@@ -96,7 +163,72 @@
               "datasourceUid": "waba-prometheus",
               "model": {
                 "refId": "A",
-                "expr": "waba_kafka_query_lag_messages{query=\"silver_to_gold\"} or waba_demo_kafka_aml_lag_messages",
+                "expr": "waba_kafka_query_lag_messages{query=\"silver_to_gold\"} or (waba_telemetry_expected{source=\"kafka\"} == 0)",
+                "instant": true,
+                "intervalMs": 15000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "type": "query",
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        5000
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "waba-kafka-aml-demo",
+          "title": "Retard Kafka AML > 5 000 messages \u00b7 d\u00e9mo",
+          "condition": "B",
+          "for": "0s",
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "isPaused": false,
+          "annotations": {
+            "summary": "Lag du checkpoint partag\u00e9 fraude/AML ; pas de groupe AML s\u00e9par\u00e9. Signal de test isol\u00e9."
+          },
+          "labels": {
+            "team": "waba",
+            "severity": "warning",
+            "scenario": "demo"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "waba-prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "waba_demo_kafka_aml_lag_messages",
                 "instant": true,
                 "intervalMs": 15000,
                 "maxDataPoints": 43200
@@ -144,11 +276,12 @@
           "execErrState": "Error",
           "isPaused": false,
           "annotations": {
-            "summary": "Run planifi\u00e9 J+1 non r\u00e9ussi \u00e0 l\u2019\u00e9ch\u00e9ance UTC. scenario=demo identifie les tests."
+            "summary": "Run planifi\u00e9 J+1 non r\u00e9ussi apr\u00e8s 06 h UTC."
           },
           "labels": {
             "team": "waba",
-            "severity": "warning"
+            "severity": "warning",
+            "scenario": "live"
           },
           "data": [
             {
@@ -160,7 +293,267 @@
               "datasourceUid": "waba-prometheus",
               "model": {
                 "refId": "A",
-                "expr": "waba_regulatory_deadline_missed or waba_demo_regulatory_deadline_missed",
+                "expr": "waba_regulatory_deadline_missed",
+                "instant": true,
+                "intervalMs": 15000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "type": "query",
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "waba-regulatory-demo",
+          "title": "Rapport r\u00e9glementaire manquant \u00e0 06 h UTC \u00b7 d\u00e9mo",
+          "condition": "B",
+          "for": "0s",
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "isPaused": false,
+          "annotations": {
+            "summary": "Run planifi\u00e9 J+1 non r\u00e9ussi apr\u00e8s 06 h UTC. Signal de test isol\u00e9."
+          },
+          "labels": {
+            "team": "waba",
+            "severity": "warning",
+            "scenario": "demo"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "waba-prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "waba_demo_regulatory_deadline_missed",
+                "instant": true,
+                "intervalMs": 15000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "type": "query",
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "waba-telemetry-unavailable",
+          "title": "Collecteur attendu indisponible",
+          "condition": "B",
+          "for": "1m",
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "isPaused": false,
+          "annotations": {
+            "summary": "Une source attendue ne produit plus de mesures. Les pauses volontaires ne d\u00e9clenchent pas cette r\u00e8gle."
+          },
+          "labels": {
+            "team": "waba",
+            "severity": "warning",
+            "scenario": "live"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "waba-prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "((waba_telemetry_expected == 1) unless on(source) (waba_telemetry_available == 1)) or (1 - waba_telemetry_available{source=~\"spark|kubernetes\"})",
+                "instant": true,
+                "intervalMs": 15000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "type": "query",
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        0
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "waba-telemetry-stale",
+          "title": "Mesures globales p\u00e9rim\u00e9es",
+          "condition": "B",
+          "for": "0s",
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "isPaused": false,
+          "annotations": {
+            "summary": "Le dernier cycle de collecte date de plus de deux minutes."
+          },
+          "labels": {
+            "team": "waba",
+            "severity": "warning",
+            "scenario": "live"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "waba-prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "time() - waba_exporter_collection_timestamp_seconds",
+                "instant": true,
+                "intervalMs": 15000,
+                "maxDataPoints": 43200
+              }
+            },
+            {
+              "refId": "B",
+              "relativeTimeRange": {
+                "from": 0,
+                "to": 0
+              },
+              "datasourceUid": "__expr__",
+              "model": {
+                "refId": "B",
+                "type": "threshold",
+                "expression": "A",
+                "conditions": [
+                  {
+                    "type": "query",
+                    "evaluator": {
+                      "type": "gt",
+                      "params": [
+                        120
+                      ]
+                    },
+                    "operator": {
+                      "type": "and"
+                    },
+                    "reducer": {
+                      "type": "last",
+                      "params": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "uid": "waba-exporter-absent",
+          "title": "Exporteur absent",
+          "condition": "B",
+          "for": "1m",
+          "noDataState": "NoData",
+          "execErrState": "Error",
+          "isPaused": false,
+          "annotations": {
+            "summary": "La s\u00e9rie de fra\u00eecheur de l\u2019exporteur a disparu."
+          },
+          "labels": {
+            "team": "waba",
+            "severity": "warning",
+            "scenario": "live"
+          },
+          "data": [
+            {
+              "refId": "A",
+              "relativeTimeRange": {
+                "from": 600,
+                "to": 0
+              },
+              "datasourceUid": "waba-prometheus",
+              "model": {
+                "refId": "A",
+                "expr": "absent(waba_exporter_collection_timestamp_seconds) or vector(0)",
                 "instant": true,
                 "intervalMs": 15000,
                 "maxDataPoints": 43200

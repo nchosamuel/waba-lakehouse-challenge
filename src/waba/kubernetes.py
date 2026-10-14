@@ -10,6 +10,7 @@ SUPPORTED_JOBS = {
     "seed_stream_context",
     "seed_analytics_context",
     "seed_lambda_membership",
+    "verify_review_fixes",
     "streaming_pipeline",
 }
 

@@ -17,7 +17,7 @@ Cette version implémente les niveaux 1 et 2 du challenge. Le niveau 3 est test�
 | Quatre DAGs Airflow | Vérifié | Exécutions réelles du scheduler, dépendances, retries, paramètres pays/période. |
 | Reporting J+1 | Vérifié pour des agrégats de démonstration | 00h30 UTC ; données futures exclues ; primes acquises au prorata. Aucun formulaire officiel revendiqué. |
 | Déploiement vierge | Vérifié, avec correction du démarrage documentée | Volumes séparés initialement vides, quatre DAGs réussis et KPIs contrôlés ; `fresh-install-verification.json`. |
-| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 29 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
+| Git et CI | Publié, CI verte | Dépôt privé GitHub ; source sans `.env` ; 33 tests indépendants de Docker ; statut de cette branche visible dans GitHub Actions. |
 | Document technique | Disponible | `technical-writeup.md` : synthèse des niveaux livrés ; documents de conception détaillés associés. |
 | Vidéo de 5–10 minutes | Reste à enregistrer | `demo-script.md` fournit le déroulé ; ce document ne remplace pas une vidéo. |
 | NiFi/Kafka/streaming/fraude/AML | Vérifié en Docker et Kubernetes local | NiFi/Kafka, deux traitements Spark, DLQ, trois règles de fraude, AML et liquidité ; vue Lambda sans chevauchement ; reprise et rejeux vérifiés. |
@@ -34,3 +34,10 @@ Les rapports JSON existants témoignent des exécutions dont ils sont issus ; il
 ## Rattrapage du rapport planifié — 14 octobre
 
 Le scheduler Airflow a créé et terminé le run `scheduled__2026-10-13T00:30:00+00:00` pour le rapport du 13 octobre, le 14 octobre à 15:14:59 UTC. L’échéance de 06 h UTC n’a pas été respectée ; elle n’a pas été déplacée. Seize fichiers ont été vérifiés et l’alerte réelle est revenue à Normal. Les huit fichiers BCEAO utilisent le dernier snapshot simulé disponible, du 28 février ; les huit fichiers CIMA sont vides car aucun contexte d’assurance modélisé n’existe pour octobre. C’est une validation du rattrapage technique, pas de la fraîcheur ou de l’exhaustivité réglementaire. Voir `regulatory-catch-up-verification.json`.
+
+## Corrections après revue des exigences
+
+- La vue Lambda utilise une seule photographie transactionnelle Gold atomique. `review-fixes-verification.json` vérifie les totaux Trino avant publication, après interruption injectée et après rejeu, ainsi que les règles sur événements anciens.
+- Les règles individuelles streaming examinent chaque événement accepté ; les fenêtres multi-transactions sont recalculées autour de ces événements. Le watermark conserve sa politique explicite de rejet des événements trop anciens.
+- Trois règles réelles et trois règles de démonstration séparées ; alertes supplémentaires sur collecteur attendu indisponible, mesures périmées et exporteur absent. `telemetry-failure-verification.json` prouve une panne réelle de connexion du collecteur NiFi et sa résolution, sans interrompre la fraîcheur des autres sources.
+- `regulatory-coverage-verification.json` vérifie les 40 agrégats CIMA de février pour huit pays contre Gold, avec couverture fraîche du scénario. Chaque rapport produit désormais `coverage.json` : un succès technique avec données absentes ou anciennes ne certifie pas la couverture métier. La politique de fraîcheur d’un jour est une hypothèse de démonstration, pas une règle réglementaire officielle. Le retard du rattrapage d’octobre reste conservé.
